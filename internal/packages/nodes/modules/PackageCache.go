@@ -1,6 +1,8 @@
 package modules
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func PackageCache() {
 	fmt.Println("Hello from Pkg cache")

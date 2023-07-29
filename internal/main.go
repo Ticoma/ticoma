@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	fmt.Printf("Hello from main")
-	nodes.GameNode()
+	fmt.Printf("Hello from main\n")
+
 	nodes.PlayerNode()
 	os.Exit(0)
 }
