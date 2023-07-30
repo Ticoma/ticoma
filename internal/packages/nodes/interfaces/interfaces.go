@@ -3,22 +3,23 @@
 package interfaces
 
 type Position struct {
-	X int
-	Y int
+	X int `json:"posX"`
+	Y int `json:"posY"`
 }
 
 type DestPosition struct {
-	*Position
+	X int `json:"destPosX"`
+	Y int `json:"destPosY"`
 }
 
 type ActionDataPackage struct {
-	PlayerId     int
-	PlayerPubKey string
-	*Position
-	*DestPosition
+	PlayerId      int    `json:"playerId"`
+	PubKey        string `json:"pubKey"`
+	*Position     `json:"pos"`
+	*DestPosition `json:"destPos"`
 }
 
 type ActionDataPackageTimestamped struct {
 	*ActionDataPackage
-	Timestamp int
+	Timestamp int `json:"timestamp"`
 }

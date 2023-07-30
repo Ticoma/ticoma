@@ -25,6 +25,11 @@ func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *ActionDataPackageTimest
 	blocksTraveledX := math.Abs(float64(endPos.X) - float64(startPos.X))
 	blocksTraveledY := math.Abs(float64(endPos.Y) - float64(startPos.Y))
 	blocksTraveledTotal := blocksTraveledX + blocksTraveledY
+
+	// if elapsedTime == 0 {
+	// 	return true
+	// }
+
 	velocity := int(blocksTraveledTotal) / elapsedTime
 
 	if velocity > MAX_VEL {

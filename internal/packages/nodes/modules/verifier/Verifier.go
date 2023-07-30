@@ -1,8 +1,5 @@
 package verifier
 
-// import (
-// )
-
 type Verifier struct {
 	*EngineVerifier
 	*SecurityVerifier
