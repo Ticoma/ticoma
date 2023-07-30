@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	// . "ticoma/packages/nodes/interfaces"
 )
 
 // SecurityVerifier
 type SecurityVerifier struct{}
 
-func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
+func (sv *SecurityVerifier) GetPackageSchema(timestamped bool) string {
 
-	const schema = `{
+	// Schema for the classic Action Data Package (local)
+	const schemaADP = `{
 		playerId: int,
 		pubKey: string,
 		pos: {
@@ -25,6 +25,38 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
 		},
 	},`
 
+	// Schema for ADP with a Timestamp key
+	const schemaADPTimestamped = `{
+		playerId: int,
+		pubKey: string,
+		pos: {
+			posX: int,
+			posY: int,
+		},
+		destPos: {
+			destPosX: int,
+			destPosY: int,
+		},
+		timestamp: int,
+	},`
+
+	if timestamped {
+		return schemaADPTimestamped
+	}
+	return schemaADP
+
+}
+
+func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte, timestamped bool) bool {
+
+	var schema string
+
+	if timestamped {
+		schema = sv.GetPackageSchema(true)
+	} else {
+		schema = sv.GetPackageSchema(false)
+	}
+
 	pkgStr := string(pkg)
 	res := []byte{}
 	keySelected := false
@@ -35,8 +67,6 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
 	}
 
 	dec := json.NewDecoder(strings.NewReader(pkgStr))
-
-	fmt.Println("IM HERE")
 
 	for {
 		t, err := dec.Token()
@@ -73,8 +103,9 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
 		}
 	}
 
-	fmt.Println(StripString(schema, true))
-	fmt.Println(StripString(string(res), true))
+	// DEBUG
+	// fmt.Println(StripString(schema, true))
+	// fmt.Println(StripString(string(res), true))
 
 	return strings.Compare(StripString(schema, true), StripString(string(res), true)) == 0
 }

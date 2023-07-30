@@ -14,7 +14,7 @@ func TestVerifyPackageTypesRandom(t *testing.T) {
 
 	// Completely random package
 	pkgStr := `{"foo": bar}`
-	got := v.SecurityVerifier.VerifyADPTypes([]byte(pkgStr))
+	got := v.SecurityVerifier.VerifyADPTypes([]byte(pkgStr), false)
 	want := false
 
 	if got != want {
@@ -23,7 +23,7 @@ func TestVerifyPackageTypesRandom(t *testing.T) {
 
 	// Empty package
 	pkgStrEmpty := ``
-	got2 := v.SecurityVerifier.VerifyADPTypes([]byte(pkgStrEmpty))
+	got2 := v.SecurityVerifier.VerifyADPTypes([]byte(pkgStrEmpty), false)
 	want2 := false
 
 	if got2 != want2 {
@@ -67,14 +67,14 @@ func TestVerifyPackageTypesIncorrect(t *testing.T) {
 		}
 	}`)
 
-	got1 := v.SecurityVerifier.VerifyADPTypes(pkg1)
+	got1 := v.SecurityVerifier.VerifyADPTypes(pkg1, false)
 	want1 := false
 
 	if got1 != want1 {
 		t.Errorf("got %t, wanted %t", got1, want1)
 	}
 
-	got2 := v.SecurityVerifier.VerifyADPTypes(pkg2)
+	got2 := v.SecurityVerifier.VerifyADPTypes(pkg2, false)
 	want2 := false
 
 	if got2 != want2 {
@@ -87,6 +87,7 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 
 	v := NewVerifier()
 
+	// Basic local pkg
 	pkg := ActionDataPackage{
 		PlayerId:     1,
 		PubKey:       "PUBKEY",
@@ -101,11 +102,36 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 		fmt.Println(err)
 	}
 
-	got := v.SecurityVerifier.VerifyADPTypes(jsonBytes)
+	got := v.SecurityVerifier.VerifyADPTypes(jsonBytes, false)
 	want := true
 
 	if got != want {
 		t.Errorf("got %t, wanted %t", got, want)
+	}
+
+	// Verify a timestamped package
+	pkg2 := ActionDataPackageTimestamped{
+		ActionDataPackage: &ActionDataPackage{
+			PlayerId:     1,
+			PubKey:       "PUBKEY",
+			Position:     &Position{X: 1, Y: 1},
+			DestPosition: &DestPosition{X: 2, Y: 2},
+		},
+		Timestamp: 1337,
+	}
+
+	// to json string first
+	jsonBytes2, err2 := json.Marshal(pkg2)
+
+	if err2 != nil {
+		fmt.Println(err2)
+	}
+
+	got2 := v.SecurityVerifier.VerifyADPTypes(jsonBytes2, true)
+	want2 := true
+
+	if got2 != want2 {
+		t.Errorf("got %t, wanted %t", got2, want2)
 	}
 
 }
