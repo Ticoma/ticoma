@@ -29,21 +29,14 @@ func PlayerNode() {
 	// 	DestPosition: &DestPosition{X: 3, Y: 3},
 	// }
 
-	// // test := InterfaceToString(testADP)
-	// test, err := json.Marshal(testADP)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-
-	// testADP_str := fmt.Sprint(testADP)
-	// fmt.Println(testADP_str)
-
 	testVerifier := NewVerifier()
 
-	// incorrect := []byte(`{"PLAYER_ID":"test","pubKey":"PUBKEY","zzz":{"posX":1,"posY":1},"destPos":{"destPosX":1,"destPosY":1}}`)
+	incorrect := []byte(`{"PLAYER_ID":0,"pubKey":"PUBKEY","zzz":{"posX":1,"posY":1},"destPos":{"destPosX":1,"destPosY":1}}`)
 	correct := []byte(`{"playerId":0,"pubKey":"PUBKEY","pos":{"posX":1,"posY":1},"destPos":{"destPosX":1,"destPosY":1}}`)
 
+	res0 := testVerifier.VerifyADPTypes(incorrect)
 	res := testVerifier.VerifyADPTypes(correct)
+	fmt.Println(res0)
 	fmt.Println(res)
 
 	// pos := Position{X: 1, Y: 1}

@@ -3,7 +3,6 @@ package verifier
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 	// . "ticoma/packages/nodes/interfaces"
 )
@@ -30,10 +29,18 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
 	res := []byte{}
 	keySelected := false
 
+	// Anti spam
+	if len(pkg) == 0 {
+		return false
+	}
+
 	dec := json.NewDecoder(strings.NewReader(pkgStr))
+
+	fmt.Println("IM HERE")
+
 	for {
 		t, err := dec.Token()
-		if err == io.EOF {
+		if err != nil {
 			break
 		}
 
