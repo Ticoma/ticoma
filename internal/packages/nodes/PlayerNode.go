@@ -10,60 +10,29 @@ import (
 func PlayerNode() {
 	fmt.Printf("Hello from PlayerNode\n")
 
+	// Init two players
 	v := NewVerifier()
 	nc := NewNodeCache(v)
 
+	// init player 0
 	pkg := ActionDataPackageTimestamped{
 		ActionDataPackage: &ActionDataPackage{
-			PlayerId:     1,
+			PlayerId:     0,
 			PubKey:       "PUBKEY",
 			Position:     &Position{X: 1, Y: 1},
-			DestPosition: &DestPosition{X: 2, Y: 2},
+			DestPosition: &DestPosition{X: 1, Y: 1},
 		},
-		Timestamp: 1337,
+		Timestamp: 1,
 	}
-
-	// should return empty map
-	// fmt.Println("EMPTY: ", nc.GetAll())
 
 	nc.Put(pkg)
 
-	// fmt.Println(nc.GetCache(1))
+	// init second node later
+	v2 := NewVerifier()
+	nc2 := NewNodeCache(v2)
 
-	// init for player 2
-	// v2 := NewVerifier()
-	// nc2 := NewNodeCache(v2)
+	cache := nc2.GetAll()
 
-	pkg2 := ActionDataPackageTimestamped{
-		ActionDataPackage: &ActionDataPackage{
-			PlayerId:     2,
-			PubKey:       "PUBKEY2",
-			Position:     &Position{X: 3, Y: 3},
-			DestPosition: &DestPosition{X: 3, Y: 3},
-		},
-		Timestamp: 7331,
-	}
+	fmt.Println(cache)
 
-	nc.Put(pkg2)
-
-	fmt.Println("PLAYER 1's CACHE: ")
-	fmt.Println(nc.GetCache(1))
-	fmt.Println(nc.GetCache(2))
-
-	// check
-	pkg3 := ActionDataPackageTimestamped{
-		ActionDataPackage: &ActionDataPackage{
-			PlayerId:     1,
-			PubKey:       "PUBKEY",
-			Position:     &Position{X: 2, Y: 2},
-			DestPosition: &DestPosition{X: 2, Y: 2},
-		},
-		Timestamp: 2337,
-	}
-
-	nc.Put(pkg3)
-
-	fmt.Println("PLAYER 1's CACHE: ")
-	fmt.Println(nc.GetCache(1))
-	fmt.Println(nc.GetCache(2))
 }

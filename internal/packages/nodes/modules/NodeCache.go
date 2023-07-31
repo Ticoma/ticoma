@@ -55,11 +55,13 @@ func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
 	jsonBytes, err := json.Marshal(pkg)
 	if err != nil {
 		fmt.Println("[NODE CACHE] - Couldn't serialize package. ", err)
+		return
 	}
 
 	validPkgTypes := nc.SecurityVerifier.VerifyADPTypes(jsonBytes, true)
 	if !validPkgTypes {
 		fmt.Println("[NODE CACHE] - Couldn't verify package types. ", err)
+		return
 	}
 
 	// init cache map if needed
@@ -81,6 +83,7 @@ func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
 
 	if !validPos {
 		fmt.Println("[NODE CACHE] - Coulnd't verify move direction or position. ", err)
+		return
 	}
 
 	curr := nc.CacheStore.Store[pkg.PlayerId][1]
@@ -88,6 +91,7 @@ func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
 
 	if !validMove {
 		fmt.Println("[NODE CACHE] - Engine couldn't verify move. ", err)
+		return
 	}
 
 	// push stack to the left
