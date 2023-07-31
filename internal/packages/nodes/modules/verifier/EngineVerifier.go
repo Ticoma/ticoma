@@ -16,7 +16,7 @@ const MAX_VEL = MAX_BLOCKS_TRAVEL_PER_SECOND / SECONDS_IN_MS
 
 // Engine verify functions
 
-// Movement
+// Checks if the player traversed too many blocks in a short amount of time
 func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *ActionDataPackageTimestamped, endPkg *ActionDataPackageTimestamped) bool {
 
 	startPos := startPkg.Position
@@ -35,4 +35,15 @@ func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *ActionDataPackageTimest
 
 	return true
 
+}
+
+// Checks if destPos of last package matches the pos of currently arriving package
+func (ev *EngineVerifier) VerifyMoveDirection(lastDestPos *DestPosition, pos *Position) bool {
+	verX := lastDestPos.X == pos.X
+	verY := lastDestPos.Y == pos.Y
+	if !verX || !verY {
+		return false
+	} else {
+		return true
+	}
 }

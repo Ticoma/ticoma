@@ -55,10 +55,10 @@ func PlayerNode() {
 		ActionDataPackage: &ActionDataPackage{
 			PlayerId:     1,
 			PubKey:       "PUBKEY",
-			Position:     &Position{X: 1, Y: 1},
+			Position:     &Position{X: 2, Y: 2},
 			DestPosition: &DestPosition{X: 2, Y: 2},
 		},
-		Timestamp: 9999,
+		Timestamp: 2337,
 	}
 
 	nc.Put(pkg3)

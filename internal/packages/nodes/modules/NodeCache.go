@@ -8,9 +8,8 @@ import (
 	. "ticoma/packages/nodes/modules/verifier"
 )
 
-// NodeCache internal memory model => [Prev, Current]
-type PrevAndCurrentADPT [2]ActionDataPackageTimestamped
-type Store map[int]PrevAndCurrentADPT
+type PrevAndCurrentADPT [2]ActionDataPackageTimestamped // [ADPT, ADPT]
+type Store map[int]PrevAndCurrentADPT                   // NodeCache internal memory model => [Prev ADPT, Current ADPT]
 
 type NodeCache struct {
 	*CacheStore
@@ -38,20 +37,19 @@ func (nc *NodeCache) GetCache(id int) PrevAndCurrentADPT {
 	cache := nc.CacheStore.Store[id]
 	// fmt.Println("CACHE", cache)
 	return cache
-	// cache := cs.Store[id]
-	// return cache
 }
 
 func (nc *NodeCache) GetPrevious(id int) ActionDataPackageTimestamped {
 	return nc.CacheStore.Store[id][0]
-	// return cs.Store[id][0]
 }
 
 func (nc *NodeCache) GetCurrent(id int) ActionDataPackageTimestamped {
 	return nc.CacheStore.Store[id][1]
-	// return cs.Store[id][1]
 }
 
+// Put new package to NodeCache
+//
+// (move stack to the left and delete oldest package from cache)
 func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
 
 	jsonBytes, err := json.Marshal(pkg)
@@ -59,8 +57,8 @@ func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
 		fmt.Println("[NODE CACHE] - Couldn't serialize package. ", err)
 	}
 
-	verified := nc.SecurityVerifier.VerifyADPTypes(jsonBytes, true)
-	if !verified {
+	validPkgTypes := nc.SecurityVerifier.VerifyADPTypes(jsonBytes, true)
+	if !validPkgTypes {
 		fmt.Println("[NODE CACHE] - Couldn't verify package types. ", err)
 	}
 
@@ -73,11 +71,29 @@ func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
 	// if there's no cache and a package arrives, it means it's the first package
 	if nc.CacheStore.Store[pkg.PlayerId][0] == (ActionDataPackageTimestamped{}) || nc.CacheStore.Store[pkg.PlayerId][1] == (ActionDataPackageTimestamped{}) {
 		fmt.Println("FIRST PKG")
-		// nc.CacheStore.Store = make(Store)
-
-		var test PrevAndCurrentADPT
-		test[0], test[1] = pkg, pkg
-		nc.CacheStore.Store[pkg.PlayerId] = test
+		var store PrevAndCurrentADPT
+		store[0], store[1] = pkg, pkg
+		nc.CacheStore.Store[pkg.PlayerId] = store
+		return
 	}
+
+	validPos := nc.EngineVerifier.VerifyMoveDirection(nc.CacheStore.Store[pkg.PlayerId][1].DestPosition, pkg.Position)
+
+	if !validPos {
+		fmt.Println("[NODE CACHE] - Coulnd't verify move direction or position. ", err)
+	}
+
+	curr := nc.CacheStore.Store[pkg.PlayerId][1]
+	validMove := nc.EngineVerifier.VerifyPlayerMovement(&curr, &pkg)
+
+	if !validMove {
+		fmt.Println("[NODE CACHE] - Engine couldn't verify move. ", err)
+	}
+
+	// push stack to the left
+	var new PrevAndCurrentADPT
+	new[0] = curr
+	new[1] = pkg
+	nc.CacheStore.Store[pkg.PlayerId] = new
 
 }
