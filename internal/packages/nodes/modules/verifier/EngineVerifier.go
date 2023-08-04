@@ -42,7 +42,7 @@ func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *ActionDataPackageTimest
 }
 
 // Checks if destPos of last package matches the pos of currently arriving package
-func (ev *EngineVerifier) VerifyMoveDirection(lastDestPos *DestPosition, pos *Position) bool {
+func (ev *EngineVerifier) VerifyLastMovePos(lastDestPos *DestPosition, pos *Position) bool {
 	verX := lastDestPos.X == pos.X
 	verY := lastDestPos.Y == pos.Y
 	if !verX || !verY {

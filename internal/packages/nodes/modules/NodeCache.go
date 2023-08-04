@@ -79,7 +79,7 @@ func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
 		return
 	}
 
-	validPos := nc.EngineVerifier.VerifyMoveDirection(nc.CacheStore.Store[pkg.PlayerId][1].DestPosition, pkg.Position)
+	validPos := nc.EngineVerifier.VerifyLastMovePos(nc.CacheStore.Store[pkg.PlayerId][1].DestPosition, pkg.Position)
 
 	if !validPos {
 		fmt.Println("[NODE CACHE] - Coulnd't verify move direction or position. ", err)
@@ -95,9 +95,9 @@ func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
 	}
 
 	// push stack to the left
-	var new PrevAndCurrentADPT
-	new[0] = curr
-	new[1] = pkg
-	nc.CacheStore.Store[pkg.PlayerId] = new
+	cache := PrevAndCurrentADPT{
+		curr, pkg,
+	}
+	nc.CacheStore.Store[pkg.PlayerId] = cache
 
 }
