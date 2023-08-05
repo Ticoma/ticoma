@@ -2,18 +2,13 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"os"
 	"ticoma/packages/network/nodes"
-	"ticoma/packages/network/utils"
-	"time"
 
 	"github.com/joho/godotenv"
 )
-
-var flagAddress = flag.String("addr", "", "Address")
 
 func main() {
 
@@ -22,14 +17,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-
-	flag.Parse()
-
-	if *flagAddress == "" {
-		panic("No addr flag!")
-	}
-
-	fmt.Printf("Hello from main\n")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go nodeProcess(ctx)
@@ -52,25 +39,26 @@ func nodeProcess(ctx context.Context) {
 }
 
 func testGameNode(ctx context.Context) {
-	gn := nodes.NewGameNode()
-	fmt.Println("GameNode initialized")
 
-	gn.SetupHost("127.0.0.1", "1337")
-	fmt.Println("GameNode host set up")
+	// relayIp := os.Getenv("RELAY_IP")
+	// relayAddr := os.Getenv("RELAY_ADDR")
+	// relayPort := "1337"
 
-	relayIp := os.Getenv("RELAY_IP")
-	relayInfo := utils.ConvertToAddrInfo(relayIp, *flagAddress, "1337")
-	gn.ConnectToRelay(ctx, *relayInfo)
-	fmt.Println("GameNode connected to relay")
+	// Test setup GameNode
+	// gn := nodes.NewGameNode()
+	// gn.InitGameNode(&ctx, relayAddr, relayIp, relayPort, true)
 
-	gn.ReserveSlot(ctx, *relayInfo)
-	fmt.Println("GameNode relay slot reserved")
+	// Test setup relay
+	sgn := nodes.NewStandaloneGameNode()
+	sgn.GameNodeRelay.SetupRelay("0.0.0.0", "1337")
 
-	topic, _ := gn.ConnectToPubsub(ctx, "ticoma1", true)
-	fmt.Println("Connected to pubsub!")
+	fmt.Println("Relay peerID ", sgn.RelayHost.ID())
+	fmt.Println("Relay Addr ", sgn.RelayHost.Addrs())
 
-	for {
-		gn.Greet(ctx, topic, "test msg")
-		time.Sleep(2 * time.Second)
-	}
+	fmt.Println("Done")
+
+	// for {
+	// 	gn.Greet(ctx, topic, "test msg")
+	// 	time.Sleep(2 * time.Second)
+	// }
 }

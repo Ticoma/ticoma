@@ -9,7 +9,7 @@ import (
 // Public relay node service for standalone game nodes,
 // Players can use those relays to join the game
 type GameNodeRelay struct {
-	relayHost host.Host
+	RelayHost host.Host
 }
 
 // Setup relay
@@ -28,5 +28,5 @@ func (gnr *GameNodeRelay) SetupRelay(listenIp string, listenPort string) {
 		panic(err)
 	}
 
-	gnr.relayHost = host
+	gnr.RelayHost = host
 }

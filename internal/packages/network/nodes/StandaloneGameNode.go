@@ -1,7 +1,8 @@
 package nodes
 
 import (
-	"ticoma/packages/network/nodes/relay"
+	core "ticoma/packages/network/nodes/core"
+	relay "ticoma/packages/network/nodes/relay"
 )
 
 // Extended game node,
@@ -9,4 +10,13 @@ import (
 type StandaloneGameNode struct {
 	*GameNode
 	*relay.GameNodeRelay
+}
+
+func NewStandaloneGameNode() *StandaloneGameNode {
+	return &StandaloneGameNode{
+		GameNode: &GameNode{
+			GameNodeCore: &core.GameNodeCore{},
+		},
+		GameNodeRelay: &relay.GameNodeRelay{},
+	}
 }

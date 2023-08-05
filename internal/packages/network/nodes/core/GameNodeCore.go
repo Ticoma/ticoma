@@ -11,16 +11,16 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/client"
 )
 
-// Essential game node logic:
 //
-// - Libp2p node
+// This is the core logical component of a GameNode,
+// Which contains a Libp2p node (a host)
+// And is used as a connector between the network and our engine,
+// It is responsible for sending and receiving data on the GossipSub
 //
-// - Internal functions for:
-//   - parsing / unpacking pkgs, strings, w.e
-//   - veriyfing source of pkg, other nodes
+
 type GameNodeCore struct {
 	host                  host.Host
-	relayConnectionStatus bool // Is node core connected to a relay
+	relayConnectionStatus bool // Is node core connected to a Relay (Standalone GameNode)
 }
 
 // Initialize host
@@ -86,11 +86,18 @@ func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, 
 		panic(err)
 	}
 
+	msg, err := sub.Next(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("GOT MSG", msg)
+
 	fmt.Printf("Connected to topic: %s!\n", topicName)
 	return topic, sub
 }
 
 func (gnc *GameNodeCore) Greet(ctx context.Context, topic *pubsub.Topic, msg string) {
-	// fmt.Println("Pubishing!") DEBUG
+	fmt.Println("Pubishing!") // DEBUG
 	topic.Publish(ctx, []byte(msg))
 }
