@@ -5,8 +5,8 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
-
-	// ma "github.com/multiformats/go-multiaddr"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	 "context"
 	"fmt"
 )
 
@@ -34,9 +34,32 @@ func setupRelay() host.Host {
 	return host
 }
 
+
+func connectToPubsub(ctx context.Context, h host.Host) (*pubsub.Topic, *pubsub.Subscription) {
+
+	ps, err := pubsub.NewGossipSub(ctx, h)
+	if err != nil {
+		panic(err)
+	}
+
+	topic, err := ps.Join("ticoma2")
+	if err != nil {
+		panic(err)
+	}
+	topic.Relay()
+
+	sub, subErr := topic.Subscribe()
+	if subErr != nil {
+		panic(err)
+	}
+
+	fmt.Println("Connected to pubsub!")
+	return topic, sub
+}
+
 func InitGameNode() {
-
-	relay1 := setupRelay()
-
+	ctx := context.Background()
+	relay1 := setupRelay()	
+	connectToPubsub(ctx, relay1)
 	fmt.Println(GetPeerInfo(relay1).ID)
 }
