@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"ticoma/packages/network/nodes"
+	gamenode "ticoma/packages/network/gamenode"
+	playernode "ticoma/packages/nodes"
 
 	"github.com/joho/godotenv"
 )
@@ -34,31 +35,57 @@ func nodeProcess(ctx context.Context) {
 		fmt.Println("EXIT")
 		return
 	default:
-		testGameNode(ctx)
+		// testGameNode(ctx)
+		testPlayerNode(ctx)
 	}
+}
+
+func testPlayerNode(ctx context.Context) {
+
+	nodeConfig := gamenode.GameNodeConfig{
+		RelayAddr:          "",
+		RelayIp:            "",
+		RelayPort:          "",
+		EnableDebugLogging: true,
+	}
+
+	pn := playernode.NewPlayerNode()
+	pn.InitPlayerNode(&ctx, &nodeConfig)
+	pn.ListenForPkgs(&ctx)
+
 }
 
 func testGameNode(ctx context.Context) {
 
-	// relayIp := os.Getenv("RELAY_IP")
-	// relayAddr := os.Getenv("RELAY_ADDR")
-	// relayPort := "1337"
+	// conf
+	relayIp := os.Getenv("RELAY_IP")
+	relayAddr := os.Getenv("RELAY_ADDR")
+	relayPort := "1337"
 
+	// =====================
+	// Setup relay first
+
+	rel := gamenode.NewStandaloneGameNode()
+	rel.SetupRelay(relayIp, relayPort)
+
+	// fmt.Println("Relay pID: ", rel.RelayHost.ID().String())
+
+	nodeConfig := gamenode.GameNodeConfig{
+		RelayAddr:          relayAddr,
+		RelayIp:            relayIp,
+		RelayPort:          relayPort,
+		EnableDebugLogging: true,
+	}
+
+	fmt.Println("Local relay set up")
+
+	// =====================
 	// Test setup GameNode
-	// gn := nodes.NewGameNode()
-	// gn.InitGameNode(&ctx, relayAddr, relayIp, relayPort, true)
 
-	// Test setup relay
-	sgn := nodes.NewStandaloneGameNode()
-	sgn.GameNodeRelay.SetupRelay("0.0.0.0", "1337")
+	fmt.Println("Setting up GameNode")
 
-	fmt.Println("Relay peerID ", sgn.RelayHost.ID())
-	fmt.Println("Relay Addr ", sgn.RelayHost.Addrs())
+	gn := gamenode.NewGameNode()
+	gn.InitGameNode(&ctx, &nodeConfig)
 
 	fmt.Println("Done")
-
-	// for {
-	// 	gn.Greet(ctx, topic, "test msg")
-	// 	time.Sleep(2 * time.Second)
-	// }
 }

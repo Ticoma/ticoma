@@ -19,13 +19,14 @@ import (
 //
 
 type GameNodeCore struct {
-	host                  host.Host
-	relayConnectionStatus bool // Is node core connected to a Relay (Standalone GameNode)
+	host                  host.Host // Basic libp2p client
+	relayConnectionStatus bool      // Is node core connected to a Relay (Standalone GameNode)
 }
 
 // Initialize host
 func (gnc *GameNodeCore) SetupHost(listenIp string, listenPort string) {
-	host, err := libp2p.New(
+
+	h, err := libp2p.New(
 		libp2p.ListenAddrStrings("/ip4/" + listenIp + "/tcp/" + listenPort),
 		// libp2p.NoListenAddrs()
 	)
@@ -33,7 +34,8 @@ func (gnc *GameNodeCore) SetupHost(listenIp string, listenPort string) {
 	if err != nil {
 		panic(err)
 	}
-	gnc.host = host
+
+	gnc.host = h
 }
 
 // Peer info
@@ -64,10 +66,14 @@ func (gnc *GameNodeCore) ConnectToRelay(ctx context.Context, relayAddrInfo peer.
 	gnc.relayConnectionStatus = true
 }
 
-// Connect to pubsub and return topic, sub
-func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, relayEnabled bool) (*pubsub.Topic, *pubsub.Subscription) {
+func (gnc *GameNodeCore) TEST(ctx *context.Context) {
+	fmt.Println(ctx, "I GOT CONTEXT")
+}
 
-	ps, err := pubsub.NewGossipSub(ctx, gnc.host)
+// Connect to pubsub and return topic, sub
+func (gnc *GameNodeCore) ConnectToPubsub(ctx *context.Context, topicName string, relayEnabled bool) (*pubsub.Topic, *pubsub.Subscription) {
+
+	ps, err := pubsub.NewGossipSub(*ctx, gnc.host)
 	if err != nil {
 		panic(err)
 	}
@@ -86,7 +92,7 @@ func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, 
 		panic(err)
 	}
 
-	msg, err := sub.Next(ctx)
+	msg, err := sub.Next(*ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -95,9 +101,4 @@ func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, 
 
 	fmt.Printf("Connected to topic: %s!\n", topicName)
 	return topic, sub
-}
-
-func (gnc *GameNodeCore) Greet(ctx context.Context, topic *pubsub.Topic, msg string) {
-	fmt.Println("Pubishing!") // DEBUG
-	topic.Publish(ctx, []byte(msg))
 }

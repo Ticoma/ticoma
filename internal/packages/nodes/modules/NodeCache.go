@@ -52,7 +52,9 @@ func (nc *NodeCache) GetCurrent(id int) ActionDataPackageTimestamped {
 // (move stack to the left and delete oldest package from cache)
 func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
 
+	// Conv json pkg to byte array
 	jsonBytes, err := json.Marshal(pkg)
+
 	if err != nil {
 		fmt.Println("[NODE CACHE] - Couldn't serialize package. ", err)
 		return

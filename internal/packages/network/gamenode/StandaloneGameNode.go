@@ -1,8 +1,8 @@
-package nodes
+package gamenode
 
 import (
-	core "ticoma/packages/network/nodes/core"
-	relay "ticoma/packages/network/nodes/relay"
+	core "ticoma/packages/network/gamenode/core"
+	relay "ticoma/packages/network/gamenode/relay"
 )
 
 // Extended game node,

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"ticoma/packages/nodes/utils"
 )
 
 // SecurityVerifier
@@ -107,16 +108,5 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte, timestamped bool) bool {
 	// fmt.Println(StripString(schema, true))
 	// fmt.Println(StripString(string(res), true))
 
-	return strings.Compare(StripString(schema, true), StripString(string(res), true)) == 0
-}
-
-// temp here
-func StripString(str string, removeLastCharToo bool) string {
-	str = strings.Replace(str, " ", "", -1)
-	str = strings.Replace(str, "\t", "", -1)
-	str = strings.Replace(str, "\n", "", -1)
-	if removeLastCharToo {
-		str = strings.TrimSuffix(str, ",")
-	}
-	return str
+	return strings.Compare(utils.StripString(schema, true), utils.StripString(string(res), true)) == 0
 }
