@@ -3,15 +3,17 @@ package verifier
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
+	"ticoma/packages/nodes/interfaces"
 	"ticoma/packages/nodes/utils"
+	"time"
 )
 
 // SecurityVerifier
 type SecurityVerifier struct{}
 
-func (sv *SecurityVerifier) GetPackageSchema(timestamped bool) string {
-
+func (sv *SecurityVerifier) GetPackageSchema() string {
 	const schemaADP = `{
 		playerId: int,
 		pubKey: string,
@@ -25,41 +27,14 @@ func (sv *SecurityVerifier) GetPackageSchema(timestamped bool) string {
 		},
 	},`
 
-	const schemaADPTimestamped = `{
-		playerId: int,
-		pubKey: string,
-		pos: {
-			posX: int,
-			posY: int,
-		},
-		destPos: {
-			destPosX: int,
-			destPosY: int,
-		},
-		timestamp: int,
-	},`
-
-	if timestamped {
-		return schemaADPTimestamped
-	}
 	return schemaADP
-
 }
 
-// TODO : Remove timestamped option from here. Timestamp will be assigned by the system,
-// while constructing a Pkg from string, not by the user. This is only local
+func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
 
-func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte, timestamped bool) bool {
+	schema := sv.GetPackageSchema()
 
-	var schema string
-
-	if timestamped {
-		schema = sv.GetPackageSchema(true)
-	} else {
-		schema = sv.GetPackageSchema(false)
-	}
-
-	fmt.Println("PKG STR: ", string(pkg)) // DEBUG
+	// fmt.Println("PKG STR: ", string(pkg)) // DEBUG
 
 	res := []byte{}
 	keySelected := false
@@ -107,10 +82,60 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte, timestamped bool) bool {
 	}
 
 	// DEBUG
-	fmt.Println("SCHEMA ", utils.StripString(schema, true))
-	fmt.Println("RES ", utils.StripString(string(res), true))
+	fmt.Println("[ADP TYPES] SCHEMA ", utils.StripString(schema, true))
+	fmt.Println("[ADP TYPES] RES ", utils.StripString(string(res), true))
 
 	valid := strings.Compare(utils.StripString(schema, true), utils.StripString(string(res), true)) == 0
 
 	return valid
+}
+
+// Try to construct an ADPT based on provided string pkg
+// (Types of pkg should be verified at this point)
+func (sv *SecurityVerifier) ConstructADPT(pkgBytes []byte) (interfaces.ActionDataPackageTimestamped, error) {
+
+	const EXPECTED_VAL_LENGTH_IN_ADP = 6 // [playerId, pubKey, posX, posY, destX, destY]
+
+	// Type check
+	validPkgTypes := sv.VerifyADPTypes(pkgBytes)
+	if !validPkgTypes {
+		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't verify package types.")
+	}
+
+	// If types are OK, try extract vals
+	vals := utils.ExtractValsFromStrPkg(string(pkgBytes))
+	if len(vals) != EXPECTED_VAL_LENGTH_IN_ADP {
+		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema.")
+	}
+
+	playerId, err := strconv.Atoi(vals[0])
+	if err != nil {
+		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't assign playerId from vals.")
+	}
+
+	var positions []int
+	// conv vals[2:5] to ints
+	for i := 2; i < len(vals); i++ {
+		fmt.Println("VALS[i] ", vals[i])
+		pos, err := strconv.Atoi(vals[i])
+		if err != nil {
+			// fmt.Println("[SEC VER] - Err while converting string val to int")
+			return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Err while converting string val to int")
+		}
+		positions = append(positions, pos)
+	}
+
+	timestamp := time.Now().Unix()
+
+	ADPT := interfaces.ActionDataPackageTimestamped{
+		ActionDataPackage: &interfaces.ActionDataPackage{
+			PlayerId:     playerId,
+			PubKey:       vals[1],
+			Position:     &interfaces.Position{X: positions[0], Y: positions[1]},
+			DestPosition: &interfaces.DestPosition{X: positions[2], Y: positions[3]},
+		},
+		Timestamp: timestamp,
+	}
+
+	return ADPT, nil
 }

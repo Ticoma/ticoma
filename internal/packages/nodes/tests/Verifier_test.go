@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"testing"
 	. "ticoma/packages/nodes/interfaces"
+	. "ticoma/packages/nodes/modules"
 	. "ticoma/packages/nodes/modules/verifier"
 	"ticoma/packages/nodes/utils"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestVerifyPackageTypesRandom(t *testing.T) {
@@ -15,7 +18,7 @@ func TestVerifyPackageTypesRandom(t *testing.T) {
 
 	// Completely random package
 	pkgStr := `{"foo": bar}`
-	got := v.SecurityVerifier.VerifyADPTypes([]byte(pkgStr), false)
+	got := v.SecurityVerifier.VerifyADPTypes([]byte(pkgStr))
 	want := false
 
 	if got != want {
@@ -24,7 +27,7 @@ func TestVerifyPackageTypesRandom(t *testing.T) {
 
 	// Empty package
 	pkgStrEmpty := ``
-	got2 := v.SecurityVerifier.VerifyADPTypes([]byte(pkgStrEmpty), false)
+	got2 := v.SecurityVerifier.VerifyADPTypes([]byte(pkgStrEmpty))
 	want2 := false
 
 	if got2 != want2 {
@@ -68,14 +71,14 @@ func TestVerifyPackageTypesIncorrect(t *testing.T) {
 		}
 	}`)
 
-	got1 := v.SecurityVerifier.VerifyADPTypes(pkg1, false)
+	got1 := v.SecurityVerifier.VerifyADPTypes(pkg1)
 	want1 := false
 
 	if got1 != want1 {
 		t.Errorf("got %t, wanted %t", got1, want1)
 	}
 
-	got2 := v.SecurityVerifier.VerifyADPTypes(pkg2, false)
+	got2 := v.SecurityVerifier.VerifyADPTypes(pkg2)
 	want2 := false
 
 	if got2 != want2 {
@@ -96,10 +99,6 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 		DestPosition: &DestPosition{X: 2, Y: 2},
 	}
 
-	// quick test tmp
-	// fn, jt := utils.GetInterfaceFieldNames(pkg, true)
-	// fmt.Println("FN ", fn, "JT", jt)
-
 	// to json string first
 	jsonBytes, err := json.Marshal(pkg)
 
@@ -107,36 +106,11 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 		fmt.Println(err)
 	}
 
-	got := v.SecurityVerifier.VerifyADPTypes(jsonBytes, false)
+	got := v.SecurityVerifier.VerifyADPTypes(jsonBytes)
 	want := true
 
 	if got != want {
 		t.Errorf("got %t, wanted %t", got, want)
-	}
-
-	// Verify a timestamped package
-	pkg2 := ActionDataPackageTimestamped{
-		ActionDataPackage: &ActionDataPackage{
-			PlayerId:     1,
-			PubKey:       "PUBKEY",
-			Position:     &Position{X: 1, Y: 1},
-			DestPosition: &DestPosition{X: 2, Y: 2},
-		},
-		Timestamp: 1337,
-	}
-
-	// to json string first
-	jsonBytes2, err2 := json.Marshal(pkg2)
-
-	if err2 != nil {
-		fmt.Println(err2)
-	}
-
-	got2 := v.SecurityVerifier.VerifyADPTypes(jsonBytes2, true)
-	want2 := true
-
-	if got2 != want2 {
-		t.Errorf("got %t, wanted %t", got2, want2)
 	}
 
 }
@@ -144,10 +118,11 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 func TestConvStringToPkg(t *testing.T) {
 
 	v := NewVerifier()
+	nc := NewNodeCache(v)
 
 	// Validate string pkg and, if successful, try to convert it to a struct
 	testPkg := `{"playerId":0,"pubKey":"PUBKEY","pos":{"posX":1,"posY":1},"destPos":{"destPosX":1,"destPosY":1}}`
-	verified := v.SecurityVerifier.VerifyADPTypes([]byte(testPkg), false)
+	verified := nc.Verifier.SecurityVerifier.VerifyADPTypes([]byte(testPkg))
 	verifiedWant := true
 
 	if verified != verifiedWant {
@@ -159,9 +134,19 @@ func TestConvStringToPkg(t *testing.T) {
 	vals = utils.ExtractValsFromStrPkg(testPkg)
 	fmt.Println(vals)
 
-	// types are OK, try construct
+	var expected interface{}
+	expected = []string{"0", "PUBKEY", "1", "1", "1", "1"}
 
-	adp := &ActionDataPackage{}
-	utils.ConstructPkg(adp, vals, false)
+	// Check extract
+	assert.Equal(t, vals, expected)
+
+	// Try construct adpt
+	pkg, err := nc.Verifier.SecurityVerifier.ConstructADPT([]byte(testPkg))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(pkg.ActionDataPackage)
+	fmt.Println(pkg.Timestamp)
 
 }

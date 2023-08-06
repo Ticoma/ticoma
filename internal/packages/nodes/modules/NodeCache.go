@@ -2,7 +2,7 @@ package modules
 
 import (
 	// "fmt"
-	"encoding/json"
+
 	"fmt"
 	. "ticoma/packages/nodes/interfaces"
 	. "ticoma/packages/nodes/modules/verifier"
@@ -50,24 +50,21 @@ func (nc *NodeCache) GetCurrent(id int) ActionDataPackageTimestamped {
 // Put new package to NodeCache
 //
 // (move stack to the left and delete oldest package from cache)
-func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
+func (nc *NodeCache) Put(pkgBytes []byte) {
 
-	// Conv json pkg to byte array
-	jsonBytes, err := json.Marshal(pkg)
+	// Verify types of incoming pkg
+	valid := nc.Verifier.SecurityVerifier.VerifyADPTypes(pkgBytes)
+	if !valid {
+		fmt.Println("[NODE CACHE] - Couldn't verify pkg types.")
+	}
 
+	// Construct adpt
+	pkg, err := nc.Verifier.SecurityVerifier.ConstructADPT(pkgBytes)
 	if err != nil {
-		fmt.Println("[NODE CACHE] - Couldn't serialize package. ", err)
-		return
+		fmt.Println("[NODE CACHE] - ADPT Construct err: ", err)
 	}
 
-	// Type check
-	validPkgTypes := nc.SecurityVerifier.VerifyADPTypes(jsonBytes, true)
-	if !validPkgTypes {
-		fmt.Println("[NODE CACHE] - Couldn't verify package types.")
-		return
-	}
-
-	// init cache map if needed
+	// init cache map if first pkg
 	if len(nc.CacheStore.Store) == 0 {
 		fmt.Println("INIT CACHE MAP")
 		nc.CacheStore.Store = make(Store)

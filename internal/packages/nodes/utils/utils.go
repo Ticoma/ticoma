@@ -82,15 +82,9 @@ func GetInterfaceFieldNames(obj interface{}, wantJsonTags bool) ([]string, []str
 					}
 				}
 			}
-
 		}
 	} else {
-		fmt.Println("not a stuct")
+		fmt.Println("[UTILS] Can't get fields - provided object is not a struct.")
 	}
-
 	return fieldNames, jsonTags
-}
-
-func ConstructPkg(model interface{}, vals interface{}, timestamped bool) {
-
 }

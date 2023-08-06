@@ -22,5 +22,5 @@ type ActionDataPackage struct {
 // Important note: Timestamp will always initialize and hold 0 until changed
 type ActionDataPackageTimestamped struct {
 	*ActionDataPackage
-	Timestamp int `json:"timestamp"`
+	Timestamp int64 `json:"timestamp"`
 }
