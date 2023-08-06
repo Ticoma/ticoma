@@ -31,19 +31,23 @@ func NewGameNode() *GameNode {
 }
 
 // Initializes an empty GameNode in a configurable way
-func (gn *GameNode) InitGameNode(ctx *context.Context, config *GameNodeConfig) {
+func (gn *GameNode) InitGameNode(ctx context.Context, config *GameNodeConfig) {
 
 	relayInfo := utils.ConvertToAddrInfo(config.RelayIp, config.RelayAddr, config.RelayPort)
 
 	// Host setup
-	gn.GameNodeCore.SetupHost("127.0.0.1", "8888")
+	err := gn.GameNodeCore.SetupHost("0.0.0.0", "8888")
+	if err != nil {
+		panic(err)
+	}
+
 	if config.EnableDebugLogging {
 		fmt.Println("GameNode host set up")
 	}
 
 	// Connect to relay (TODO: check if reservation is needed)
 	// gn.ConnectToRelay(config.Ctx, *relayInfo)
-	gn.ConnectToRelay(*ctx, *relayInfo)
+	gn.ConnectToRelay(ctx, *relayInfo)
 	if config.EnableDebugLogging {
 		fmt.Println("GameNode connected to relay")
 	}

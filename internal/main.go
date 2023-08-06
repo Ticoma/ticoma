@@ -41,17 +41,28 @@ func nodeProcess(ctx context.Context) {
 }
 
 func testPlayerNode(ctx context.Context) {
+	relayIp := os.Getenv("RELAY_IP")
+	relayAddr := os.Getenv("RELAY_ADDR")
+	relayPort := "1337"
 
 	nodeConfig := gamenode.GameNodeConfig{
-		RelayAddr:          "",
-		RelayIp:            "",
-		RelayPort:          "",
+		RelayAddr:          relayAddr,
+		RelayIp:            relayIp,
+		RelayPort:          relayPort,
 		EnableDebugLogging: true,
 	}
 
 	pn := playernode.NewPlayerNode()
-	pn.InitPlayerNode(&ctx, &nodeConfig)
-	pn.ListenForPkgs(&ctx)
+	pn.InitPlayerNode(ctx, &nodeConfig)
+
+	// send
+	// for {
+	// 	pn.SendPkg(ctx, "Hello!")
+	// 	time.Sleep(time.Second * 2)
+	// }
+
+	// receive
+	// pn.ListenForPkgs(ctx)
 
 }
 
@@ -85,7 +96,7 @@ func testGameNode(ctx context.Context) {
 	fmt.Println("Setting up GameNode")
 
 	gn := gamenode.NewGameNode()
-	gn.InitGameNode(&ctx, &nodeConfig)
+	gn.InitGameNode(ctx, &nodeConfig)
 
 	fmt.Println("Done")
 }

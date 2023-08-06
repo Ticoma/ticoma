@@ -24,18 +24,19 @@ type GameNodeCore struct {
 }
 
 // Initialize host
-func (gnc *GameNodeCore) SetupHost(listenIp string, listenPort string) {
+func (gnc *GameNodeCore) SetupHost(listenIp string, listenPort string) error {
 
 	h, err := libp2p.New(
 		libp2p.ListenAddrStrings("/ip4/" + listenIp + "/tcp/" + listenPort),
-		// libp2p.NoListenAddrs()
 	)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	gnc.host = h
+
+	return nil
 }
 
 // Peer info
@@ -71,9 +72,9 @@ func (gnc *GameNodeCore) TEST(ctx *context.Context) {
 }
 
 // Connect to pubsub and return topic, sub
-func (gnc *GameNodeCore) ConnectToPubsub(ctx *context.Context, topicName string, relayEnabled bool) (*pubsub.Topic, *pubsub.Subscription) {
+func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, relayEnabled bool) (*pubsub.Topic, *pubsub.Subscription) {
 
-	ps, err := pubsub.NewGossipSub(*ctx, gnc.host)
+	ps, err := pubsub.NewGossipSub(ctx, gnc.host)
 	if err != nil {
 		panic(err)
 	}
@@ -91,13 +92,6 @@ func (gnc *GameNodeCore) ConnectToPubsub(ctx *context.Context, topicName string,
 	if subErr != nil {
 		panic(err)
 	}
-
-	msg, err := sub.Next(*ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("GOT MSG", msg)
 
 	fmt.Printf("Connected to topic: %s!\n", topicName)
 	return topic, sub

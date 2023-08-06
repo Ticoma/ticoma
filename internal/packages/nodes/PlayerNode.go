@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"ticoma/packages/network/gamenode"
+	"ticoma/packages/network/gamenode/core"
 	nodecache "ticoma/packages/nodes/modules"
 	"ticoma/packages/nodes/modules/verifier"
 )
@@ -25,21 +26,23 @@ type PlayerNode struct {
 
 func NewPlayerNode() *PlayerNode {
 	return &PlayerNode{
-		GameNode: &gamenode.GameNode{},
+		GameNode: &gamenode.GameNode{
+			GameNodeCore: &core.GameNodeCore{},
+		},
 		NodeCache: &nodecache.NodeCache{
 			Verifier: &verifier.Verifier{},
 		},
 	}
 }
 
-func (pn *PlayerNode) InitPlayerNode(ctx *context.Context, gameNodeConfig *gamenode.GameNodeConfig) {
+func (pn *PlayerNode) InitPlayerNode(ctx context.Context, gameNodeConfig *gamenode.GameNodeConfig) {
 	pn.GameNode.InitGameNode(ctx, gameNodeConfig)
 }
 
 // Listens for incoming packages on the pubsub network, and verifies each message through the NodeCache verifier
-func (pn *PlayerNode) ListenForPkgs(ctx *context.Context) {
+func (pn *PlayerNode) ListenForPkgs(ctx context.Context) {
 	for {
-		msg, err := pn.GameNode.Sub.Next(*ctx)
+		msg, err := pn.GameNode.Sub.Next(ctx)
 		if err != nil {
 			panic(err)
 		}
@@ -47,4 +50,8 @@ func (pn *PlayerNode) ListenForPkgs(ctx *context.Context) {
 		// pn.NodeCache.Put(msg.Message.Data)
 		// TODO: Find a way to convert []byte / string -> ADPT quickly
 	}
+}
+
+func (pn *PlayerNode) SendPkg(ctx context.Context, data string) {
+	pn.GameNode.Topic.Publish(ctx, []byte(data))
 }
