@@ -60,9 +60,10 @@ func (nc *NodeCache) Put(pkg ActionDataPackageTimestamped) {
 		return
 	}
 
+	// Type check
 	validPkgTypes := nc.SecurityVerifier.VerifyADPTypes(jsonBytes, true)
 	if !validPkgTypes {
-		fmt.Println("[NODE CACHE] - Couldn't verify package types. ", err)
+		fmt.Println("[NODE CACHE] - Couldn't verify package types.")
 		return
 	}
 

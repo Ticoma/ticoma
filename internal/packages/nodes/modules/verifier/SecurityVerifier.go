@@ -12,7 +12,6 @@ type SecurityVerifier struct{}
 
 func (sv *SecurityVerifier) GetPackageSchema(timestamped bool) string {
 
-	// Schema for the classic Action Data Package (local)
 	const schemaADP = `{
 		playerId: int,
 		pubKey: string,
@@ -26,7 +25,6 @@ func (sv *SecurityVerifier) GetPackageSchema(timestamped bool) string {
 		},
 	},`
 
-	// Schema for ADP with a Timestamp key
 	const schemaADPTimestamped = `{
 		playerId: int,
 		pubKey: string,
@@ -48,6 +46,9 @@ func (sv *SecurityVerifier) GetPackageSchema(timestamped bool) string {
 
 }
 
+// TODO : Remove timestamped option from here. Timestamp will be assigned by the system,
+// while constructing a Pkg from string, not by the user. This is only local
+
 func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte, timestamped bool) bool {
 
 	var schema string
@@ -58,7 +59,8 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte, timestamped bool) bool {
 		schema = sv.GetPackageSchema(false)
 	}
 
-	pkgStr := string(pkg)
+	fmt.Println("PKG STR: ", string(pkg)) // DEBUG
+
 	res := []byte{}
 	keySelected := false
 
@@ -67,7 +69,7 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte, timestamped bool) bool {
 		return false
 	}
 
-	dec := json.NewDecoder(strings.NewReader(pkgStr))
+	dec := json.NewDecoder(strings.NewReader(string(pkg)))
 
 	for {
 		t, err := dec.Token()
@@ -75,7 +77,7 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte, timestamped bool) bool {
 			break
 		}
 
-		// fmt.Printf("%v: %T\n", t, t)
+		// fmt.Printf("[TEST] %v: %T\n", t, t)
 
 		switch v := t.(type) {
 		case json.Delim:
@@ -105,8 +107,10 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte, timestamped bool) bool {
 	}
 
 	// DEBUG
-	// fmt.Println(StripString(schema, true))
-	// fmt.Println(StripString(string(res), true))
+	fmt.Println("SCHEMA ", utils.StripString(schema, true))
+	fmt.Println("RES ", utils.StripString(string(res), true))
 
-	return strings.Compare(utils.StripString(schema, true), utils.StripString(string(res), true)) == 0
+	valid := strings.Compare(utils.StripString(schema, true), utils.StripString(string(res), true)) == 0
+
+	return valid
 }

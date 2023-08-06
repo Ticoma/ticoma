@@ -6,6 +6,7 @@ import (
 	"testing"
 	. "ticoma/packages/nodes/interfaces"
 	. "ticoma/packages/nodes/modules/verifier"
+	"ticoma/packages/nodes/utils"
 )
 
 func TestVerifyPackageTypesRandom(t *testing.T) {
@@ -95,6 +96,10 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 		DestPosition: &DestPosition{X: 2, Y: 2},
 	}
 
+	// quick test tmp
+	// fn, jt := utils.GetInterfaceFieldNames(pkg, true)
+	// fmt.Println("FN ", fn, "JT", jt)
+
 	// to json string first
 	jsonBytes, err := json.Marshal(pkg)
 
@@ -133,5 +138,30 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 	if got2 != want2 {
 		t.Errorf("got %t, wanted %t", got2, want2)
 	}
+
+}
+
+func TestConvStringToPkg(t *testing.T) {
+
+	v := NewVerifier()
+
+	// Validate string pkg and, if successful, try to convert it to a struct
+	testPkg := `{"playerId":0,"pubKey":"PUBKEY","pos":{"posX":1,"posY":1},"destPos":{"destPosX":1,"destPosY":1}}`
+	verified := v.SecurityVerifier.VerifyADPTypes([]byte(testPkg), false)
+	verifiedWant := true
+
+	if verified != verifiedWant {
+		t.Errorf("got %t, wanted %t", verified, verifiedWant)
+	}
+
+	// Extract vals
+	var vals interface{}
+	vals = utils.ExtractValsFromStrPkg(testPkg)
+	fmt.Println(vals)
+
+	// types are OK, try construct
+
+	adp := &ActionDataPackage{}
+	utils.ConstructPkg(adp, vals, false)
 
 }
