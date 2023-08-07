@@ -49,6 +49,12 @@ func (nc *NodeCache) GetCurrent(id int) ActionDataPackageTimestamped {
 
 // Put new package to NodeCache
 //
+// (TMP HERE) Pkg verification process:
+// 1. verify fieldNames, types of json string pkg
+// 2. extract json pkg values
+// 3. initialize ADP struct and try assign values
+// 4. engine verifies ADP
+// 5. If all 4 pass, put ADP in cache
 // (move stack to the left and delete oldest package from cache)
 func (nc *NodeCache) Put(pkgBytes []byte) {
 
@@ -66,13 +72,11 @@ func (nc *NodeCache) Put(pkgBytes []byte) {
 
 	// init cache map if first pkg
 	if len(nc.CacheStore.Store) == 0 {
-		fmt.Println("INIT CACHE MAP")
 		nc.CacheStore.Store = make(Store)
 	}
 
 	// if there's no cache and a package arrives, it means it's the first package
 	if nc.CacheStore.Store[pkg.PlayerId][0] == (ActionDataPackageTimestamped{}) || nc.CacheStore.Store[pkg.PlayerId][1] == (ActionDataPackageTimestamped{}) {
-		fmt.Println("FIRST PKG")
 		var store PrevAndCurrentADPT
 		store[0], store[1] = pkg, pkg
 		nc.CacheStore.Store[pkg.PlayerId] = store

@@ -33,9 +33,6 @@ func (sv *SecurityVerifier) GetPackageSchema() string {
 func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
 
 	schema := sv.GetPackageSchema()
-
-	// fmt.Println("PKG STR: ", string(pkg)) // DEBUG
-
 	res := []byte{}
 	keySelected := false
 
@@ -82,8 +79,8 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
 	}
 
 	// DEBUG
-	fmt.Println("[ADP TYPES] SCHEMA ", utils.StripString(schema, true))
-	fmt.Println("[ADP TYPES] RES ", utils.StripString(string(res), true))
+	// fmt.Println("[ADP TYPES] SCHEMA ", utils.StripString(schema, true))
+	// fmt.Println("[ADP TYPES] RES ", utils.StripString(string(res), true))
 
 	valid := strings.Compare(utils.StripString(schema, true), utils.StripString(string(res), true)) == 0
 
@@ -116,10 +113,8 @@ func (sv *SecurityVerifier) ConstructADPT(pkgBytes []byte) (interfaces.ActionDat
 	var positions []int
 	// conv vals[2:5] to ints
 	for i := 2; i < len(vals); i++ {
-		fmt.Println("VALS[i] ", vals[i])
 		pos, err := strconv.Atoi(vals[i])
 		if err != nil {
-			// fmt.Println("[SEC VER] - Err while converting string val to int")
 			return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Err while converting string val to int")
 		}
 		positions = append(positions, pos)

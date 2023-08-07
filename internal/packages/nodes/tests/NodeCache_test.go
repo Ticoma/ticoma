@@ -1,93 +1,98 @@
 package tests
 
-// import (
-// 	"fmt"
-// 	"testing"
-// 	. "ticoma/packages/nodes/interfaces"
-// 	. "ticoma/packages/nodes/modules"
-// 	. "ticoma/packages/nodes/modules/verifier"
+import (
+	"fmt"
+	"testing"
+	. "ticoma/packages/nodes/interfaces"
+	. "ticoma/packages/nodes/modules"
+	. "ticoma/packages/nodes/modules/verifier"
+	"ticoma/packages/nodes/utils"
 
-// 	assert "github.com/stretchr/testify/assert"
-// )
+	assert "github.com/stretchr/testify/assert"
+)
 
-// func TestNodeCacheInit(t *testing.T) {
+func TestNodeCacheInit(t *testing.T) {
 
-// 	// Initialize a cache and put first pkg
-// 	v := NewVerifier()
-// 	nc := NewNodeCache(v)
+	// Initialize a cache and put first pkg
+	v := NewVerifier()
+	nc := NewNodeCache(v)
 
-// 	pkg := ActionDataPackageTimestamped{
-// 		ActionDataPackage: &ActionDataPackage{
-// 			PlayerId:     1,
-// 			PubKey:       "PUBKEY",
-// 			Position:     &Position{X: 1, Y: 1},
-// 			DestPosition: &DestPosition{X: 2, Y: 2},
-// 		},
-// 		Timestamp: 1337,
-// 	}
+	pkg := ActionDataPackage{
+		PlayerId:     1,
+		PubKey:       "PUBKEY",
+		Position:     &Position{X: 1, Y: 1},
+		DestPosition: &DestPosition{X: 2, Y: 2},
+	}
 
-// 	// should be empty -> map[]
-// 	fmt.Println(nc.GetAll())
+	// should be empty -> map[]
+	fmt.Println(nc.GetAll())
 
-// 	// put first pkg in
-// 	nc.Put(pkg)
+	// put first pkg in
+	pkgStr := utils.StringifyPkg(pkg, false)
+	nc.Put([]byte(pkgStr))
 
-// 	prev := nc.GetPrevious(1)
-// 	curr := nc.GetCurrent(1)
+	prev := nc.GetPrevious(1)
+	curr := nc.GetCurrent(1)
 
-// 	assert.Equal(t, prev, pkg)
-// 	assert.Equal(t, curr, pkg)
+	// Remove timestamp from cache
+	prevADP := utils.StripPkgFromTimestamp(&prev)
+	currADP := utils.StripPkgFromTimestamp(&curr)
 
-// }
+	assert.Equal(t, prevADP, &pkg)
+	assert.Equal(t, currADP, &pkg)
 
-// func TestNodeCacheGetters(t *testing.T) {
+}
 
-// 	// Initialize cache, verifier for player 0
-// 	v := NewVerifier()
-// 	nc := NewNodeCache(v)
+func TestNodeCacheGetters(t *testing.T) {
 
-// 	v2 := NewVerifier()
-// 	nc2 := NewNodeCache(v2)
+	// Initialize cache, verifier for player 0
+	v := NewVerifier()
+	nc := NewNodeCache(v)
 
-// 	// init player 0
-// 	pkg := ActionDataPackageTimestamped{
-// 		ActionDataPackage: &ActionDataPackage{
-// 			PlayerId:     0,
-// 			PubKey:       "PUBKEY",
-// 			Position:     &Position{X: 1, Y: 1},
-// 			DestPosition: &DestPosition{X: 1, Y: 1},
-// 		},
-// 		Timestamp: 1,
-// 	}
+	v2 := NewVerifier()
+	nc2 := NewNodeCache(v2)
 
-// 	nc.Put(pkg)
+	// init player 0
+	pkg := ActionDataPackage{
+		PlayerId:     0,
+		PubKey:       "PUBKEY0",
+		Position:     &Position{X: 1, Y: 1},
+		DestPosition: &DestPosition{X: 1, Y: 1},
+	}
 
-// 	// Init player 1
-// 	pkg2 := ActionDataPackageTimestamped{
-// 		ActionDataPackage: &ActionDataPackage{
-// 			PlayerId:     1,
-// 			PubKey:       "PUBKEY",
-// 			Position:     &Position{X: 1, Y: 1},
-// 			DestPosition: &DestPosition{X: 1, Y: 1},
-// 		},
-// 		Timestamp: 223,
-// 	}
+	pkgStr := utils.StringifyPkg(pkg, false)
+	nc.Put([]byte(pkgStr))
 
-// 	// Imitate evt listener (temp)
-// 	nc.Put(pkg2)
-// 	nc2.Put(pkg2)
+	// Init player 1
+	pkg2 := ActionDataPackage{
+		PlayerId:     1,
+		PubKey:       "PUBKEY1",
+		Position:     &Position{X: 2, Y: 2},
+		DestPosition: &DestPosition{X: 2, Y: 2},
+	}
 
-// 	// Get player1 pos from p0's cache
-// 	p0c := nc.GetCache(1)
+	pkgStr2 := utils.StringifyPkg(pkg2, false)
 
-// 	assert.Equal(t, p0c[0], pkg2)
+	// Imitate PlayerNode pubsub listener
+	nc.Put([]byte(pkgStr2))
+	nc2.Put([]byte(pkgStr2))
 
-// 	// Assert self
-// 	p0self := nc.GetCurrent(0)
+	// Get player1 pos from p0's cache
+	p0c := nc.GetCache(1)
+	p0cPrev, p0cCurr := p0c[0], p0c[1]
+	p0cPrevADP := utils.StripPkgFromTimestamp(&p0cPrev)
+	p0cCurrADP := utils.StripPkgFromTimestamp(&p0cCurr)
 
-// 	assert.Equal(t, p0self, pkg)
+	// Both prev, curr of p0's cache for p1 should be p1's init pkg
+	assert.Equal(t, p0cPrevADP, &pkg2)
+	assert.Equal(t, p0cCurrADP, &pkg2)
 
-// }
+	// Assert self
+	p0self := nc.GetCurrent(0)
+	p0selfADP := utils.StripPkgFromTimestamp(&p0self)
+	assert.Equal(t, p0selfADP, &pkg)
+
+}
 
 // func TestNodeCachePut(t *testing.T) {
 

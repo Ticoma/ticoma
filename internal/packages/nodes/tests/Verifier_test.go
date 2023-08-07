@@ -115,6 +115,7 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 
 }
 
+// Manual string to pkg
 func TestConvStringToPkg(t *testing.T) {
 
 	v := NewVerifier()
