@@ -35,12 +35,13 @@ func nodeProcess(ctx context.Context) {
 		fmt.Println("EXIT")
 		return
 	default:
-		// testGameNode(ctx)
-		testPlayerNode(ctx)
+		// runPlayerNode(ctx)
+		runStandaloneGameNode(ctx)
 	}
 }
 
-func testPlayerNode(ctx context.Context) {
+func runPlayerNode(ctx context.Context) {
+
 	relayIp := os.Getenv("RELAY_IP")
 	relayAddr := os.Getenv("RELAY_ADDR")
 	relayPort := "1337"
@@ -55,6 +56,8 @@ func testPlayerNode(ctx context.Context) {
 	pn := playernode.NewPlayerNode()
 	pn.InitPlayerNode(ctx, &nodeConfig)
 
+	fmt.Println("Connected to pubsub")
+
 	// send
 	// for {
 	// 	pn.SendPkg(ctx, "Hello!")
@@ -66,37 +69,17 @@ func testPlayerNode(ctx context.Context) {
 
 }
 
-func testGameNode(ctx context.Context) {
+func runStandaloneGameNode(ctx context.Context) {
 
-	// conf
 	relayIp := os.Getenv("RELAY_IP")
-	relayAddr := os.Getenv("RELAY_ADDR")
 	relayPort := "1337"
-
-	// =====================
-	// Setup relay first
 
 	rel := gamenode.NewStandaloneGameNode()
 	rel.SetupRelay(relayIp, relayPort)
 
-	// fmt.Println("Relay pID: ", rel.RelayHost.ID().String())
-
-	nodeConfig := gamenode.GameNodeConfig{
-		RelayAddr:          relayAddr,
-		RelayIp:            relayIp,
-		RelayPort:          relayPort,
-		EnableDebugLogging: true,
-	}
-
-	fmt.Println("Local relay set up")
-
-	// =====================
-	// Test setup GameNode
-
-	fmt.Println("Setting up GameNode")
-
-	gn := gamenode.NewGameNode()
-	gn.InitGameNode(ctx, &nodeConfig)
-
-	fmt.Println("Done")
+	fmt.Println("========================")
+	fmt.Println("Relay ID: ", rel.RelayHost.ID().String())
+	fmt.Println("Relay IP: ", relayIp)
+	fmt.Println("Relay port: ", relayPort)
+	fmt.Println("========================")
 }
