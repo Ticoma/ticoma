@@ -118,8 +118,7 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 // Manual string to pkg
 func TestConvStringToPkg(t *testing.T) {
 
-	v := NewNodeVerifier()
-	nc := NewNodeCache(v)
+	nc := NewNodeCache()
 
 	// Validate string pkg and, if successful, try to convert it to a struct
 	testPkg := `{"playerId":0,"pubKey":"PUBKEY","pos":{"posX":1,"posY":1},"destPos":{"destPosX":1,"destPosY":1}}`

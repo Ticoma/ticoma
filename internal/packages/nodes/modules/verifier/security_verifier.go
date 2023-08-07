@@ -79,8 +79,8 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
 	}
 
 	// DEBUG
-	// fmt.Println("[ADP TYPES] SCHEMA ", utils.StripString(schema, true))
-	// fmt.Println("[ADP TYPES] RES ", utils.StripString(string(res), true))
+	fmt.Println("[ADP TYPES] SCHEMA ", utils.StripString(schema, true))
+	fmt.Println("[ADP TYPES] RES ", utils.StripString(string(res), true))
 
 	valid := strings.Compare(utils.StripString(schema, true), utils.StripString(string(res), true)) == 0
 

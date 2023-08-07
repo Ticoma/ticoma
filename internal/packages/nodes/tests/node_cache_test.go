@@ -5,7 +5,6 @@ import (
 	"testing"
 	. "ticoma/internal/packages/nodes/interfaces"
 	. "ticoma/internal/packages/nodes/modules"
-	. "ticoma/internal/packages/nodes/modules/verifier"
 	"ticoma/internal/packages/nodes/utils"
 
 	assert "github.com/stretchr/testify/assert"
@@ -14,8 +13,7 @@ import (
 func TestNodeCacheInit(t *testing.T) {
 
 	// Initialize a cache and put first pkg
-	v := NewNodeVerifier()
-	nc := NewNodeCache(v)
+	nc := NewNodeCache()
 
 	pkg := ActionDataPackage{
 		PlayerId:     1,
@@ -46,11 +44,8 @@ func TestNodeCacheInit(t *testing.T) {
 func TestNodeCacheGetters(t *testing.T) {
 
 	// Initialize cache, verifier for player 0
-	v := NewNodeVerifier()
-	nc := NewNodeCache(v)
-
-	v2 := NewNodeVerifier()
-	nc2 := NewNodeCache(v2)
+	nc := NewNodeCache()
+	nc2 := NewNodeCache()
 
 	// init player 0
 	pkg := ActionDataPackage{
@@ -97,8 +92,7 @@ func TestNodeCacheGetters(t *testing.T) {
 func TestNodeCachePut(t *testing.T) {
 
 	// Init two players
-	v := NewNodeVerifier()
-	nc := NewNodeCache(v)
+	nc := NewNodeCache()
 
 	// init player 0
 	pkg := ActionDataPackage{
@@ -122,8 +116,7 @@ func TestNodeCachePut(t *testing.T) {
 	assert.Equal(t, currADP, &pkg)
 
 	// init second node later
-	v2 := NewNodeVerifier()
-	nc2 := NewNodeCache(v2)
+	nc2 := NewNodeCache()
 
 	cache2 := nc2.GetAll()
 
@@ -155,11 +148,8 @@ func TestNodeCachePut(t *testing.T) {
 func TestNodeCacheInvalidPutRequest(t *testing.T) {
 
 	// init Nc, Nc2
-	v := NewNodeVerifier()
-	nc := NewNodeCache(v)
-
-	v2 := NewNodeVerifier()
-	nc2 := NewNodeCache(v2)
+	nc := NewNodeCache()
+	nc2 := NewNodeCache()
 
 	// init player 0
 	pkg0 := ActionDataPackage{
@@ -239,7 +229,7 @@ func TestNodeCacheInvalidPutRequest(t *testing.T) {
 	NcCurrADP2 := utils.StripPkgFromTimestamp(&NcCurr)
 	Nc2CurrADP2 := utils.StripPkgFromTimestamp(&Nc2Curr)
 
-	// t.Log("CURRENT ", nc.GetCurrent(0))
+	// t.Log("CURRENT ", nc.GetCurrent(0)) // DEBUG
 
 	// Both Nc should reject cheatPkg and still hold last verified pkg - pkg0move
 	assert.Equal(t, NcCurrADP2, &pkg0move)

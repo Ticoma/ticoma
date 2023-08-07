@@ -6,14 +6,33 @@ import (
 	"ticoma/internal/packages/network/gamenode"
 	"ticoma/internal/packages/network/gamenode/core"
 	nodecache "ticoma/internal/packages/nodes/modules"
-	"ticoma/internal/packages/nodes/modules/verifier"
 )
 
-//
-// PlayerNode
-// The internal interface of a communicator between the Network and the Client
-//
-// Consists of:
+// Player
+type Player struct {
+	*PlayerNode
+}
+
+func (p *Player) InitPlayer(ctx context.Context, gnc *gamenode.GameNodeConfig) {
+	p.PlayerNode.InitPlayerNode(ctx, gnc)
+}
+
+func (p *Player) Move(posX int, posY int, destPosX int, destPosY int) error {
+	ADPSchema := `{"playerId":0,"pubKey":"PUBKEY","pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`
+	data := []any{posX, posY, destPosX, destPosY}
+	pkg := fmt.Sprintf(ADPSchema, data...)
+	fmt.Println("PACKAGE ", pkg)
+	fmt.Println("CACHE ", p.PlayerNode.NodeCache)
+	err := p.PlayerNode.NodeCache.Put([]byte(pkg))
+	if err != nil {
+		return err
+	} else {
+		fmt.Printf("[MOVE] Player move verified. Request: pos: {X: %d, Y: %d}, destPos: {X: %d, Y: %d}", data...)
+		return nil
+	}
+}
+
+// PlayerNode consists of:
 // - GameNode mechanism which allows direct communication with libp2p/ipfs network, pubsub etc.
 // - NodeCache to store own and other's package cache
 // - Middleware for quick & handy signal handling from the Client
@@ -24,13 +43,12 @@ type PlayerNode struct {
 }
 
 func NewPlayerNode() *PlayerNode {
+	nc := nodecache.New()
 	return &PlayerNode{
 		IntegralGameNode: &gamenode.IntegralGameNode{
 			GameNodeCore: &core.GameNodeCore{},
 		},
-		NodeCache: &nodecache.NodeCache{
-			NodeVerifier: &verifier.NodeVerifier{},
-		},
+		NodeCache: nc,
 	}
 }
 

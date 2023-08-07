@@ -5,7 +5,7 @@ type NodeVerifier struct {
 	*SecurityVerifier
 }
 
-func NewNodeVerifier() *NodeVerifier {
+func New() *NodeVerifier {
 	return &NodeVerifier{
 		EngineVerifier:   &EngineVerifier{},
 		SecurityVerifier: &SecurityVerifier{},

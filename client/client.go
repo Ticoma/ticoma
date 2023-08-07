@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"os/exec"
+	player "ticoma/internal/packages/nodes"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -17,6 +18,8 @@ const (
 	VIEWPORT_START_Y   = (WINDOW_HEIGHT - VIEWPORT_SIZE) / 2
 )
 
+var playerMoved = false
+
 // get commit id
 func getVersion() string {
 	out, err := exec.Command("git", "rev-parse", "HEAD").Output()
@@ -27,20 +30,47 @@ func getVersion() string {
 	return commitHash
 }
 
-func Main() {
+func Main(c chan player.Player) {
+
+	// setup
 	ver := getVersion()[0:6]
 	rl.InitWindow(1280, 720, "raylib [core] example - basic window")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 
+	// retrieve initialized and connected player from internal
+	p := <-c
+
+	// init player pos
+	err := p.Move(1, 1, 1, 1)
+	if err != nil {
+		fmt.Println("[CLIENT] - Failed to move, err: ", err)
+	} else {
+		playerMoved = true
+	}
+
+	// game loop
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		DrawBg()
+
+		if playerMoved {
+			DrawPlayer(1, 1)
+		}
 		rl.ClearBackground(rl.RayWhite)
+
+		// info
 		rl.DrawText("ticoma git-"+ver, 2, 3, 20, rl.DarkGray)
+		rl.DrawText("peerid-"+p.GetPeerInfo().ID.String(), 2, 30, 16, rl.DarkGray)
 
 		rl.EndDrawing()
 	}
+
+}
+
+// Tmp solution
+func DrawPlayer(posX int, posY int) {
+	rl.DrawRectangle(int32(VIEWPORT_START_X+(BLOCK_SIZE*posX)), int32(VIEWPORT_START_Y+(BLOCK_SIZE*posY)), BLOCK_SIZE, BLOCK_SIZE, rl.Black)
 }
 
 func DrawBg() {
