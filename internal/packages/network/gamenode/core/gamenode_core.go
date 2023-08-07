@@ -67,10 +67,6 @@ func (gnc *GameNodeCore) ConnectToRelay(ctx context.Context, relayAddrInfo peer.
 	gnc.relayConnectionStatus = true
 }
 
-func (gnc *GameNodeCore) TEST(ctx *context.Context) {
-	fmt.Println(ctx, "I GOT CONTEXT")
-}
-
 // Connect to pubsub and return topic, sub
 func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, relayEnabled bool) (*pubsub.Topic, *pubsub.Subscription) {
 

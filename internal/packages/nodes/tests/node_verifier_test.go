@@ -4,17 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
-	. "ticoma/packages/nodes/interfaces"
-	. "ticoma/packages/nodes/modules"
-	. "ticoma/packages/nodes/modules/verifier"
-	"ticoma/packages/nodes/utils"
+	. "ticoma/internal/packages/nodes/interfaces"
+	. "ticoma/internal/packages/nodes/modules"
+	. "ticoma/internal/packages/nodes/modules/verifier"
+	"ticoma/internal/packages/nodes/utils"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestVerifyPackageTypesRandom(t *testing.T) {
 
-	v := NewVerifier()
+	v := NewNodeVerifier()
 
 	// Completely random package
 	pkgStr := `{"foo": bar}`
@@ -37,7 +37,7 @@ func TestVerifyPackageTypesRandom(t *testing.T) {
 }
 func TestVerifyPackageTypesIncorrect(t *testing.T) {
 
-	v := NewVerifier()
+	v := NewNodeVerifier()
 
 	// Invalid pkgs (keys are not equal to schema / values are of incorrect type)
 
@@ -89,7 +89,7 @@ func TestVerifyPackageTypesIncorrect(t *testing.T) {
 
 func TestVerifyPackageTypesCorrect(t *testing.T) {
 
-	v := NewVerifier()
+	v := NewNodeVerifier()
 
 	// Basic local pkg
 	pkg := ActionDataPackage{
@@ -118,12 +118,12 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 // Manual string to pkg
 func TestConvStringToPkg(t *testing.T) {
 
-	v := NewVerifier()
+	v := NewNodeVerifier()
 	nc := NewNodeCache(v)
 
 	// Validate string pkg and, if successful, try to convert it to a struct
 	testPkg := `{"playerId":0,"pubKey":"PUBKEY","pos":{"posX":1,"posY":1},"destPos":{"destPosX":1,"destPosY":1}}`
-	verified := nc.Verifier.SecurityVerifier.VerifyADPTypes([]byte(testPkg))
+	verified := nc.NodeVerifier.SecurityVerifier.VerifyADPTypes([]byte(testPkg))
 	verifiedWant := true
 
 	if verified != verifiedWant {
@@ -131,18 +131,16 @@ func TestConvStringToPkg(t *testing.T) {
 	}
 
 	// Extract vals
-	var vals interface{}
-	vals = utils.ExtractValsFromStrPkg(testPkg)
+	vals := utils.ExtractValsFromStrPkg(testPkg)
 	fmt.Println(vals)
 
-	var expected interface{}
-	expected = []string{"0", "PUBKEY", "1", "1", "1", "1"}
+	expected := []string{"0", "PUBKEY", "1", "1", "1", "1"}
 
 	// Check extract
 	assert.Equal(t, vals, expected)
 
 	// Try construct adpt
-	pkg, err := nc.Verifier.SecurityVerifier.ConstructADPT([]byte(testPkg))
+	pkg, err := nc.NodeVerifier.SecurityVerifier.ConstructADPT([]byte(testPkg))
 	if err != nil {
 		fmt.Println(err)
 	}

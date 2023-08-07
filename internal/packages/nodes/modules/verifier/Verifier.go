@@ -1,12 +1,12 @@
 package verifier
 
-type Verifier struct {
+type NodeVerifier struct {
 	*EngineVerifier
 	*SecurityVerifier
 }
 
-func NewVerifier() *Verifier {
-	return &Verifier{
+func NewNodeVerifier() *NodeVerifier {
+	return &NodeVerifier{
 		EngineVerifier:   &EngineVerifier{},
 		SecurityVerifier: &SecurityVerifier{},
 	}

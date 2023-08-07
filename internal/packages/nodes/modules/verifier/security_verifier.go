@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"ticoma/packages/nodes/interfaces"
-	"ticoma/packages/nodes/utils"
+	"ticoma/internal/packages/nodes/interfaces"
+	"ticoma/internal/packages/nodes/utils"
 	"time"
 )
 

@@ -1,20 +1,20 @@
 package gamenode
 
 import (
-	core "ticoma/packages/network/gamenode/core"
-	relay "ticoma/packages/network/gamenode/relay"
+	core "ticoma/internal/packages/network/gamenode/core"
+	relay "ticoma/internal/packages/network/gamenode/relay"
 )
 
 // Extended game node,
 // Consists of: GameNodeCore + NodeRelay
 type StandaloneGameNode struct {
-	*GameNode
+	*IntegralGameNode
 	*relay.GameNodeRelay
 }
 
 func NewStandaloneGameNode() *StandaloneGameNode {
 	return &StandaloneGameNode{
-		GameNode: &GameNode{
+		IntegralGameNode: &IntegralGameNode{
 			GameNodeCore: &core.GameNodeCore{},
 		},
 		GameNodeRelay: &relay.GameNodeRelay{},

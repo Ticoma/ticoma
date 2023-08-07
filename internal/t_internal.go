@@ -1,17 +1,19 @@
-package main
+package internal
 
 import (
 	"context"
 	"fmt"
 	"log"
 	"os"
-	gamenode "ticoma/packages/network/gamenode"
-	playernode "ticoma/packages/nodes"
+	"time"
 
 	"github.com/joho/godotenv"
+
+	gamenode "ticoma/internal/packages/network/gamenode"
+	playernode "ticoma/internal/packages/nodes"
 )
 
-func main() {
+func Main(isRelay bool) {
 
 	// Load env
 	err := godotenv.Load()
@@ -19,8 +21,10 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	fmt.Println("DOTENV TEST ", os.Getenv("TEST"))
+
 	ctx, cancel := context.WithCancel(context.Background())
-	go nodeProcess(ctx)
+	go nodeProcess(ctx, isRelay)
 
 	var opt string
 	fmt.Println("Press anything to stop")
@@ -29,14 +33,17 @@ func main() {
 	os.Exit(0)
 }
 
-func nodeProcess(ctx context.Context) {
+func nodeProcess(ctx context.Context, isRelay bool) {
 	select {
 	case <-ctx.Done():
 		fmt.Println("EXIT")
 		return
 	default:
-		// runPlayerNode(ctx)
-		runStandaloneGameNode(ctx)
+		if isRelay {
+			runStandaloneGameNode(ctx)
+		} else {
+			runPlayerNode(ctx)
+		}
 	}
 }
 
@@ -56,30 +63,26 @@ func runPlayerNode(ctx context.Context) {
 	pn := playernode.NewPlayerNode()
 	pn.InitPlayerNode(ctx, &nodeConfig)
 
-	fmt.Println("Connected to pubsub")
+	// receive
+	go pn.ListenForPkgs(ctx)
 
 	// send
-	// for {
-	// 	pn.SendPkg(ctx, "Hello!")
-	// 	time.Sleep(time.Second * 2)
-	// }
-
-	// receive
-	// pn.ListenForPkgs(ctx)
+	for {
+		pn.SendPkg(ctx, "Hello")
+		time.Sleep(time.Second * 2)
+	}
 
 }
 
 func runStandaloneGameNode(ctx context.Context) {
 
-	relayIp := os.Getenv("RELAY_IP")
 	relayPort := "1337"
 
 	rel := gamenode.NewStandaloneGameNode()
-	rel.SetupRelay(relayIp, relayPort)
+	rel.SetupRelay("0.0.0.0", relayPort)
 
 	fmt.Println("========================")
 	fmt.Println("Relay ID: ", rel.RelayHost.ID().String())
-	fmt.Println("Relay IP: ", relayIp)
 	fmt.Println("Relay port: ", relayPort)
 	fmt.Println("========================")
 }

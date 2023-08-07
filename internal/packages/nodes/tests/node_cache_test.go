@@ -3,10 +3,10 @@ package tests
 import (
 	"fmt"
 	"testing"
-	. "ticoma/packages/nodes/interfaces"
-	. "ticoma/packages/nodes/modules"
-	. "ticoma/packages/nodes/modules/verifier"
-	"ticoma/packages/nodes/utils"
+	. "ticoma/internal/packages/nodes/interfaces"
+	. "ticoma/internal/packages/nodes/modules"
+	. "ticoma/internal/packages/nodes/modules/verifier"
+	"ticoma/internal/packages/nodes/utils"
 
 	assert "github.com/stretchr/testify/assert"
 )
@@ -14,7 +14,7 @@ import (
 func TestNodeCacheInit(t *testing.T) {
 
 	// Initialize a cache and put first pkg
-	v := NewVerifier()
+	v := NewNodeVerifier()
 	nc := NewNodeCache(v)
 
 	pkg := ActionDataPackage{
@@ -46,10 +46,10 @@ func TestNodeCacheInit(t *testing.T) {
 func TestNodeCacheGetters(t *testing.T) {
 
 	// Initialize cache, verifier for player 0
-	v := NewVerifier()
+	v := NewNodeVerifier()
 	nc := NewNodeCache(v)
 
-	v2 := NewVerifier()
+	v2 := NewNodeVerifier()
 	nc2 := NewNodeCache(v2)
 
 	// init player 0
@@ -97,7 +97,7 @@ func TestNodeCacheGetters(t *testing.T) {
 func TestNodeCachePut(t *testing.T) {
 
 	// Init two players
-	v := NewVerifier()
+	v := NewNodeVerifier()
 	nc := NewNodeCache(v)
 
 	// init player 0
@@ -122,7 +122,7 @@ func TestNodeCachePut(t *testing.T) {
 	assert.Equal(t, currADP, &pkg)
 
 	// init second node later
-	v2 := NewVerifier()
+	v2 := NewNodeVerifier()
 	nc2 := NewNodeCache(v2)
 
 	cache2 := nc2.GetAll()
@@ -155,10 +155,10 @@ func TestNodeCachePut(t *testing.T) {
 func TestNodeCacheInvalidPutRequest(t *testing.T) {
 
 	// init Nc, Nc2
-	v := NewVerifier()
+	v := NewNodeVerifier()
 	nc := NewNodeCache(v)
 
-	v2 := NewVerifier()
+	v2 := NewNodeVerifier()
 	nc2 := NewNodeCache(v2)
 
 	// init player 0

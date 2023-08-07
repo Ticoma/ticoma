@@ -3,14 +3,14 @@ package gamenode
 import (
 	"context"
 	"fmt"
-	"ticoma/packages/network/gamenode/core"
-	"ticoma/packages/network/utils"
+	"ticoma/internal/packages/network/gamenode/core"
+	"ticoma/internal/packages/network/utils"
 
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
-// Basic GameNode, integral part of PlayerNode
-type GameNode struct {
+// GameNode, integral part of PlayerNode
+type IntegralGameNode struct {
 	*core.GameNodeCore
 	Topic *pubsub.Topic
 	Sub   *pubsub.Subscription
@@ -24,14 +24,14 @@ type GameNodeConfig struct {
 	EnableDebugLogging bool
 }
 
-func NewGameNode() *GameNode {
-	return &GameNode{
+func NewGameNode() *IntegralGameNode {
+	return &IntegralGameNode{
 		GameNodeCore: &core.GameNodeCore{},
 	}
 }
 
 // Initializes an empty GameNode in a configurable way
-func (gn *GameNode) InitGameNode(ctx context.Context, config *GameNodeConfig) {
+func (gn *IntegralGameNode) InitGameNode(ctx context.Context, config *GameNodeConfig) {
 
 	relayInfo := utils.ConvertToAddrInfo(config.RelayIp, config.RelayAddr, config.RelayPort)
 

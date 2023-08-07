@@ -4,8 +4,8 @@ import (
 	// "fmt"
 
 	"fmt"
-	. "ticoma/packages/nodes/interfaces"
-	. "ticoma/packages/nodes/modules/verifier"
+	. "ticoma/internal/packages/nodes/interfaces"
+	. "ticoma/internal/packages/nodes/modules/verifier"
 )
 
 type PrevAndCurrentADPT [2]ActionDataPackageTimestamped // [ADPT, ADPT]
@@ -13,7 +13,7 @@ type Store map[int]PrevAndCurrentADPT                   // NodeCache internal me
 
 type NodeCache struct {
 	*CacheStore
-	*Verifier
+	*NodeVerifier
 }
 
 type CacheStore struct {
@@ -22,10 +22,10 @@ type CacheStore struct {
 
 // NodeCache functions
 
-func NewNodeCache(v *Verifier) *NodeCache {
+func NewNodeCache(v *NodeVerifier) *NodeCache {
 	return &NodeCache{
-		CacheStore: &CacheStore{},
-		Verifier:   v,
+		CacheStore:   &CacheStore{},
+		NodeVerifier: v,
 	}
 }
 
@@ -60,13 +60,13 @@ func (nc *NodeCache) GetCurrent(id int) ActionDataPackageTimestamped {
 func (nc *NodeCache) Put(pkgBytes []byte) {
 
 	// Verify types of incoming pkg
-	valid := nc.Verifier.SecurityVerifier.VerifyADPTypes(pkgBytes)
+	valid := nc.NodeVerifier.SecurityVerifier.VerifyADPTypes(pkgBytes)
 	if !valid {
 		fmt.Println("[NODE CACHE] - Couldn't verify pkg types.")
 	}
 
 	// Construct adpt
-	pkg, err := nc.Verifier.SecurityVerifier.ConstructADPT(pkgBytes)
+	pkg, err := nc.NodeVerifier.SecurityVerifier.ConstructADPT(pkgBytes)
 	if err != nil {
 		fmt.Println("[NODE CACHE] - ADPT Construct err: ", err)
 	}

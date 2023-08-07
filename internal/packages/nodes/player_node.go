@@ -3,10 +3,10 @@ package player
 import (
 	"context"
 	"fmt"
-	"ticoma/packages/network/gamenode"
-	"ticoma/packages/network/gamenode/core"
-	nodecache "ticoma/packages/nodes/modules"
-	"ticoma/packages/nodes/modules/verifier"
+	"ticoma/internal/packages/network/gamenode"
+	"ticoma/internal/packages/network/gamenode/core"
+	nodecache "ticoma/internal/packages/nodes/modules"
+	"ticoma/internal/packages/nodes/modules/verifier"
 )
 
 //
@@ -19,39 +19,41 @@ import (
 // - Middleware for quick & handy signal handling from the Client
 
 type PlayerNode struct {
-	*gamenode.GameNode
+	*gamenode.IntegralGameNode
 	*nodecache.NodeCache
 	// Middleware soon (after basic @raylib implementation)
 }
 
 func NewPlayerNode() *PlayerNode {
 	return &PlayerNode{
-		GameNode: &gamenode.GameNode{
+		IntegralGameNode: &gamenode.IntegralGameNode{
 			GameNodeCore: &core.GameNodeCore{},
 		},
 		NodeCache: &nodecache.NodeCache{
-			Verifier: &verifier.Verifier{},
+			NodeVerifier: &verifier.NodeVerifier{},
 		},
 	}
 }
 
 func (pn *PlayerNode) InitPlayerNode(ctx context.Context, gameNodeConfig *gamenode.GameNodeConfig) {
-	pn.GameNode.InitGameNode(ctx, gameNodeConfig)
+	pn.IntegralGameNode.InitGameNode(ctx, gameNodeConfig)
 }
 
 // Listens for incoming packages on the pubsub network, and verifies each message through the NodeCache verifier
 func (pn *PlayerNode) ListenForPkgs(ctx context.Context) {
 	for {
-		msg, err := pn.GameNode.Sub.Next(ctx)
+		msg, err := pn.IntegralGameNode.Sub.Next(ctx)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(msg.ReceivedFrom, ": ", string(msg.Message.Data))
-		// pn.NodeCache.Put(msg.Message.Data)
-		// TODO: Find a way to convert []byte / string -> ADPT quickly
+		// don't echo own msgs
+		if msg.ReceivedFrom != pn.GetPeerInfo().ID {
+			fmt.Println(msg.ReceivedFrom, ": ", string(msg.Message.Data))
+			// pn.NodeCache.Put(msg.Message.Data) <-- soon
+		}
 	}
 }
 
 func (pn *PlayerNode) SendPkg(ctx context.Context, data string) {
-	pn.GameNode.Topic.Publish(ctx, []byte(data))
+	pn.IntegralGameNode.Topic.Publish(ctx, []byte(data))
 }
