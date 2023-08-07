@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 	. "ticoma/internal/packages/nodes/interfaces"
-	. "ticoma/internal/packages/nodes/modules"
-	. "ticoma/internal/packages/nodes/modules/verifier"
+	nodecache "ticoma/internal/packages/nodes/modules"
+	verifier "ticoma/internal/packages/nodes/modules/verifier"
 	"ticoma/internal/packages/nodes/utils"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +14,7 @@ import (
 
 func TestVerifyPackageTypesRandom(t *testing.T) {
 
-	v := NewNodeVerifier()
+	v := verifier.New()
 
 	// Completely random package
 	pkgStr := `{"foo": bar}`
@@ -37,7 +37,7 @@ func TestVerifyPackageTypesRandom(t *testing.T) {
 }
 func TestVerifyPackageTypesIncorrect(t *testing.T) {
 
-	v := NewNodeVerifier()
+	v := verifier.New()
 
 	// Invalid pkgs (keys are not equal to schema / values are of incorrect type)
 
@@ -89,7 +89,7 @@ func TestVerifyPackageTypesIncorrect(t *testing.T) {
 
 func TestVerifyPackageTypesCorrect(t *testing.T) {
 
-	v := NewNodeVerifier()
+	v := verifier.New()
 
 	// Basic local pkg
 	pkg := ActionDataPackage{
@@ -118,7 +118,7 @@ func TestVerifyPackageTypesCorrect(t *testing.T) {
 // Manual string to pkg
 func TestConvStringToPkg(t *testing.T) {
 
-	nc := NewNodeCache()
+	nc := nodecache.New()
 
 	// Validate string pkg and, if successful, try to convert it to a struct
 	testPkg := `{"playerId":0,"pubKey":"PUBKEY","pos":{"posX":1,"posY":1},"destPos":{"destPosX":1,"destPosY":1}}`
