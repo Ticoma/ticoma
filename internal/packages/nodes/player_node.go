@@ -21,7 +21,6 @@ import (
 type PlayerNode struct {
 	*gamenode.IntegralGameNode
 	*nodecache.NodeCache
-	// Middleware soon (after basic @raylib implementation)
 }
 
 func NewPlayerNode() *PlayerNode {

@@ -21,8 +21,6 @@ func Main(isRelay bool) {
 		log.Fatal("Error loading .env file")
 	}
 
-	fmt.Println("DOTENV TEST ", os.Getenv("TEST"))
-
 	ctx, cancel := context.WithCancel(context.Background())
 	go nodeProcess(ctx, isRelay)
 

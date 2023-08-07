@@ -50,22 +50,9 @@ func (nc *NodeCache) GetCurrent(id int) ActionDataPackageTimestamped {
 // Put new package to NodeCache
 //
 // (move stack to the left and delete oldest package from cache)
-//
-// (TMP HERE) Pkg verification process:
-// 1. verify fieldNames, types of json string pkg
-// 2. extract json pkg values
-// 3. initialize ADP struct and try assign values
-// 4. engine verifies ADP
-// 5. If all 4 pass, put ADP in cache
 func (nc *NodeCache) Put(pkgBytes []byte) {
 
-	// Verify types of incoming pkg
-	valid := nc.NodeVerifier.SecurityVerifier.VerifyADPTypes(pkgBytes)
-	if !valid {
-		fmt.Println("[NODE CACHE] - Couldn't verify pkg types.")
-	}
-
-	// Construct adpt
+	// Try construct adpt
 	pkg, err := nc.NodeVerifier.SecurityVerifier.ConstructADPT(pkgBytes)
 	if err != nil {
 		fmt.Println("[NODE CACHE] - ADPT Construct err: ", err)

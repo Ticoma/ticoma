@@ -15,8 +15,9 @@ func main() {
 
 	fmt.Println("Opts: ", *clientF, *relayF)
 
-	t_internal.Main(*relayF)
+	go t_internal.Main(*relayF)
 	if *clientF {
 		t_client.Main()
 	}
+	fmt.Scanln()
 }

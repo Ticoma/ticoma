@@ -45,19 +45,13 @@ func (gn *IntegralGameNode) InitGameNode(ctx context.Context, config *GameNodeCo
 		fmt.Println("GameNode host set up")
 	}
 
-	// Connect to relay (TODO: check if reservation is needed)
-	// gn.ConnectToRelay(config.Ctx, *relayInfo)
 	gn.ConnectToRelay(ctx, *relayInfo)
 	if config.EnableDebugLogging {
 		fmt.Println("GameNode connected to relay")
 	}
 
-	// gn.ReserveSlot(ctx, *relayInfo)
-	// fmt.Println("GameNode relay slot reserved")
-
 	// Pubsub
 	topic, sub := gn.ConnectToPubsub(ctx, "ticoma1", true) //
-	// topic, sub := gn.ConnectToPubsub(config.Ctx, "ticoma1", true) //
 	if config.EnableDebugLogging {
 		fmt.Println("Connected to pubsub!")
 	}

@@ -61,7 +61,7 @@ func StringifyPkg(pkg interface{}, trimLastChar bool) string {
 	}
 }
 
-// Get all: Field names (nested), Json tags (optional) of a struct (can be empty)
+// Get all: Field names (nested), Field types(optional), Json tags (optional) of a struct (can be empty)
 //
 // Returns (field names, field json tags, field types)
 func GetInterfaceFieldData(obj interface{}, wantJsonTags bool, wantTypes bool) ([]string, []string, []interface{}) {
