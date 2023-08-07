@@ -94,147 +94,154 @@ func TestNodeCacheGetters(t *testing.T) {
 
 }
 
-// func TestNodeCachePut(t *testing.T) {
+func TestNodeCachePut(t *testing.T) {
 
-// 	// Init two players
-// 	v := NewVerifier()
-// 	nc := NewNodeCache(v)
+	// Init two players
+	v := NewVerifier()
+	nc := NewNodeCache(v)
 
-// 	// init player 0
-// 	pkg := ActionDataPackageTimestamped{
-// 		ActionDataPackage: &ActionDataPackage{
-// 			PlayerId:     0,
-// 			PubKey:       "PUBKEY",
-// 			Position:     &Position{X: 1, Y: 1},
-// 			DestPosition: &DestPosition{X: 1, Y: 1},
-// 		},
-// 		Timestamp: 1,
-// 	}
+	// init player 0
+	pkg := ActionDataPackage{
+		PlayerId:     0,
+		PubKey:       "PUBKEY0",
+		Position:     &Position{X: 1, Y: 1},
+		DestPosition: &DestPosition{X: 1, Y: 1},
+	}
 
-// 	nc.Put(pkg)
+	pkgStr := utils.StringifyPkg(pkg, false)
+	nc.Put([]byte(pkgStr))
 
-// 	// init pkg should fill both prev, curr of p0's node cache
-// 	cache := nc.GetCache(0)
-// 	prev := cache[0]
-// 	curr := cache[1]
+	cache := nc.GetCache(0)
+	prev := cache[0]
+	curr := cache[1]
+	prevADP := utils.StripPkgFromTimestamp(&prev)
+	currADP := utils.StripPkgFromTimestamp(&curr)
 
-// 	assert.Equal(t, prev, pkg)
-// 	assert.Equal(t, curr, pkg)
+	// init pkg should fill both prev, curr of p0's node cache
+	assert.Equal(t, prevADP, &pkg)
+	assert.Equal(t, currADP, &pkg)
 
-// 	// init second node later
-// 	v2 := NewVerifier()
-// 	nc2 := NewNodeCache(v2)
+	// init second node later
+	v2 := NewVerifier()
+	nc2 := NewNodeCache(v2)
 
-// 	cache2 := nc2.GetAll()
+	cache2 := nc2.GetAll()
 
-// 	// fmt.Println(cache)
-// 	assert.Equal(t, len(cache2), 0) // should return empty map
+	// fmt.Println(cache)
+	assert.Equal(t, len(cache2), 0) // should return empty map
 
-// 	// Player 0 move
-// 	pkg2 := ActionDataPackageTimestamped{
-// 		ActionDataPackage: &ActionDataPackage{
-// 			PlayerId:     0,
-// 			PubKey:       "PUBKEY",
-// 			Position:     &Position{X: 1, Y: 1},
-// 			DestPosition: &DestPosition{X: 3, Y: 3},
-// 		},
-// 		Timestamp: 223,
-// 	}
+	// Player 0 move
+	pkg2 := ActionDataPackage{
+		PlayerId:     0,
+		PubKey:       "PUBKEY0",
+		Position:     &Position{X: 1, Y: 1},
+		DestPosition: &DestPosition{X: -3, Y: -3},
+	}
+	pkg2Str := utils.StringifyPkg(pkg2, false)
 
-// 	nc.Put(pkg2)
-// 	nc2.Put(pkg2) // imitate evt listener
+	nc.Put([]byte(pkg2Str))
+	nc2.Put([]byte(pkg2Str))
 
-// 	p0prev := nc.GetPrevious(0)
-// 	p0prev1 := nc2.GetPrevious(0)
+	p0prev := nc.GetPrevious(0)
+	p0prev2 := nc2.GetPrevious(0) // get p0's previous package from NodeCache2
+	p0prevADP := utils.StripPkgFromTimestamp(&p0prev)
+	p0prev2ADP := utils.StripPkgFromTimestamp(&p0prev2)
 
-// 	assert.Equal(t, p0prev, pkg)
-// 	assert.Equal(t, p0prev1, pkg2) // p1's node cache should have no record of the first pkg
+	assert.Equal(t, p0prevADP, &pkg)
+	assert.Equal(t, p0prev2ADP, &pkg2) // NodeCache2 should have no record of p0's init pkg
 
-// }
+}
 
-// func TestNodeCacheInvalidPutRequest(t *testing.T) {
+func TestNodeCacheInvalidPutRequest(t *testing.T) {
 
-// 	// init p0 cache, p1 cache
-// 	v := NewVerifier()
-// 	nc := NewNodeCache(v)
+	// init Nc, Nc2
+	v := NewVerifier()
+	nc := NewNodeCache(v)
 
-// 	v2 := NewVerifier()
-// 	nc2 := NewNodeCache(v2)
+	v2 := NewVerifier()
+	nc2 := NewNodeCache(v2)
 
-// 	// init player 0
-// 	pkg := ActionDataPackageTimestamped{
-// 		ActionDataPackage: &ActionDataPackage{
-// 			PlayerId:     0,
-// 			PubKey:       "PUBKEY",
-// 			Position:     &Position{X: 1, Y: 1},
-// 			DestPosition: &DestPosition{X: 1, Y: 1},
-// 		},
-// 		Timestamp: 1,
-// 	}
+	// init player 0
+	pkg0 := ActionDataPackage{
+		PlayerId:     0,
+		PubKey:       "PUBKEY0",
+		Position:     &Position{X: 1, Y: 1},
+		DestPosition: &DestPosition{X: 1, Y: 1},
+	}
+	pkg0Str := utils.StringifyPkg(pkg0, false)
 
-// 	nc.Put(pkg) // init p0 pos for both
-// 	nc2.Put(pkg)
+	// init p0 package for both Nc, Nc2
+	nc.Put([]byte(pkg0Str))
+	nc2.Put([]byte(pkg0Str))
 
-// 	// p0 request invalid move (destPos of prev pkg does not equal current Pos)
-// 	pkg2 := ActionDataPackageTimestamped{
-// 		ActionDataPackage: &ActionDataPackage{
-// 			PlayerId:     0,
-// 			PubKey:       "PUBKEY",
-// 			Position:     &Position{X: 4, Y: 4},
-// 			DestPosition: &DestPosition{X: 4, Y: 4},
-// 		},
-// 		Timestamp: 2,
-// 	}
+	// p0 request invalid move (destPos of prev pkg does not equal current Pos)
+	pkg0invalid := ActionDataPackage{
+		PlayerId:     0,
+		PubKey:       "PUBKEY0",
+		Position:     &Position{X: 4, Y: 4},
+		DestPosition: &DestPosition{X: 4, Y: 4},
+	}
+	pkg0invalidStr := utils.StringifyPkg(pkg0invalid, false)
 
-// 	// this should get rejected
-// 	nc.Put(pkg2)
-// 	nc2.Put(pkg2)
+	// this should get rejected
+	nc.Put([]byte(pkg0invalidStr))
+	nc2.Put([]byte(pkg0invalidStr))
 
-// 	n0cache := nc.GetCache(0)
-// 	n1cache := nc.GetCache(0)
+	NcCache := nc.GetCache(0)
+	Nc2Cache := nc2.GetCache(0)
+	NcCurrADP := utils.StripPkgFromTimestamp(&NcCache[1])
+	Nc2CurrADP := utils.StripPkgFromTimestamp(&Nc2Cache[1])
 
-// 	// fmt.Println(n0cache)
+	// fmt.Println(NcCurrADP, Nc2CurrADP) // DEBUG
 
-// 	assert.Equal(t, n0cache[1], pkg) // pkg is still curr, pkg2 didn't pass
-// 	assert.Equal(t, n1cache[1], pkg)
+	assert.Equal(t, NcCurrADP, &pkg0) // pkg is still curr, pkg2 didn't pass
+	assert.Equal(t, Nc2CurrADP, &pkg0)
 
-// 	// p0 sends a start move pkg {1, 1} to {12, 12} at ts = 3
-// 	pkg3 := ActionDataPackageTimestamped{
-// 		ActionDataPackage: &ActionDataPackage{
-// 			PlayerId:     0,
-// 			PubKey:       "PUBKEY",
-// 			Position:     &Position{X: 1, Y: 1},
-// 			DestPosition: &DestPosition{X: 12, Y: 12},
-// 		},
-// 		Timestamp: 3,
-// 	}
+	// p0 sends a start move pkg P{1, 1} to dP{12, 12}
+	pkg0move := ActionDataPackage{
+		PlayerId:     0,
+		PubKey:       "PUBKEY0",
+		Position:     &Position{X: 1, Y: 1},
+		DestPosition: &DestPosition{X: 12, Y: 12},
+	}
+	pkg0moveStr := utils.StringifyPkg(pkg0move, false)
 
-// 	nc.Put(pkg3)
-// 	nc2.Put(pkg3)
+	// Send pkg
+	nc.Put([]byte(pkg0moveStr))
+	nc2.Put([]byte(pkg0moveStr))
 
-// 	// check if start move req passed
-// 	p0curr := nc.GetCurrent(0)
-// 	p0curr1 := nc2.GetCurrent(0)
+	Ncp0curr := nc.GetCurrent(0)
+	Nc2p0curr := nc2.GetCurrent(0)
+	NcPlayer0CurrADP := utils.StripPkgFromTimestamp(&Ncp0curr)
+	Nc2Player0CurrADP := utils.StripPkgFromTimestamp(&Nc2p0curr)
 
-// 	assert.Equal(t, p0curr, pkg3)
-// 	assert.Equal(t, p0curr1, pkg3)
+	// check if move request "pkg0move" got validated
+	assert.Equal(t, NcPlayer0CurrADP, &pkg0move)
+	assert.Equal(t, Nc2Player0CurrADP, &pkg0move)
 
-// 	// p0 sends end move pkg which implies crazy move speed based on ts (24 blocks traveled in 1000ms)
-// 	pkg4 := ActionDataPackageTimestamped{
-// 		ActionDataPackage: &ActionDataPackage{
-// 			PlayerId:     0,
-// 			PubKey:       "PUBKEY",
-// 			Position:     &Position{X: 12, Y: 12},
-// 			DestPosition: &DestPosition{X: 12, Y: 12},
-// 		},
-// 		Timestamp: 1003,
-// 	}
+	// p0 sends end move pkg with a direction shift (prev destPos =/= currPos), tp/backtrack attempt
+	// This pkg below should get rejected
+	cheatPkg := ActionDataPackage{
+		PlayerId:     0,
+		PubKey:       "PUBKEY0",
+		Position:     &Position{X: 0, Y: 0},
+		DestPosition: &DestPosition{X: 0, Y: 0},
+	}
+	cheatPkgStr := utils.StringifyPkg(cheatPkg, false)
 
-// 	nc.Put(pkg4)
-// 	nc2.Put(pkg4)
+	// Send it
+	nc.Put([]byte(cheatPkgStr))
+	nc2.Put([]byte(cheatPkgStr))
 
-// 	t.Log("CURRENT ", nc.GetCurrent(0))
+	// Check cache
+	NcCurr := nc.GetCurrent(0)
+	Nc2Curr := nc.GetCurrent(0)
+	NcCurrADP2 := utils.StripPkgFromTimestamp(&NcCurr)
+	Nc2CurrADP2 := utils.StripPkgFromTimestamp(&Nc2Curr)
 
-// 	assert.Equal(t, nc.GetCurrent(0), pkg3)
-// 	assert.Equal(t, nc2.GetCurrent(0), pkg3) // both nodes should reject pkg4
-// }
+	// t.Log("CURRENT ", nc.GetCurrent(0))
+
+	// Both Nc should reject cheatPkg and still hold last verified pkg - pkg0move
+	assert.Equal(t, NcCurrADP2, &pkg0move)
+	assert.Equal(t, Nc2CurrADP2, &pkg0move)
+}
