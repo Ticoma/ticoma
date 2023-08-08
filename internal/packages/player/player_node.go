@@ -9,14 +9,17 @@ import (
 )
 
 // Player interface
+//
+// This interface is sent to client module once a connection to pubsub is established
+// the client is able to perform certain actions through this interface
 type PlayerInterface interface {
 	GetPeerID() string
 	Move(posX int, posY int, destPosX int, destPosY int) error
 }
 
-// Player
 type Player struct {
 	*PlayerNode
+	ctx context.Context
 }
 
 func New(ctx context.Context, nodeConfig *gamenode.NodeConfig) PlayerInterface {
@@ -24,6 +27,7 @@ func New(ctx context.Context, nodeConfig *gamenode.NodeConfig) PlayerInterface {
 	pn.InitPlayerNode(ctx, nodeConfig)
 	return &Player{
 		PlayerNode: pn,
+		ctx:        ctx,
 	}
 }
 
@@ -37,10 +41,10 @@ func (p *Player) Move(posX int, posY int, destPosX int, destPosY int) error {
 	if err != nil {
 		return err
 	} else {
-
 		msg := fmt.Sprintf("[MOVE] Player move verified. Request: pos: {X: %d, Y: %d}, destPos: {X: %d, Y: %d}", data...)
 		debug.DebugLog(msg, debug.PLAYER)
 		fmt.Println(msg)
+		p.PlayerNode.SendPkg(p.ctx, pkg)
 		return nil
 	}
 }
@@ -82,8 +86,11 @@ func (pn *PlayerNode) ListenForPkgs(ctx context.Context) {
 		}
 		// don't echo own msgs
 		if msg.ReceivedFrom != pn.GameNode.GetPeerInfo().ID {
-			fmt.Println("RECEIVED PKG")
-			debug.DebugLog("[PLAYER NODE] - Peer "+string(msg.ReceivedFrom)+" : "+string(msg.Message.Data), debug.NETWORK)
+			debug.DebugLog("[PLAYER NODE] - Peer "+msg.ReceivedFrom.Pretty()+" : "+string(msg.Message.Data), debug.NETWORK)
+			err := pn.NodeCache.Put(msg.Message.Data)
+			if err != nil {
+				debug.DebugLog("[PLAYER NODE] - I couldn't verify a package coming from "+msg.ReceivedFrom.Pretty()+"\nPkg: "+string(msg.Message.Data), debug.NETWORK)
+			}
 		} else {
 			debug.DebugLog("[PLAYER NODE] - I just sent a package: "+string(msg.Message.Data), debug.NETWORK)
 		}
