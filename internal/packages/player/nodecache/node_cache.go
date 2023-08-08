@@ -4,6 +4,7 @@ import (
 	// "fmt"
 
 	"fmt"
+	"ticoma/internal/debug"
 	intf "ticoma/internal/packages/player/interfaces"
 	"ticoma/internal/packages/player/nodecache/verifier"
 )
@@ -69,6 +70,7 @@ func (nc *NodeCache) Put(pkgBytes []byte) error {
 		var store PrevAndCurrentADPT
 		store[0], store[1] = pkg, pkg
 		nc.CacheStore.Store[pkg.PlayerId] = store
+		debug.DebugLog("[NODE CACHE] - First pkg from: "+string(pkg.PlayerId), debug.PLAYER)
 		return nil
 	}
 

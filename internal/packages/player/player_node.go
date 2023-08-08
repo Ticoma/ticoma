@@ -89,7 +89,9 @@ func (pn *PlayerNode) ListenForPkgs(ctx context.Context) {
 			debug.DebugLog("[PLAYER NODE] - Peer "+msg.ReceivedFrom.Pretty()+" : "+string(msg.Message.Data), debug.NETWORK)
 			err := pn.NodeCache.Put(msg.Message.Data)
 			if err != nil {
-				debug.DebugLog("[PLAYER NODE] - I couldn't verify a package coming from "+msg.ReceivedFrom.Pretty()+"\nPkg: "+string(msg.Message.Data), debug.NETWORK)
+				debug.DebugLog("[PLAYER NODE] - I couldn't verify a package coming from "+msg.ReceivedFrom.Pretty()+"\nPkg: "+string(msg.Message.Data)+"\n "+err.Error(), debug.NETWORK)
+			} else {
+				debug.DebugLog("\n[PLAYER NODE] - Pkg from: "+msg.ReceivedFrom.Pretty()+" Verified !!! \n", debug.NETWORK)
 			}
 		} else {
 			debug.DebugLog("[PLAYER NODE] - I just sent a package: "+string(msg.Message.Data), debug.NETWORK)
