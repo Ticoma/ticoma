@@ -12,14 +12,7 @@ import (
 )
 
 // conf
-var relayIp = os.Getenv("RELAY_IP")
-var relayAddr = os.Getenv("RELAY_ADDR")
-var relayPort = "1337"
-var nodeConfig = gamenode.NodeConfig{
-	RelayAddr: relayAddr,
-	RelayIp:   relayIp,
-	RelayPort: relayPort,
-}
+var nodeConfig = gamenode.NodeConfig{}
 
 func Main(ctx context.Context, c chan player.PlayerInterface, isRelay bool) {
 
@@ -29,7 +22,15 @@ func Main(ctx context.Context, c chan player.PlayerInterface, isRelay bool) {
 		panic("Error loading .env file")
 	}
 
-	// TODO: Check if all .env vars are != nil based on flags
+	relayIp := os.Getenv("RELAY_IP")
+	relayAddr := os.Getenv("RELAY_ADDR")
+	relayPort := "1337"
+	nodeConfig.RelayAddr = relayAddr
+	nodeConfig.RelayPort = relayPort
+	nodeConfig.RelayIp = relayIp
+
+	// TODO:
+	// Check if all .env vars are != nil based on flags
 	// to prevent 10-line errs from libp2p
 
 	if isRelay {
@@ -53,8 +54,7 @@ func runStandaloneGameNode(ctx context.Context) {
 	nodeConfig.IsRelay = true
 	gn.InitGameNode(ctx, &nodeConfig)
 
-	fmt.Println("========================")
+	fmt.Println("===============================================================")
 	fmt.Println("Relay ID: ", gn.GetPeerInfo().ID)
-	fmt.Println("Relay port: ", relayPort)
-	fmt.Println("========================")
+	fmt.Println("===============================================================")
 }
