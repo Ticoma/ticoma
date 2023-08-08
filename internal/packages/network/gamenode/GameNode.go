@@ -2,12 +2,21 @@ package gamenode
 
 import (
 	"context"
-	"fmt"
+	"ticoma/internal/debug"
 	"ticoma/internal/packages/network/gamenode/core"
 	"ticoma/internal/packages/network/utils"
 
+	relay "ticoma/internal/packages/network/gamenode/relay"
+
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
+
+// Extended game node,
+// Consists of: GameNodeCore + NodeRelay
+type StandaloneGameNode struct {
+	*IntegralGameNode
+	*relay.GameNodeRelay
+}
 
 // GameNode, integral part of PlayerNode
 type IntegralGameNode struct {
@@ -30,6 +39,14 @@ func NewIntegralGameNode() *IntegralGameNode {
 	}
 }
 
+func NewStandaloneGameNode() *StandaloneGameNode {
+	ign := NewIntegralGameNode()
+	return &StandaloneGameNode{
+		IntegralGameNode: ign,
+		GameNodeRelay:    &relay.GameNodeRelay{},
+	}
+}
+
 // Initializes an empty GameNode in a configurable way
 func (ign *IntegralGameNode) InitGameNode(ctx context.Context, config *GameNodeConfig) {
 
@@ -41,20 +58,14 @@ func (ign *IntegralGameNode) InitGameNode(ctx context.Context, config *GameNodeC
 		panic(err)
 	}
 
-	if config.EnableDebugLogging {
-		fmt.Println("GameNode host set up")
-	}
+	debug.DebugLog("GameNode host set up", debug.NETWORK)
 
 	ign.ConnectToRelay(ctx, *relayInfo)
-	if config.EnableDebugLogging {
-		fmt.Println("GameNode connected to relay")
-	}
+	debug.DebugLog("GameNode host set up", debug.NETWORK)
 
 	// Pubsub
 	topic, sub := ign.ConnectToPubsub(ctx, "ticoma1", true)
-	if config.EnableDebugLogging {
-		fmt.Println("Connected to pubsub!")
-	}
+	debug.DebugLog("Connected to pubsub!", debug.NETWORK)
 
 	ign.Topic = topic
 	ign.Sub = sub

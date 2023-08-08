@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"ticoma/internal/debug"
 	"ticoma/internal/packages/player/interfaces"
 	"ticoma/internal/packages/player/utils"
 	"time"
@@ -79,8 +80,9 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
 	}
 
 	// DEBUG
-	fmt.Println("[ADP TYPES] SCHEMA ", utils.StripString(schema, true))
-	fmt.Println("[ADP TYPES] RES ", utils.StripString(string(res), true))
+
+	debug.DebugLog("[ADP TYPES] SCHEMA "+utils.StripString(schema, true), debug.PLAYER)
+	debug.DebugLog("[ADP TYPES RES "+utils.StripString(string(res), true), debug.PLAYER)
 
 	valid := strings.Compare(utils.StripString(schema, true), utils.StripString(string(res), true)) == 0
 

@@ -3,30 +3,48 @@ package player
 import (
 	"context"
 	"fmt"
+	"ticoma/internal/debug"
 	"ticoma/internal/packages/network/gamenode"
 	"ticoma/internal/packages/player/nodecache"
 )
+
+// Player interface
+type PlayerInterface interface {
+	Move(posX int, posY int, destPosX int, destPosY int) error
+	// InitPlayer(ctx context.Context, gnc *gamenode.GameNodeConfig) dup
+}
 
 // Player
 type Player struct {
 	*PlayerNode
 }
 
-func (p *Player) InitPlayer(ctx context.Context, gnc *gamenode.GameNodeConfig) {
-	p.PlayerNode.InitPlayerNode(ctx, gnc)
+// func (p *Player) InitPlayer(ctx context.Context, gnc *gamenode.GameNodeConfig) {
+// 	p.PlayerNode.InitPlayerNode(ctx, gnc)
+// }
+
+func New(ctx context.Context, gnc *gamenode.GameNodeConfig) PlayerInterface {
+	pn := NewPlayerNode()
+	pn.InitPlayerNode(ctx, gnc)
+	return &Player{
+		PlayerNode: pn,
+	}
 }
 
 func (p *Player) Move(posX int, posY int, destPosX int, destPosY int) error {
 	ADPSchema := `{"playerId":0,"pubKey":"PUBKEY","pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`
 	data := []any{posX, posY, destPosX, destPosY}
 	pkg := fmt.Sprintf(ADPSchema, data...)
-	fmt.Println("PACKAGE ", pkg)
-	fmt.Println("CACHE ", p.PlayerNode.NodeCache)
+	debug.DebugLog("[MOVE] PACKAGE "+pkg, debug.PLAYER)
+	debug.DebugLog("[MOVE] CACHE "+fmt.Sprintf("%v", p.PlayerNode.NodeCache), debug.PLAYER)
 	err := p.PlayerNode.NodeCache.Put([]byte(pkg))
 	if err != nil {
 		return err
 	} else {
-		fmt.Printf("[MOVE] Player move verified. Request: pos: {X: %d, Y: %d}, destPos: {X: %d, Y: %d}", data...)
+
+		msg := fmt.Sprintf("[MOVE] Player move verified. Request: pos: {X: %d, Y: %d}, destPos: {X: %d, Y: %d}", data...)
+		debug.DebugLog(msg, debug.PLAYER)
+		fmt.Println(msg)
 		return nil
 	}
 }
@@ -52,6 +70,7 @@ func NewPlayerNode() *PlayerNode {
 
 func (pn *PlayerNode) InitPlayerNode(ctx context.Context, gameNodeConfig *gamenode.GameNodeConfig) {
 	pn.IntegralGameNode.InitGameNode(ctx, gameNodeConfig)
+	go pn.ListenForPkgs(ctx)
 }
 
 // Listens for incoming packages on the pubsub network, and verifies each message through the NodeCache verifier
@@ -65,6 +84,8 @@ func (pn *PlayerNode) ListenForPkgs(ctx context.Context) {
 		if msg.ReceivedFrom != pn.GetPeerInfo().ID {
 			fmt.Println(msg.ReceivedFrom, ": ", string(msg.Message.Data))
 			// pn.NodeCache.Put(msg.Message.Data) <-- soon
+		} else {
+			debug.DebugLog("[PLAYER NODE] - I just sent a package: "+string(msg.Message.Data), debug.NETWORK)
 		}
 	}
 }

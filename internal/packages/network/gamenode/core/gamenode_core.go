@@ -2,7 +2,8 @@ package core
 
 import (
 	"context"
-	"fmt"
+
+	debug "ticoma/internal/debug"
 
 	"github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -66,6 +67,6 @@ func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, 
 		panic(err)
 	}
 
-	fmt.Printf("Connected to topic: %s!\n", topicName)
+	debug.DebugLog("Connected to topic: "+topicName, debug.NETWORK)
 	return topic, sub
 }

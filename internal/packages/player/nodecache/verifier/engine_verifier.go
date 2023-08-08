@@ -3,6 +3,7 @@ package verifier
 import (
 	"fmt"
 	"math"
+	"ticoma/internal/debug"
 	. "ticoma/internal/packages/player/interfaces"
 )
 
@@ -33,7 +34,8 @@ func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *ActionDataPackageTimest
 	// fmt.Println("MAX VELOCITY: ", MAX_VEL)
 
 	if velocity > MAX_VEL {
-		fmt.Printf("[ERR] Engine player movement verification (velocity too high)\nVelocity: %f, max acceptable velocity: %f", velocity, MAX_VEL)
+		msg := fmt.Sprintf("[ERR] Engine player movement verification (velocity too high)\nVelocity: %f, max acceptable velocity: %f", velocity, MAX_VEL)
+		debug.DebugLog(msg, debug.PLAYER)
 		return false
 	}
 

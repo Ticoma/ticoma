@@ -30,7 +30,7 @@ func getVersion() string {
 	return commitHash
 }
 
-func Main(c chan player.Player) {
+func Main(c chan player.PlayerInterface) {
 
 	// setup
 	ver := getVersion()[0:6]
@@ -61,7 +61,7 @@ func Main(c chan player.Player) {
 
 		// info
 		rl.DrawText("ticoma git-"+ver, 2, 3, 20, rl.DarkGray)
-		rl.DrawText("peerid-"+p.GetPeerInfo().ID.String(), 2, 30, 16, rl.DarkGray)
+		// rl.DrawText("peerid-"+p.GetPeerInfo().ID.String(), 2, 30, 16, rl.DarkGray)
 
 		rl.EndDrawing()
 	}

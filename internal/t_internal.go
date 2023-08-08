@@ -3,21 +3,20 @@ package internal
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
-
-	"github.com/joho/godotenv"
 
 	gamenode "ticoma/internal/packages/network/gamenode"
 	player "ticoma/internal/packages/player"
+
+	"github.com/joho/godotenv"
 )
 
-func Main(ctx context.Context, c chan player.Player, isRelay bool) {
+func Main(ctx context.Context, c chan player.PlayerInterface, isRelay bool) {
 
 	// Load env
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		panic("Error loading .env file")
 	}
 
 	if isRelay {
@@ -27,21 +26,7 @@ func Main(ctx context.Context, c chan player.Player, isRelay bool) {
 	}
 }
 
-// func nodeProcess(ctx context.Context, isRelay bool) {
-// 	select {
-// 	case <-ctx.Done():
-// 		fmt.Println("EXIT")
-// 		return
-// 	default:
-// 		if isRelay {
-// 			runStandaloneGameNode(ctx)
-// 		} else {
-// 			runPlayerNode(ctx)
-// 		}
-// 	}
-// }
-
-func runPlayerNode(c chan player.Player, ctx context.Context) {
+func runPlayerNode(c chan player.PlayerInterface, ctx context.Context) {
 
 	relayIp := os.Getenv("RELAY_IP")
 	relayAddr := os.Getenv("RELAY_ADDR")
@@ -54,14 +39,9 @@ func runPlayerNode(c chan player.Player, ctx context.Context) {
 		EnableDebugLogging: true,
 	}
 
-	pn := player.NewPlayerNode()
-	pn.InitPlayerNode(ctx, &nodeConfig)
+	p := player.New(ctx, &nodeConfig)
 
-	p := &player.Player{
-		PlayerNode: pn,
-	}
-
-	c <- *p
+	c <- p
 }
 
 func runStandaloneGameNode(ctx context.Context) {

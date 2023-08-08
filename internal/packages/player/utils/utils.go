@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"ticoma/internal/debug"
 	"ticoma/internal/packages/player/interfaces"
 )
 
@@ -36,7 +37,8 @@ func StripPkgFromTimestamp(adpt *interfaces.ActionDataPackageTimestamped) *inter
 // Pkg types must be OK
 // This needs some improvement
 func ExtractValsFromStrPkg(pkg string) []string {
-	fmt.Println("EXTRACT GOT ", pkg) // DEBUG
+
+	debug.DebugLog("EXTRACT GOT"+pkg, debug.PLAYER)
 
 	// Order of ignored is important
 	var ignored = []string{"{", "}", "\"", ":", "playerId", "pubKey", "posX", "posY", "pos", "destPosX", "destPosY", "destPos"}
