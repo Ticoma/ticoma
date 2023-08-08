@@ -8,22 +8,13 @@ import (
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/client"
 )
 
-//
-// This is the core logical component of a GameNode,
-// Which contains a Libp2p node (a host)
-// And is used as a connector between the network and our engine,
-// It is responsible for sending and receiving data on the GossipSub
-//
-
+// Logical interface responsible for direct communication on the pubsub
 type GameNodeCore struct {
-	host                  host.Host // Basic libp2p client
-	relayConnectionStatus bool      // Is node core connected to a Relay (Standalone GameNode)
+	host host.Host
 }
 
-// Initialize host
 func (gnc *GameNodeCore) SetupHost(listenIp string, listenPort string) error {
 
 	h, err := libp2p.New(
@@ -32,14 +23,12 @@ func (gnc *GameNodeCore) SetupHost(listenIp string, listenPort string) error {
 
 	if err != nil {
 		return err
+	} else {
+		gnc.host = h
+		return nil
 	}
-
-	gnc.host = h
-
-	return nil
 }
 
-// Peer info
 func (gnc *GameNodeCore) GetPeerInfo() peer.AddrInfo {
 	return peer.AddrInfo{
 		ID:    gnc.host.ID(),
@@ -47,27 +36,15 @@ func (gnc *GameNodeCore) GetPeerInfo() peer.AddrInfo {
 	}
 }
 
-// Send reserve slot request to relay
-func (gnc *GameNodeCore) ReserveSlot(ctx context.Context, relayAddrInfo peer.AddrInfo) {
-	_, err := client.Reserve(ctx, gnc.host, relayAddrInfo)
-	if err != nil {
-		panic(err)
-	}
-}
-
-// Establish connection to relay
 func (gnc *GameNodeCore) ConnectToRelay(ctx context.Context, relayAddrInfo peer.AddrInfo) {
 
 	err := gnc.host.Connect(ctx, relayAddrInfo)
 	if err != nil {
 		panic(err)
 	}
-
-	// Connection to relay established
-	gnc.relayConnectionStatus = true
 }
 
-// Connect to pubsub and return topic, sub
+// returns pubsub[topic, sub] objects
 func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, relayEnabled bool) (*pubsub.Topic, *pubsub.Subscription) {
 
 	ps, err := pubsub.NewGossipSub(ctx, gnc.host)

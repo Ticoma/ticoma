@@ -12,7 +12,6 @@ type GameNodeRelay struct {
 	RelayHost host.Host
 }
 
-// Setup relay
 func (gnr *GameNodeRelay) SetupRelay(listenIp string, listenPort string) {
 	host, err := libp2p.New(
 		libp2p.ListenAddrStrings("/ip4/" + listenIp + "/tcp/" + listenPort),

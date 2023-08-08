@@ -1,11 +1,11 @@
-package modules
+package nodecache
 
 import (
 	// "fmt"
 
 	"fmt"
-	intf "ticoma/internal/packages/nodes/interfaces"
-	verifier "ticoma/internal/packages/nodes/modules/verifier"
+	intf "ticoma/internal/packages/player/interfaces"
+	"ticoma/internal/packages/player/nodecache/verifier"
 )
 
 type PrevAndCurrentADPT [2]intf.ActionDataPackageTimestamped // [ADPT, ADPT]

@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"ticoma/internal/packages/network/gamenode"
-	"ticoma/internal/packages/network/gamenode/core"
-	nodecache "ticoma/internal/packages/nodes/modules"
+	"ticoma/internal/packages/player/nodecache"
 )
 
 // Player
@@ -44,11 +43,10 @@ type PlayerNode struct {
 
 func NewPlayerNode() *PlayerNode {
 	nc := nodecache.New()
+	ign := gamenode.NewIntegralGameNode()
 	return &PlayerNode{
-		IntegralGameNode: &gamenode.IntegralGameNode{
-			GameNodeCore: &core.GameNodeCore{},
-		},
-		NodeCache: nc,
+		IntegralGameNode: ign,
+		NodeCache:        nc,
 	}
 }
 

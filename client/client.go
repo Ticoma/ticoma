@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 	"os/exec"
-	player "ticoma/internal/packages/nodes"
+	player "ticoma/internal/packages/player"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )

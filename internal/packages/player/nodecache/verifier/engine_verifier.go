@@ -3,7 +3,7 @@ package verifier
 import (
 	"fmt"
 	"math"
-	. "ticoma/internal/packages/nodes/interfaces"
+	. "ticoma/internal/packages/player/interfaces"
 )
 
 // EngineVerifier

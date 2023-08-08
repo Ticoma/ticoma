@@ -3,9 +3,9 @@ package tests
 import (
 	"fmt"
 	"testing"
-	. "ticoma/internal/packages/nodes/interfaces"
-	nodecache "ticoma/internal/packages/nodes/modules"
-	"ticoma/internal/packages/nodes/utils"
+	. "ticoma/internal/packages/player/interfaces"
+	"ticoma/internal/packages/player/nodecache"
+	"ticoma/internal/packages/player/utils"
 
 	assert "github.com/stretchr/testify/assert"
 )

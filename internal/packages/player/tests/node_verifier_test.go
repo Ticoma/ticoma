@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
-	. "ticoma/internal/packages/nodes/interfaces"
-	nodecache "ticoma/internal/packages/nodes/modules"
-	verifier "ticoma/internal/packages/nodes/modules/verifier"
-	"ticoma/internal/packages/nodes/utils"
+	. "ticoma/internal/packages/player/interfaces"
+	"ticoma/internal/packages/player/nodecache"
+	"ticoma/internal/packages/player/nodecache/verifier"
+	"ticoma/internal/packages/player/utils"
 
 	"github.com/stretchr/testify/assert"
 )

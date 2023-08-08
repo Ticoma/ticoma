@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"ticoma/internal/packages/nodes/interfaces"
+	"ticoma/internal/packages/player/interfaces"
 )
 
 // Strip a string from any whitespaces, tabs, newline chars, etc...

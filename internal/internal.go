@@ -9,7 +9,7 @@ import (
 	"github.com/joho/godotenv"
 
 	gamenode "ticoma/internal/packages/network/gamenode"
-	player "ticoma/internal/packages/nodes"
+	player "ticoma/internal/packages/player"
 )
 
 func Main(ctx context.Context, c chan player.Player, isRelay bool) {

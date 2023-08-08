@@ -24,19 +24,19 @@ type GameNodeConfig struct {
 	EnableDebugLogging bool
 }
 
-func NewGameNode() *IntegralGameNode {
+func NewIntegralGameNode() *IntegralGameNode {
 	return &IntegralGameNode{
 		GameNodeCore: &core.GameNodeCore{},
 	}
 }
 
 // Initializes an empty GameNode in a configurable way
-func (gn *IntegralGameNode) InitGameNode(ctx context.Context, config *GameNodeConfig) {
+func (ign *IntegralGameNode) InitGameNode(ctx context.Context, config *GameNodeConfig) {
 
 	relayInfo := utils.ConvertToAddrInfo(config.RelayIp, config.RelayAddr, config.RelayPort)
 
 	// Host setup
-	err := gn.GameNodeCore.SetupHost("0.0.0.0", "8888")
+	err := ign.GameNodeCore.SetupHost("0.0.0.0", "8888")
 	if err != nil {
 		panic(err)
 	}
@@ -45,17 +45,17 @@ func (gn *IntegralGameNode) InitGameNode(ctx context.Context, config *GameNodeCo
 		fmt.Println("GameNode host set up")
 	}
 
-	gn.ConnectToRelay(ctx, *relayInfo)
+	ign.ConnectToRelay(ctx, *relayInfo)
 	if config.EnableDebugLogging {
 		fmt.Println("GameNode connected to relay")
 	}
 
 	// Pubsub
-	topic, sub := gn.ConnectToPubsub(ctx, "ticoma1", true) //
+	topic, sub := ign.ConnectToPubsub(ctx, "ticoma1", true)
 	if config.EnableDebugLogging {
 		fmt.Println("Connected to pubsub!")
 	}
 
-	gn.Topic = topic
-	gn.Sub = sub
+	ign.Topic = topic
+	ign.Sub = sub
 }

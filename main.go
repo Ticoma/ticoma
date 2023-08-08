@@ -7,7 +7,7 @@ import (
 	"os"
 	t_client "ticoma/client"
 	t_internal "ticoma/internal"
-	player "ticoma/internal/packages/nodes"
+	player "ticoma/internal/packages/player"
 )
 
 func main() {
