@@ -98,18 +98,18 @@ func (sv *SecurityVerifier) ConstructADPT(pkgBytes []byte) (interfaces.ActionDat
 	// Type check
 	validPkgTypes := sv.VerifyADPTypes(pkgBytes)
 	if !validPkgTypes {
-		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't verify package types.")
+		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't verify package types.%s", "")
 	}
 
 	// If types are OK, try extract vals
 	vals := utils.ExtractValsFromStrPkg(string(pkgBytes))
 	if len(vals) != EXPECTED_VAL_LENGTH_IN_ADP {
-		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema.")
+		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema.%s", "")
 	}
 
 	playerId, err := strconv.Atoi(vals[0])
 	if err != nil {
-		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't assign playerId from vals.")
+		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't assign playerId from vals.%s", "")
 	}
 
 	var positions []int
@@ -117,12 +117,12 @@ func (sv *SecurityVerifier) ConstructADPT(pkgBytes []byte) (interfaces.ActionDat
 	for i := 2; i < len(vals); i++ {
 		pos, err := strconv.Atoi(vals[i])
 		if err != nil {
-			return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Err while converting string val to int")
+			return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Err while converting string val to int.%s", "")
 		}
 		positions = append(positions, pos)
 	}
 
-	timestamp := time.Now().Unix()
+	timestamp := time.Now().UnixMilli()
 
 	ADPT := interfaces.ActionDataPackageTimestamped{
 		ActionDataPackage: &interfaces.ActionDataPackage{

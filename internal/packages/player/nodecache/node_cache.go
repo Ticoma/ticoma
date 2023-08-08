@@ -73,16 +73,15 @@ func (nc *NodeCache) Put(pkgBytes []byte) error {
 	}
 
 	validPos := nc.EngineVerifier.VerifyLastMovePos(nc.CacheStore.Store[pkg.PlayerId][1].DestPosition, pkg.Position)
-
 	if !validPos {
-		return fmt.Errorf("[NODE CACHE] - Coulnd't verify move direction or position. err: %w", err)
+		return fmt.Errorf("[NODE CACHE] - Coulnd't verify move direction or position.%s", "")
 	}
 
 	curr := nc.CacheStore.Store[pkg.PlayerId][1]
 	validMove := nc.EngineVerifier.VerifyPlayerMovement(&curr, &pkg)
 
 	if !validMove {
-		return fmt.Errorf("[NODE CACHE] - Engine couldn't verify move. %w", err)
+		return fmt.Errorf("[NODE CACHE] - Engine couldn't verify move.%s", "")
 	}
 
 	// push stack to the left

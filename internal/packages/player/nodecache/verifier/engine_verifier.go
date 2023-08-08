@@ -3,8 +3,9 @@ package verifier
 import (
 	"fmt"
 	"math"
+	"strconv"
 	"ticoma/internal/debug"
-	. "ticoma/internal/packages/player/interfaces"
+	intf "ticoma/internal/packages/player/interfaces"
 )
 
 // EngineVerifier
@@ -18,7 +19,7 @@ const MAX_VEL = float64(MAX_BLOCKS_TRAVEL_PER_SECOND) / float64(SECONDS_IN_MS)
 // Engine verify functions
 
 // Checks if the player traversed too many blocks in a short amount of time
-func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *ActionDataPackageTimestamped, endPkg *ActionDataPackageTimestamped) bool {
+func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *intf.ActionDataPackageTimestamped, endPkg *intf.ActionDataPackageTimestamped) bool {
 
 	startPos := startPkg.Position
 	endPos := endPkg.Position
@@ -30,8 +31,9 @@ func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *ActionDataPackageTimest
 	velocity := blocksTraveledTotal / float64(elapsedTime)
 
 	// DEBUG
-	// fmt.Println("VELOCITY: ", velocity)
-	// fmt.Println("MAX VELOCITY: ", MAX_VEL)
+	debug.DebugLog("[ENGINE] VELOCITY: "+strconv.FormatFloat(velocity, 'E', -1, 32), debug.PLAYER)
+	debug.DebugLog("[ENGINE] MAX VELOCITY: "+strconv.FormatFloat(MAX_VEL, 'E', -1, 32), debug.PLAYER)
+	debug.DebugLog("[ENGINE] ELAPSED TIME: "+strconv.FormatInt(elapsedTime, 10), debug.PLAYER)
 
 	if velocity > MAX_VEL {
 		msg := fmt.Sprintf("[ERR] Engine player movement verification (velocity too high)\nVelocity: %f, max acceptable velocity: %f", velocity, MAX_VEL)
@@ -44,7 +46,7 @@ func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *ActionDataPackageTimest
 }
 
 // Checks if destPos of last package matches the pos of currently arriving package
-func (ev *EngineVerifier) VerifyLastMovePos(lastDestPos *DestPosition, pos *Position) bool {
+func (ev *EngineVerifier) VerifyLastMovePos(lastDestPos *intf.DestPosition, pos *intf.Position) bool {
 	verX := lastDestPos.X == pos.X
 	verY := lastDestPos.Y == pos.Y
 	if !verX || !verY {

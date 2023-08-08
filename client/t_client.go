@@ -2,11 +2,18 @@ package client
 
 import (
 	"fmt"
+	"math/rand"
 	"os/exec"
 	player "ticoma/internal/packages/player"
+	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+type PlayerClient struct {
+	X int
+	Y int
+}
 
 const (
 	WINDOW_WIDTH       = 1280
@@ -34,7 +41,7 @@ func Main(c chan player.PlayerInterface) {
 
 	// setup
 	ver := getVersion()[0:6]
-	rl.InitWindow(1280, 720, "raylib [core] example - basic window")
+	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Ticoma Client")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 	jetbrains := rl.LoadFont("client/assets/fonts/JetBrainsMono-Medium.ttf")
@@ -42,13 +49,12 @@ func Main(c chan player.PlayerInterface) {
 	// retrieve initialized and connected player from internal
 	p := <-c
 
-	// init player pos
-	err := p.Move(1, 1, 1, 1)
-	if err != nil {
-		fmt.Println("[CLIENT] - Failed to move, err: ", err)
-	} else {
-		playerMoved = true
-	}
+	// init player pos @ random pos
+	randX := RandRange(0, 10)
+	randY := RandRange(0, 10)
+	pc := &PlayerClient{}
+	MovePlayer(p, pc, randX, randY, randX, randY)
+	go KeyPressHandler(p, pc)
 
 	// game loop
 	for !rl.WindowShouldClose() {
@@ -56,7 +62,7 @@ func Main(c chan player.PlayerInterface) {
 		DrawBg()
 
 		if playerMoved {
-			DrawPlayer(1, 1)
+			DrawPlayer(pc.X, pc.Y)
 		}
 		rl.ClearBackground(rl.RayWhite)
 
@@ -69,6 +75,50 @@ func Main(c chan player.PlayerInterface) {
 		rl.EndDrawing()
 	}
 
+}
+
+func KeyPressHandler(p player.PlayerInterface, pc *PlayerClient) {
+	for {
+		if rl.IsKeyDown(rl.KeyA) {
+			MovePlayer(p, pc, pc.X, pc.Y, pc.X-1, pc.Y)
+		}
+		if rl.IsKeyDown(rl.KeyD) {
+			MovePlayer(p, pc, pc.X, pc.Y, pc.X+1, pc.Y)
+		}
+		if rl.IsKeyDown(rl.KeyS) {
+			MovePlayer(p, pc, pc.X, pc.Y, pc.X, pc.Y+1)
+		}
+		if rl.IsKeyDown(rl.KeyW) {
+			MovePlayer(p, pc, pc.X, pc.Y, pc.X, pc.Y-1)
+		}
+	}
+}
+
+// {1, 1, 1, 1}
+// {1, 1, 2, 2}
+// {2, 2, 2, 2}
+
+func MovePlayer(p player.PlayerInterface, pc *PlayerClient, posX int, posY int, destX int, destY int) {
+	playerMoved = true
+	err := p.Move(posX, posY, destX, destY)
+	if err != nil {
+		fmt.Println("[CLIENT] - Failed to move, err: ", err)
+	}
+	HandleKeyCooldown(p, pc, destX, destY, destX, destY)
+}
+
+func HandleKeyCooldown(p player.PlayerInterface, pc *PlayerClient, posX int, posY int, destX int, destY int) {
+	time.Sleep(time.Millisecond * 250)
+	err := p.Move(destX, destY, destX, destY)
+	pc.X, pc.Y = destX, destY
+	if err != nil {
+		fmt.Println("[CLIENT][HANDLE KEY CD] - Failed to move, err: ", err)
+	}
+	fmt.Println("CAN PRESS AGAIN")
+}
+
+func RandRange(min int, max int) int {
+	return rand.Intn(max-min) + min
 }
 
 // Tmp solution
