@@ -19,9 +19,9 @@ type Player struct {
 	*PlayerNode
 }
 
-func New(ctx context.Context, gnc *gamenode.GameNodeConfig) PlayerInterface {
+func New(ctx context.Context, nodeConfig *gamenode.NodeConfig) PlayerInterface {
 	pn := NewPlayerNode()
-	pn.InitPlayerNode(ctx, gnc)
+	pn.InitPlayerNode(ctx, nodeConfig)
 	return &Player{
 		PlayerNode: pn,
 	}
@@ -55,35 +55,35 @@ func (p *Player) GetPeerID() string {
 // - Middleware for quick & handy signal handling from the Client
 
 type PlayerNode struct {
-	*gamenode.IntegralGameNode
+	*gamenode.GameNode
 	*nodecache.NodeCache
 }
 
 func NewPlayerNode() *PlayerNode {
 	nc := nodecache.New()
-	ign := gamenode.NewIntegralGameNode()
+	gn := gamenode.New()
 	return &PlayerNode{
-		IntegralGameNode: ign,
-		NodeCache:        nc,
+		GameNode:  gn,
+		NodeCache: nc,
 	}
 }
 
-func (pn *PlayerNode) InitPlayerNode(ctx context.Context, gameNodeConfig *gamenode.GameNodeConfig) {
-	pn.IntegralGameNode.InitGameNode(ctx, gameNodeConfig)
+func (pn *PlayerNode) InitPlayerNode(ctx context.Context, nodeConfig *gamenode.NodeConfig) {
+	pn.GameNode.InitGameNode(ctx, nodeConfig)
 	go pn.ListenForPkgs(ctx)
 }
 
 // Listens for incoming packages on the pubsub network, and verifies each message through the NodeCache verifier
 func (pn *PlayerNode) ListenForPkgs(ctx context.Context) {
 	for {
-		msg, err := pn.IntegralGameNode.Sub.Next(ctx)
+		msg, err := pn.GameNode.Sub.Next(ctx)
 		if err != nil {
 			panic(err)
 		}
 		// don't echo own msgs
-		if msg.ReceivedFrom != pn.GetPeerInfo().ID {
-			fmt.Println(msg.ReceivedFrom, ": ", string(msg.Message.Data))
-			// pn.NodeCache.Put(msg.Message.Data) <-- soon
+		if msg.ReceivedFrom != pn.GameNode.GetPeerInfo().ID {
+			fmt.Println("RECEIVED PKG")
+			debug.DebugLog("[PLAYER NODE] - Peer "+string(msg.ReceivedFrom)+" : "+string(msg.Message.Data), debug.NETWORK)
 		} else {
 			debug.DebugLog("[PLAYER NODE] - I just sent a package: "+string(msg.Message.Data), debug.NETWORK)
 		}
@@ -91,5 +91,5 @@ func (pn *PlayerNode) ListenForPkgs(ctx context.Context) {
 }
 
 func (pn *PlayerNode) SendPkg(ctx context.Context, data string) {
-	pn.IntegralGameNode.Topic.Publish(ctx, []byte(data))
+	pn.GameNode.Topic.Publish(ctx, []byte(data))
 }

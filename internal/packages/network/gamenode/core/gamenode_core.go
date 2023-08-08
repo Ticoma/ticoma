@@ -46,7 +46,7 @@ func (gnc *GameNodeCore) ConnectToRelay(ctx context.Context, relayAddrInfo peer.
 }
 
 // returns pubsub[topic, sub] objects
-func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, relayEnabled bool) (*pubsub.Topic, *pubsub.Subscription) {
+func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, isRelay bool) (*pubsub.Topic, *pubsub.Subscription) {
 
 	ps, err := pubsub.NewGossipSub(ctx, gnc.host)
 	if err != nil {
@@ -58,7 +58,7 @@ func (gnc *GameNodeCore) ConnectToPubsub(ctx context.Context, topicName string, 
 		panic(err)
 	}
 
-	if relayEnabled {
+	if isRelay {
 		topic.Relay()
 	}
 

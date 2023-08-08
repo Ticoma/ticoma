@@ -11,6 +11,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// conf
+var relayIp = os.Getenv("RELAY_IP")
+var relayAddr = os.Getenv("RELAY_ADDR")
+var relayPort = "1337"
+var nodeConfig = gamenode.NodeConfig{
+	RelayAddr: relayAddr,
+	RelayIp:   relayIp,
+	RelayPort: relayPort,
+}
+
 func Main(ctx context.Context, c chan player.PlayerInterface, isRelay bool) {
 
 	// Load env
@@ -18,6 +28,9 @@ func Main(ctx context.Context, c chan player.PlayerInterface, isRelay bool) {
 	if err != nil {
 		panic("Error loading .env file")
 	}
+
+	// TODO: Check if all .env vars are != nil based on flags
+	// to prevent 10-line errs from libp2p
 
 	if isRelay {
 		runStandaloneGameNode(ctx)
@@ -28,17 +41,7 @@ func Main(ctx context.Context, c chan player.PlayerInterface, isRelay bool) {
 
 func runPlayerNode(c chan player.PlayerInterface, ctx context.Context) {
 
-	relayIp := os.Getenv("RELAY_IP")
-	relayAddr := os.Getenv("RELAY_ADDR")
-	relayPort := "1337"
-
-	nodeConfig := gamenode.GameNodeConfig{
-		RelayAddr:          relayAddr,
-		RelayIp:            relayIp,
-		RelayPort:          relayPort,
-		EnableDebugLogging: true,
-	}
-
+	nodeConfig.IsRelay = false
 	p := player.New(ctx, &nodeConfig)
 
 	c <- p
@@ -46,13 +49,12 @@ func runPlayerNode(c chan player.PlayerInterface, ctx context.Context) {
 
 func runStandaloneGameNode(ctx context.Context) {
 
-	relayPort := "1337"
-
-	rel := gamenode.NewStandaloneGameNode()
-	rel.SetupRelay("0.0.0.0", relayPort)
+	gn := gamenode.New()
+	nodeConfig.IsRelay = true
+	gn.InitGameNode(ctx, &nodeConfig)
 
 	fmt.Println("========================")
-	fmt.Println("Relay ID: ", rel.RelayHost.ID().String())
+	fmt.Println("Relay ID: ", gn.GetPeerInfo().ID)
 	fmt.Println("Relay port: ", relayPort)
 	fmt.Println("========================")
 }
