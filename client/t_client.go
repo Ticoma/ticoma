@@ -37,6 +37,7 @@ func Main(c chan player.PlayerInterface) {
 	rl.InitWindow(1280, 720, "raylib [core] example - basic window")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
+	jetbrains := rl.LoadFont("client/assets/fonts/JetBrainsMono-Medium.ttf")
 
 	// retrieve initialized and connected player from internal
 	p := <-c
@@ -60,8 +61,10 @@ func Main(c chan player.PlayerInterface) {
 		rl.ClearBackground(rl.RayWhite)
 
 		// info
-		rl.DrawText("ticoma git-"+ver, 2, 3, 20, rl.DarkGray)
-		// rl.DrawText("peerid-"+p.GetPeerInfo().ID.String(), 2, 30, 16, rl.DarkGray)
+		leftTop := &rl.Vector2{X: 2, Y: 3}
+		leftTop2 := &rl.Vector2{X: 2, Y: 20}
+		rl.DrawTextEx(jetbrains, "ticoma git-"+ver, *leftTop, 20, 0, rl.DarkGray)
+		rl.DrawTextEx(jetbrains, "peerid-"+p.GetPeerID(), *leftTop2, 20, 0, rl.DarkGray)
 
 		rl.EndDrawing()
 	}

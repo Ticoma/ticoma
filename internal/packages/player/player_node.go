@@ -10,18 +10,14 @@ import (
 
 // Player interface
 type PlayerInterface interface {
+	GetPeerID() string
 	Move(posX int, posY int, destPosX int, destPosY int) error
-	// InitPlayer(ctx context.Context, gnc *gamenode.GameNodeConfig) dup
 }
 
 // Player
 type Player struct {
 	*PlayerNode
 }
-
-// func (p *Player) InitPlayer(ctx context.Context, gnc *gamenode.GameNodeConfig) {
-// 	p.PlayerNode.InitPlayerNode(ctx, gnc)
-// }
 
 func New(ctx context.Context, gnc *gamenode.GameNodeConfig) PlayerInterface {
 	pn := NewPlayerNode()
@@ -47,6 +43,10 @@ func (p *Player) Move(posX int, posY int, destPosX int, destPosY int) error {
 		fmt.Println(msg)
 		return nil
 	}
+}
+
+func (p *Player) GetPeerID() string {
+	return p.PlayerNode.GetPeerInfo().ID.String()
 }
 
 // PlayerNode consists of:
