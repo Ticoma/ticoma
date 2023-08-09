@@ -37,7 +37,7 @@ func getVersion() string {
 	return commitHash
 }
 
-func Main(c chan player.PlayerInterface) {
+func Main(c chan player.Player) {
 
 	// setup
 	ver := getVersion()[0:6]
@@ -77,7 +77,7 @@ func Main(c chan player.PlayerInterface) {
 
 }
 
-func KeyPressHandler(p player.PlayerInterface, pc *PlayerClient) {
+func KeyPressHandler(p player.Player, pc *PlayerClient) {
 	for {
 		if rl.IsKeyDown(rl.KeyA) {
 			MovePlayer(p, pc, pc.X, pc.Y, pc.X-1, pc.Y)
@@ -98,7 +98,7 @@ func KeyPressHandler(p player.PlayerInterface, pc *PlayerClient) {
 // {1, 1, 2, 2}
 // {2, 2, 2, 2}
 
-func MovePlayer(p player.PlayerInterface, pc *PlayerClient, posX int, posY int, destX int, destY int) {
+func MovePlayer(p player.Player, pc *PlayerClient, posX int, posY int, destX int, destY int) {
 	playerMoved = true
 	err := p.Move(posX, posY, destX, destY)
 	if err != nil {
@@ -107,7 +107,7 @@ func MovePlayer(p player.PlayerInterface, pc *PlayerClient, posX int, posY int, 
 	HandleKeyCooldown(p, pc, destX, destY, destX, destY)
 }
 
-func HandleKeyCooldown(p player.PlayerInterface, pc *PlayerClient, posX int, posY int, destX int, destY int) {
+func HandleKeyCooldown(p player.Player, pc *PlayerClient, posX int, posY int, destX int, destY int) {
 	time.Sleep(time.Millisecond * 250)
 	err := p.Move(destX, destY, destX, destY)
 	pc.X, pc.Y = destX, destY

@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 	"ticoma/internal/debug"
-	"ticoma/internal/packages/player/interfaces"
+	"ticoma/internal/packages/gamenode/cache/interfaces"
 )
 
 // Strip a string from any whitespaces, tabs, newline chars, etc...

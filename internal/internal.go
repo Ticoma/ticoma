@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"os"
 
-	gamenode "ticoma/internal/packages/network/gamenode"
-	player "ticoma/internal/packages/player"
+	"ticoma/internal/packages/gamenode"
+	"ticoma/internal/packages/gamenode/network/libp2p/node"
+	"ticoma/internal/packages/player"
 
 	"github.com/joho/godotenv"
 )
 
-// conf
-var nodeConfig = gamenode.NodeConfig{}
+var nodeConfig = &node.NodeConfig{}
 
-func Main(ctx context.Context, c chan player.PlayerInterface, isRelay bool) {
+func Main(ctx context.Context, c chan player.Player, isRelay bool) {
 
 	// Load env
 	err := godotenv.Load()
@@ -40,21 +40,16 @@ func Main(ctx context.Context, c chan player.PlayerInterface, isRelay bool) {
 	}
 }
 
-func runPlayerNode(c chan player.PlayerInterface, ctx context.Context) {
-
-	nodeConfig.IsRelay = false
-	p := player.New(ctx, &nodeConfig)
-
+func runPlayerNode(c chan player.Player, ctx context.Context) {
+	p := player.New(ctx)
+	p.Init(ctx, false, nodeConfig)
 	c <- p
 }
 
 func runStandaloneGameNode(ctx context.Context) {
-
 	gn := gamenode.New()
-	nodeConfig.IsRelay = true
-	gn.InitGameNode(ctx, &nodeConfig)
-
+	gn.Init(ctx, true, nodeConfig)
 	fmt.Println("===============================================================")
-	fmt.Println("Relay ID: ", gn.GetPeerInfo().ID)
+	fmt.Println("Relay ID: ", gn.NetworkNode.Host.GetPeerInfo().ID.String())
 	fmt.Println("===============================================================")
 }

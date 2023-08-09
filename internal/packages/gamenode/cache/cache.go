@@ -1,16 +1,16 @@
-package nodecache
+package cache
 
 import (
 	// "fmt"
 
 	"fmt"
 	"ticoma/internal/debug"
-	intf "ticoma/internal/packages/player/interfaces"
-	"ticoma/internal/packages/player/nodecache/verifier"
+	"ticoma/internal/packages/gamenode/cache/interfaces"
+	"ticoma/internal/packages/gamenode/cache/verifier"
 )
 
-type PrevAndCurrentADPT [2]intf.ActionDataPackageTimestamped // [ADPT, ADPT]
-type Store map[int]PrevAndCurrentADPT                        // NodeCache internal memory model => [Prev ADPT, Current ADPT]
+type PrevAndCurrentADPT [2]interfaces.ActionDataPackageTimestamped // [ADPT, ADPT]
+type Store map[int]PrevAndCurrentADPT                              // NodeCache internal memory model => [Prev ADPT, Current ADPT]
 
 type NodeCache struct {
 	*CacheStore
@@ -41,11 +41,11 @@ func (nc *NodeCache) GetCache(id int) PrevAndCurrentADPT {
 	return cache
 }
 
-func (nc *NodeCache) GetPrevious(id int) intf.ActionDataPackageTimestamped {
+func (nc *NodeCache) GetPrevious(id int) interfaces.ActionDataPackageTimestamped {
 	return nc.CacheStore.Store[id][0]
 }
 
-func (nc *NodeCache) GetCurrent(id int) intf.ActionDataPackageTimestamped {
+func (nc *NodeCache) GetCurrent(id int) interfaces.ActionDataPackageTimestamped {
 	return nc.CacheStore.Store[id][1]
 }
 
@@ -66,7 +66,7 @@ func (nc *NodeCache) Put(pkgBytes []byte) error {
 	}
 
 	// if there's no cache and a package arrives, it means it's the first package
-	if nc.CacheStore.Store[pkg.PlayerId][0] == (intf.ActionDataPackageTimestamped{}) || nc.CacheStore.Store[pkg.PlayerId][1] == (intf.ActionDataPackageTimestamped{}) {
+	if nc.CacheStore.Store[pkg.PlayerId][0] == (interfaces.ActionDataPackageTimestamped{}) || nc.CacheStore.Store[pkg.PlayerId][1] == (interfaces.ActionDataPackageTimestamped{}) {
 		var store PrevAndCurrentADPT
 		store[0], store[1] = pkg, pkg
 		nc.CacheStore.Store[pkg.PlayerId] = store

@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"ticoma/internal/debug"
-	"ticoma/internal/packages/player/interfaces"
-	"ticoma/internal/packages/player/utils"
+	"ticoma/internal/packages/gamenode/cache/interfaces"
+	"ticoma/internal/packages/gamenode/cache/utils"
 	"time"
 )
 

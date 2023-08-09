@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/gen2brain/raylib-go/raylib v0.0.0-20230719211022-1083eace2049
+	github.com/joho/godotenv v1.5.1
 	github.com/libp2p/go-libp2p v0.29.1
 	github.com/libp2p/go-libp2p-pubsub v0.9.3
 	github.com/multiformats/go-multiaddr v0.10.1
@@ -37,7 +38,6 @@ require (
 	github.com/ipfs/go-log/v2 v2.5.1 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jbenet/go-temp-err-catcher v0.1.0 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/koron/go-ssdp v0.0.4 // indirect
