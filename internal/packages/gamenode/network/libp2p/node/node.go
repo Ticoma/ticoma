@@ -3,7 +3,7 @@ package node
 import (
 	"context"
 	"ticoma/internal/debug"
-	"ticoma/internal/packages/gamenode/network/libp2p/host"
+	"ticoma/internal/packages/gamenode/network/libp2p/node/host"
 	"ticoma/internal/packages/gamenode/network/utils"
 
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
