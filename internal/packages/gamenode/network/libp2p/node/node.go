@@ -46,6 +46,16 @@ func (nn *NetworkNode) Init(ctx context.Context, isRelay bool, nodeConfig *NodeC
 	topic, sub := nn.Host.ConnectToPubsub(ctx, "ticoma1", isRelay)
 	debug.DebugLog("Connected to pubsub!", debug.NETWORK)
 
+	// Storage (ipfs filesystem) tests
+	// h := nn.Host.GetHost()
+	// s := storage.New()
+	// s.StartServer(ctx, h)
+	// s.Add("Hello")
+	// s.Add("World!")
+	// // fmt.Println(cid, err)
+	// data, _ := s.GetLocal(ctx)
+	// fmt.Println(data)
+
 	nn.Topic = topic
 	nn.Sub = sub
 	nn.isRelay = isRelay
