@@ -52,5 +52,9 @@ func (gn *GameNode) ListenForPkgs(ctx context.Context) {
 }
 
 func (gn *GameNode) SendPkg(ctx context.Context, pkg []byte) {
+	err := gn.NodeCache.Put(pkg)
+	if err != nil {
+		debug.DebugLog("[PLAYER NODE] I couldn't verify my own package!: "+err.Error(), debug.PLAYER)
+	}
 	gn.NetworkNode.Topic.Publish(ctx, pkg)
 }
