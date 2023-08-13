@@ -39,14 +39,21 @@ func getVersion() string {
 
 func Main(c chan player.Player) {
 
-	// setup
+	// Setup
+
+	// Misc
 	ver := getVersion()[0:6]
+
+	// Raylib
 	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Ticoma Client")
 	defer rl.CloseWindow()
+	rl.SetTraceLog(4) // Disable unnecessary raylib logs
 	rl.SetTargetFPS(60)
-	jetbrains := rl.LoadFont("client/assets/fonts/JetBrainsMono-Medium.ttf")
 
-	// retrieve initialized and connected player from internal
+	// Fonts
+	jetbrains := rl.LoadFont("../client/assets/fonts/JetBrainsMono-Medium.ttf")
+
+	// Block execution till we get player instance from internal
 	p := <-c
 
 	// init player pos @ random pos
@@ -61,9 +68,9 @@ func Main(c chan player.Player) {
 		rl.BeginDrawing()
 		DrawBg()
 
-		if playerMoved {
-			DrawPlayer(pc.X, pc.Y)
-		}
+		KeyPressHandler(p, pc)
+		DrawPlayer(pc.X, pc.Y)
+
 		rl.ClearBackground(rl.RayWhite)
 
 		// info
@@ -78,43 +85,34 @@ func Main(c chan player.Player) {
 }
 
 func KeyPressHandler(p player.Player, pc *PlayerClient) {
-	for {
-		if rl.IsKeyDown(rl.KeyA) {
-			MovePlayer(p, pc, pc.X, pc.Y, pc.X-1, pc.Y)
-		}
-		if rl.IsKeyDown(rl.KeyD) {
-			MovePlayer(p, pc, pc.X, pc.Y, pc.X+1, pc.Y)
-		}
-		if rl.IsKeyDown(rl.KeyS) {
-			MovePlayer(p, pc, pc.X, pc.Y, pc.X, pc.Y+1)
-		}
-		if rl.IsKeyDown(rl.KeyW) {
-			MovePlayer(p, pc, pc.X, pc.Y, pc.X, pc.Y-1)
-		}
+	if playerMoved {
+		return
+	}
+	if rl.IsKeyDown(rl.KeyA) {
+		MovePlayer(p, pc, pc.X, pc.Y, pc.X-1, pc.Y)
+	}
+	if rl.IsKeyDown(rl.KeyD) {
+		MovePlayer(p, pc, pc.X, pc.Y, pc.X+1, pc.Y)
+	}
+	if rl.IsKeyDown(rl.KeyS) {
+		MovePlayer(p, pc, pc.X, pc.Y, pc.X, pc.Y+1)
+	}
+	if rl.IsKeyDown(rl.KeyW) {
+		MovePlayer(p, pc, pc.X, pc.Y, pc.X, pc.Y-1)
 	}
 }
-
-// {1, 1, 1, 1}
-// {1, 1, 2, 2}
-// {2, 2, 2, 2}
 
 func MovePlayer(p player.Player, pc *PlayerClient, posX int, posY int, destX int, destY int) {
-	playerMoved = true
 	err := p.Move(posX, posY, destX, destY)
 	if err != nil {
-		fmt.Println("[CLIENT] - Failed to move, err: ", err)
+		fmt.Println("[CLIENT] - Failed to request move, err: ", err)
 	}
-	HandleKeyCooldown(p, pc, destX, destY, destX, destY)
-}
-
-func HandleKeyCooldown(p player.Player, pc *PlayerClient, posX int, posY int, destX int, destY int) {
-	time.Sleep(time.Millisecond * 250)
-	err := p.Move(destX, destY, destX, destY)
-	pc.X, pc.Y = destX, destY
+	HandleMoveCooldown()
+	err = p.Move(destX, destY, destX, destY)
 	if err != nil {
-		fmt.Println("[CLIENT][HANDLE KEY CD] - Failed to move, err: ", err)
+		fmt.Println("[CLIENT] - Failed to fulfill move, err: ", err)
 	}
-	fmt.Println("CAN PRESS AGAIN")
+	pc.X, pc.Y = destX, destY
 }
 
 func RandRange(min int, max int) int {
@@ -133,4 +131,10 @@ func DrawBg() {
 			rl.DrawLine(VIEWPORT_START_X, int32(VIEWPORT_START_Y+j*BLOCK_SIZE), (VIEWPORT_START_X + VIEWPORT_SIZE), int32(VIEWPORT_START_Y+j*BLOCK_SIZE), rl.Black)
 		}
 	}
+}
+
+func HandleMoveCooldown() {
+	playerMoved = true
+	time.Sleep(time.Millisecond * 300) // Anti-spam
+	playerMoved = false
 }

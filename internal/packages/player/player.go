@@ -45,7 +45,7 @@ func (p *player) Move(posX int, posY int, destPosX int, destPosY int) error {
 	if err != nil {
 		return err
 	} else {
-		msg := fmt.Sprintf("[MOVE] Player move verified. Request: pos: {X: %d, Y: %d}, destPos: {X: %d, Y: %d}", data...)
+		msg := fmt.Sprintf("\n[MOVE] Player move verified. Request: pos: {X: %d, Y: %d}, destPos: {X: %d, Y: %d}\n", data...)
 		debug.DebugLog(msg, debug.PLAYER)
 		fmt.Println(msg)
 		p.GameNode.SendPkg(p.ctx, []byte(pkg))
