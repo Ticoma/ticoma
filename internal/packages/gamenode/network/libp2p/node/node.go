@@ -18,6 +18,7 @@ type NetworkNode struct {
 
 // Config opts for NetworkNode initialization
 type NodeConfig struct {
+	Port      string
 	RelayAddr string
 	RelayIp   string
 	RelayPort string
@@ -32,7 +33,7 @@ func New() *NetworkNode {
 // To set up a relay NetworkNode (Standalone), isRelay must be set to true
 func (nn *NetworkNode) Init(ctx context.Context, isRelay bool, nodeConfig *NodeConfig) {
 
-	err := nn.Host.SetupHost("0.0.0.0", "1337")
+	err := nn.Host.SetupHost("0.0.0.0", nodeConfig.Port)
 	if err != nil {
 		panic(err)
 	}

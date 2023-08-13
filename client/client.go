@@ -4,16 +4,12 @@ import (
 	"fmt"
 	"math/rand"
 	"os/exec"
+	"strconv"
 	player "ticoma/internal/packages/player"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
-
-type PlayerClient struct {
-	X int
-	Y int
-}
 
 const (
 	WINDOW_WIDTH       = 1280
@@ -59,17 +55,18 @@ func Main(c chan player.Player) {
 	// init player pos @ random pos
 	randX := RandRange(0, 10)
 	randY := RandRange(0, 10)
-	pc := &PlayerClient{}
-	MovePlayer(p, pc, randX, randY, randX, randY)
-	go KeyPressHandler(p, pc)
+	MovePlayer(p, randX, randY, randX, randY)
 
 	// game loop
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		DrawBg()
 
-		KeyPressHandler(p, pc)
-		DrawPlayer(pc.X, pc.Y)
+		KeyPressHandler(p)
+
+		for id, pos := range *p.GetPlayersPos() {
+			DrawPlayer(id, pos.X, pos.Y)
+		}
 
 		rl.ClearBackground(rl.RayWhite)
 
@@ -84,25 +81,28 @@ func Main(c chan player.Player) {
 
 }
 
-func KeyPressHandler(p player.Player, pc *PlayerClient) {
+func KeyPressHandler(p player.Player) {
 	if playerMoved {
 		return
 	}
+	pos := p.GetPos()
+	x, y := pos.X, pos.Y
+
 	if rl.IsKeyDown(rl.KeyA) {
-		MovePlayer(p, pc, pc.X, pc.Y, pc.X-1, pc.Y)
+		MovePlayer(p, x, y, x-1, y)
 	}
 	if rl.IsKeyDown(rl.KeyD) {
-		MovePlayer(p, pc, pc.X, pc.Y, pc.X+1, pc.Y)
+		MovePlayer(p, x, y, x+1, y)
 	}
 	if rl.IsKeyDown(rl.KeyS) {
-		MovePlayer(p, pc, pc.X, pc.Y, pc.X, pc.Y+1)
+		MovePlayer(p, x, y, x, y+1)
 	}
 	if rl.IsKeyDown(rl.KeyW) {
-		MovePlayer(p, pc, pc.X, pc.Y, pc.X, pc.Y-1)
+		MovePlayer(p, x, y, x, y-1)
 	}
 }
 
-func MovePlayer(p player.Player, pc *PlayerClient, posX int, posY int, destX int, destY int) {
+func MovePlayer(p player.Player, posX int, posY int, destX int, destY int) {
 	playerMoved = true
 	fmt.Println("\nMOVE MOVE MOVE")
 	err := p.Move(posX, posY, destX, destY)
@@ -115,7 +115,6 @@ func MovePlayer(p player.Player, pc *PlayerClient, posX int, posY int, destX int
 		fmt.Println("[CLIENT] - Failed to fulfill move, err: ", err)
 	}
 	time.Sleep(time.Millisecond * 300)
-	pc.X, pc.Y = destX, destY
 	playerMoved = false
 }
 
@@ -123,9 +122,10 @@ func RandRange(min int, max int) int {
 	return rand.Intn(max-min) + min
 }
 
-// Tmp solution
-func DrawPlayer(posX int, posY int) {
+func DrawPlayer(id int, posX int, posY int) {
 	rl.DrawRectangle(int32(VIEWPORT_START_X+(BLOCK_SIZE*posX)), int32(VIEWPORT_START_Y+(BLOCK_SIZE*posY)), BLOCK_SIZE, BLOCK_SIZE, rl.Black)
+	ids := strconv.Itoa(id)
+	rl.DrawText(ids, int32(VIEWPORT_START_X+(BLOCK_SIZE*posX)+5), int32(VIEWPORT_START_Y+(BLOCK_SIZE*posY)+5), 18, rl.Red)
 }
 
 func DrawBg() {
@@ -135,10 +135,4 @@ func DrawBg() {
 			rl.DrawLine(VIEWPORT_START_X, int32(VIEWPORT_START_Y+j*BLOCK_SIZE), (VIEWPORT_START_X + VIEWPORT_SIZE), int32(VIEWPORT_START_Y+j*BLOCK_SIZE), rl.Black)
 		}
 	}
-}
-
-func HandleMoveCooldown() {
-	playerMoved = true
-	time.Sleep(time.Millisecond * 600) // Anti-spam
-	playerMoved = false
 }

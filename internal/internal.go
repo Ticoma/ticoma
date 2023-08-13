@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 
@@ -13,6 +14,9 @@ import (
 )
 
 var nodeConfig = &node.NodeConfig{}
+
+var portFlag = flag.String("port", "1337", "Listening port (default 1337)")
+var idFlag = flag.Int("id", 0, "Player id")
 
 func Main(ctx context.Context, c chan player.Player, isRelay bool) {
 
@@ -28,6 +32,7 @@ func Main(ctx context.Context, c chan player.Player, isRelay bool) {
 	nodeConfig.RelayAddr = relayAddr
 	nodeConfig.RelayPort = relayPort
 	nodeConfig.RelayIp = relayIp
+	nodeConfig.Port = *portFlag
 
 	// TODO:
 	// Check if all .env vars are != nil based on flags
@@ -41,7 +46,7 @@ func Main(ctx context.Context, c chan player.Player, isRelay bool) {
 }
 
 func runPlayerNode(c chan player.Player, ctx context.Context) {
-	p := player.New(ctx)
+	p := player.New(ctx, *idFlag)
 	p.Init(ctx, false, nodeConfig)
 	c <- p
 }
