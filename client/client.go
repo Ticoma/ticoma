@@ -103,16 +103,20 @@ func KeyPressHandler(p player.Player, pc *PlayerClient) {
 }
 
 func MovePlayer(p player.Player, pc *PlayerClient, posX int, posY int, destX int, destY int) {
+	playerMoved = true
+	fmt.Println("\nMOVE MOVE MOVE")
 	err := p.Move(posX, posY, destX, destY)
 	if err != nil {
 		fmt.Println("[CLIENT] - Failed to request move, err: ", err)
 	}
-	HandleMoveCooldown()
+	time.Sleep(time.Millisecond * 300)
 	err = p.Move(destX, destY, destX, destY)
 	if err != nil {
 		fmt.Println("[CLIENT] - Failed to fulfill move, err: ", err)
 	}
+	time.Sleep(time.Millisecond * 300)
 	pc.X, pc.Y = destX, destY
+	playerMoved = false
 }
 
 func RandRange(min int, max int) int {
@@ -135,6 +139,6 @@ func DrawBg() {
 
 func HandleMoveCooldown() {
 	playerMoved = true
-	time.Sleep(time.Millisecond * 300) // Anti-spam
+	time.Sleep(time.Millisecond * 600) // Anti-spam
 	playerMoved = false
 }
