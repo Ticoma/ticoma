@@ -48,6 +48,7 @@ func Main(ctx context.Context, c chan player.Player, isRelay bool) {
 func runPlayerNode(c chan player.Player, ctx context.Context) {
 	p := player.New(ctx, *idFlag)
 	p.Init(ctx, false, nodeConfig)
+	fmt.Printf("Player id: %d connected!\n", *idFlag)
 	c <- p
 }
 

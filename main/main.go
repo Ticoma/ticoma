@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
 	"ticoma/client"
 	"ticoma/internal"
 	"ticoma/internal/packages/player"
@@ -21,6 +22,7 @@ func main() {
 
 	go internal.Main(ctx, c, *relayF)
 	if *clientF {
+		fmt.Println("Starting client")
 		client.Main(c)
 	}
 	fmt.Scanln()
