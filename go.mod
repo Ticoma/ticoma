@@ -16,6 +16,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/ipfs/go-log v1.0.5 // indirect
 	github.com/libp2p/go-libp2p-record v0.2.0 // indirect
+	github.com/lxn/win v0.0.0-20210218163916-a377121e959e // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 )
 
@@ -32,6 +33,7 @@ require (
 	github.com/elastic/gosigar v0.14.2 // indirect
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
+	github.com/fstanis/screenresolution v0.0.0-20190527020317-869904d15333
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
