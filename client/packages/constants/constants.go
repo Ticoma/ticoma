@@ -1,6 +1,6 @@
 package constants
 
 const (
-	// Game map vars
+	// Game constants (1.0 scaling factor)
 	BLOCK_SIZE = 64
 )

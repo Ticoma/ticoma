@@ -1,8 +1,6 @@
 package gamemap
 
-import (
-	"ticoma/client/packages/utils"
-)
+import "ticoma/client/packages/utils"
 
 type GameMap struct {
 	FrontLayer [][]MapBlock
@@ -15,6 +13,7 @@ type MapBlock struct {
 	Interactive bool
 }
 
+// Empty map constructor
 func NewMap(width int, height int) *GameMap {
 	layer := make([][]MapBlock, height)
 	for i := range layer {
@@ -26,11 +25,17 @@ func NewMap(width int, height int) *GameMap {
 	}
 }
 
-func (gm *GameMap) GenerateRandomMap(gameMap GameMap) {
-	for i := 0; i < len(gameMap.BgLayer); i++ {
-		for j := 0; j < len(gameMap.BgLayer[0]); i++ {
-			randBlockId := utils.RandRange(0, 4)
-			gameMap.BgLayer[i][j] = MapBlock{
+// Fill map layer with specified layer config/configs
+func (gm *GameMap) LoadMap(frontLayer [][]MapBlock, bgLayer [][]MapBlock) {
+	gm.FrontLayer = frontLayer
+	gm.BgLayer = bgLayer
+}
+
+func (gm *GameMap) GenerateRandomMap() {
+	for i := 0; i < len(gm.BgLayer); i++ {
+		for j := 0; j < len(gm.BgLayer[0]); j++ {
+			randBlockId := utils.RandRange(0, 2)
+			gm.BgLayer[i][j] = MapBlock{
 				BlockId:     randBlockId,
 				Collision:   false,
 				Interactive: false,
@@ -39,7 +44,8 @@ func (gm *GameMap) GenerateRandomMap(gameMap GameMap) {
 	}
 }
 
-func (gm *GameMap) UpdateBlock(gamemap *GameMap, newBlock MapBlock, x int, y int, updateOnBgLayer bool) {
+// Insert block on {x, y} pos on specified map layer
+func (gm *GameMap) InsertBlock(gamemap *GameMap, newBlock MapBlock, x int, y int, updateOnBgLayer bool) {
 	if updateOnBgLayer {
 		gamemap.BgLayer[x][y] = newBlock
 	}
