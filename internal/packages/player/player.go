@@ -14,6 +14,7 @@ import (
 // This interface is sent to client module once a connection to pubsub is established
 // the client is able to perform certain actions using this interface and is limited to its functions
 type Player interface {
+	GetId() int
 	GetPeerID() string
 	Move(posX int, posY int, destPosX int, destPosY int) error
 	Init(ctx context.Context, isRelay bool, nodeConfig *node.NodeConfig)
@@ -53,7 +54,7 @@ func (p *player) Move(posX int, posY int, destPosX int, destPosY int) error {
 	} else {
 		msg := fmt.Sprintf("[MOVE] Player move verified. Id: %d, pos: {X: %d, Y: %d}, destPos: {X: %d, Y: %d}\n", data...)
 		debug.DebugLog(msg, debug.PLAYER)
-		fmt.Println(msg)
+		// fmt.Println(msg) // DEBUG
 		p.GameNode.SendPkg(p.ctx, []byte(pkg))
 		return nil
 	}
@@ -75,4 +76,8 @@ func (p *player) GetPlayersPos() *map[int]interfaces.Position {
 
 func (p *player) GetPeerID() string {
 	return p.GameNode.Host.GetPeerInfo().ID.String()
+}
+
+func (p *player) GetId() int {
+	return p.id
 }

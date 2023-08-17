@@ -31,6 +31,7 @@ func (gm *GameMap) LoadMap(frontLayer [][]MapBlock, bgLayer [][]MapBlock) {
 	gm.BgLayer = bgLayer
 }
 
+// Tmp: generates a mosaic map full of random blocks
 func (gm *GameMap) GenerateRandomMap() {
 	for i := 0; i < len(gm.BgLayer); i++ {
 		for j := 0; j < len(gm.BgLayer[0]); j++ {
