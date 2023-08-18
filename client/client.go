@@ -25,7 +25,7 @@ func Main(pc chan internal_player.Player) {
 		Height:      1080,
 		RefreshRate: 60,
 	}
-	SIDE_PANEL_WIDTH := int32((screenConf.Width / 5))
+	SIDE_PANEL_WIDTH := int32((screenConf.Width / 4))
 
 	// Load assets
 	// font := rl.LoadFont("../client/assets/fonts/Consolas.ttf") // TODO: Fix font
@@ -56,6 +56,7 @@ func Main(pc chan internal_player.Player) {
 	rightPanel := rl.LoadRenderTexture(SIDE_PANEL_WIDTH, int32(screenConf.Height))
 	leftPanel := rl.LoadRenderTexture(SIDE_PANEL_WIDTH, int32(screenConf.Height))
 
+	// Draw textures
 	left.DrawLeftPanelSkeleton(&leftPanel, SIDE_PANEL_WIDTH, int32(screenConf.Height))
 	right.DrawRightPanelSkeleton(&rightPanel, SIDE_PANEL_WIDTH, int32(screenConf.Height))
 	center.TestMap(&centerPanel, spawnImg, &screenConf)
@@ -72,9 +73,7 @@ func Main(pc chan internal_player.Player) {
 		rl.ClearBackground(rl.Black)
 
 		rl.BeginMode2D(cam.Camera2D)
-		xOffset := 2.5 * 64
-		yOffset := 2.5 * 64
-		rl.DrawTextureRec(centerPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(spawnImg.Width), Height: float32(-spawnImg.Height)}, rl.Vector2{X: float32(xOffset), Y: float32(yOffset)}, rl.White)
+		rl.DrawTextureRec(centerPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(spawnImg.Width), Height: float32(-spawnImg.Height)}, rl.Vector2{X: float32(screenConf.Width/2) - float32(centerPanel.Texture.Width/2), Y: float32(screenConf.Height/2) - float32(centerPanel.Texture.Height/2)}, rl.White)
 		rl.EndMode2D()
 
 		rl.DrawTextureRec(playerPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(screenConf.Width), Height: float32(-screenConf.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
