@@ -3,12 +3,11 @@ package client
 import (
 	"ticoma/client/packages/actions"
 	"ticoma/client/packages/camera"
-	"ticoma/client/packages/drawing/panels/center"
+	c "ticoma/client/packages/constants"
 	"ticoma/client/packages/drawing/panels/left"
 	"ticoma/client/packages/drawing/panels/right"
-
-	// gamemap "ticoma/client/packages/game_map"
 	"ticoma/client/packages/input/keyboard"
+	"ticoma/client/packages/input/mouse"
 	intf "ticoma/client/packages/interfaces"
 	internal_player "ticoma/internal/packages/player"
 
@@ -44,26 +43,40 @@ func Main(pc chan internal_player.Player) {
 	// blockSprite := rl.LoadTextureFromImage(blocks)
 
 	// Setup game
-	cam := camera.New()
+	gameCam := camera.New()
+	gameCam.Offset = rl.Vector2{X: float32(screenConf.Width / 2), Y: float32(screenConf.Height / 2)}
 	playerMoved := false
 	spawnMapSize := 25 // In blocks
-	// testMap := gamemap.NewMap(spawnMapSize, spawnMapSize)
-	// testMap.GenerateRandomMap()
 
 	// Setup panels
-	centerPanel := rl.LoadRenderTexture(spawnImg.Width, spawnImg.Height)
-	playerPanel := rl.LoadRenderTexture(int32(screenConf.Width), int32(screenConf.Height))
-	rightPanel := rl.LoadRenderTexture(SIDE_PANEL_WIDTH, int32(screenConf.Height))
+	world := rl.LoadRenderTexture(spawnImg.Width, spawnImg.Height) // Fullscreen panel
+	// game := rl.LoadRenderTexture(int32(screenConf.Width), int32(screenConf.Height))
+	// player := rl.LoadRenderTexture(c.BLOCK_SIZE, c.BLOCK_SIZE)
+	rightPanel := rl.LoadRenderTexture(SIDE_PANEL_WIDTH, int32(screenConf.Height)) // Side panels
 	leftPanel := rl.LoadRenderTexture(SIDE_PANEL_WIDTH, int32(screenConf.Height))
+
+	// tmp, Draw map on world
+	spawnTxt := rl.LoadTextureFromImage(spawnImg)
+	rl.BeginTextureMode(world)
+	rl.ClearBackground(rl.NewColor(0, 0, 0, 0))
+	rl.DrawTextureRec(spawnTxt, rl.Rectangle{
+		X:      0,
+		Y:      0,
+		Width:  float32(spawnTxt.Width) * gameCam.Zoom,
+		Height: float32(spawnTxt.Height) * gameCam.Zoom},
+		rl.Vector2{
+			X: 0,
+			Y: 0,
+		},
+		rl.White)
+	rl.EndTextureMode()
+
+	// Wait for player conn
+	p := <-pc
 
 	// Draw textures
 	left.DrawLeftPanelSkeleton(&leftPanel, SIDE_PANEL_WIDTH, int32(screenConf.Height))
 	right.DrawRightPanelSkeleton(&rightPanel, SIDE_PANEL_WIDTH, int32(screenConf.Height))
-	center.TestMap(&centerPanel, spawnImg, &screenConf)
-	center.DrawSelfPlayer(&playerPanel, 0, screenConf.Width, screenConf.Height)
-
-	// Display loading scene, wait for internal
-	p := <-pc
 
 	actions.InitPlayer(p, &playerMoved, spawnMapSize/2, spawnMapSize/2)
 
@@ -72,15 +85,16 @@ func Main(pc chan internal_player.Player) {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
-		rl.BeginMode2D(cam.Camera2D)
-		rl.DrawTextureRec(centerPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(spawnImg.Width), Height: float32(-spawnImg.Height)}, rl.Vector2{X: float32(screenConf.Width/2) - float32(centerPanel.Texture.Width/2), Y: float32(screenConf.Height/2) - float32(centerPanel.Texture.Height/2)}, rl.White)
+		// Draw game
+		rl.BeginMode2D(gameCam.Camera2D)
+		rl.DrawTextureRec(world.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(world.Texture.Width), Height: float32(-world.Texture.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
+		rl.DrawRectangle(int32(p.GetPos().X)*c.BLOCK_SIZE, int32(p.GetPos().Y)*c.BLOCK_SIZE, c.BLOCK_SIZE, c.BLOCK_SIZE, rl.Red)
 		rl.EndMode2D()
+		// rl.DrawTextureRec(leftPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(leftPanel.Texture.Width), Height: float32(-leftPanel.Texture.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
+		// rl.DrawTextureRec(rightPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(rightPanel.Texture.Width), Height: float32(-rightPanel.Texture.Height)}, rl.Vector2{X: float32(int32(screenConf.Width) - SIDE_PANEL_WIDTH), Y: 0}, rl.White)
 
-		rl.DrawTextureRec(playerPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(screenConf.Width), Height: float32(-screenConf.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
-		rl.DrawTextureRec(leftPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(leftPanel.Texture.Width), Height: float32(-leftPanel.Texture.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
-		rl.DrawTextureRec(rightPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(rightPanel.Texture.Width), Height: float32(-rightPanel.Texture.Height)}, rl.Vector2{X: float32(int32(screenConf.Width) - SIDE_PANEL_WIDTH), Y: 0}, rl.White)
-
-		keyboard.HandleKeyboardMoveInput(p, cam, &playerMoved)
+		keyboard.HandleKeyboardMoveInput(p, gameCam, &playerMoved)
+		mouse.HandleMouseInputs(gameCam)
 
 		rl.EndDrawing()
 

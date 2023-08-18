@@ -21,7 +21,7 @@ type GameCamera struct {
 
 func New() *GameCamera {
 	offset := rl.Vector2{X: 0, Y: 0}
-	target := rl.Vector2{X: 0, Y: 0}
+	target := rl.Vector2{X: 800, Y: 800}
 	return &GameCamera{
 		Camera2D: rl.NewCamera2D(offset, target, 0, 1),
 	}

@@ -26,7 +26,6 @@ func MovePlayer(p internal_player.Player, cam *camera.GameCamera, dir camera.DIR
 	if err != nil {
 		fmt.Println("[CLIENT] - Failed to move (2), err: ", err)
 	}
-	cam.MoveCamera(dir)
 	time.Sleep(time.Millisecond * 300)
 	*moveState = false
 }

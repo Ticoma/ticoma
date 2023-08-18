@@ -1,6 +1,8 @@
 package center
 
 import (
+	"fmt"
+	"ticoma/client/packages/camera"
 	c "ticoma/client/packages/constants"
 	intf "ticoma/client/packages/interfaces"
 
@@ -23,17 +25,35 @@ import (
 // 	rl.EndTextureMode()
 // }
 
-func TestMap(panel *rl.RenderTexture2D, img *rl.Image, screenConf *intf.ScreenInfo) {
+func Draw(panel *rl.RenderTexture2D, cam *camera.GameCamera, img *rl.Image, screenConf *intf.ScreenInfo) {
 	txt := rl.LoadTextureFromImage(img)
 	rl.BeginTextureMode(*panel)
-	rl.DrawTextureRec(txt, rl.Rectangle{X: 0, Y: 0, Width: float32(txt.Width), Height: float32(txt.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
+	rl.ClearBackground(rl.NewColor(0, 0, 0, 0))
+	rl.DrawTextureRec(txt, rl.Rectangle{
+		X:      0,
+		Y:      0,
+		Width:  float32(txt.Width) * cam.Zoom,
+		Height: float32(txt.Height) * cam.Zoom},
+		rl.Vector2{
+			X: 0,
+			Y: 0,
+		},
+		rl.White)
 	rl.EndTextureMode()
 }
 
 // Draw own, local player instance
-func DrawSelfPlayer(panel *rl.RenderTexture2D, id int, screenWidth int, screenHeight int) {
+func DrawSelfPlayer(panel *rl.RenderTexture2D, cam *camera.GameCamera, screenConf *intf.ScreenInfo, id int) {
+	zoom := cam.Camera2D.Zoom
+	fmt.Println(zoom)
 	rl.BeginTextureMode(*panel)
-	rl.DrawRectangleRec(rl.Rectangle{X: float32(screenWidth/2) - (c.BLOCK_SIZE / 2), Y: float32(screenHeight/2) - (c.BLOCK_SIZE / 2), Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}, rl.White)
+	rl.ClearBackground(rl.NewColor(0, 0, 0, 0))
+	rl.DrawRectangleRec(rl.Rectangle{
+		X:      float32(screenConf.Width/2) + (c.BLOCK_SIZE * (1 - zoom) / 2),
+		Y:      float32(screenConf.Height/2) + (c.BLOCK_SIZE * (1 - zoom) / 2),
+		Width:  c.BLOCK_SIZE * zoom,
+		Height: c.BLOCK_SIZE * zoom},
+		rl.White)
 	rl.EndTextureMode()
 }
 
