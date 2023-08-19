@@ -1,4 +1,4 @@
-package actions
+package player
 
 import (
 	"fmt"
@@ -8,8 +8,8 @@ import (
 )
 
 //
-// Actions package
-// High-level commands for performing client-side operations
+// Player package
+// High-level internal_player interface wrapper for Client
 //
 // E.g. Move Action calls underlying Player interface (Move) and Updates
 // the client-side player position

@@ -15,7 +15,6 @@ const (
 
 // Check for all mouse inputs
 func HandleMouseInputs(cam *camera.GameCamera) {
-
 	// Scroll
 	scroll := rl.GetMouseWheelMoveV().Y
 	if scroll != 0 {

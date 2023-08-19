@@ -39,6 +39,7 @@ func Draw(panel *rl.RenderTexture2D, cam *camera.GameCamera, img *rl.Image, scre
 			Y: 0,
 		},
 		rl.White)
+
 	rl.EndTextureMode()
 }
 

@@ -19,9 +19,9 @@ type GameCamera struct {
 	rl.Camera2D
 }
 
-func New() *GameCamera {
-	offset := rl.Vector2{X: 0, Y: 0}
-	target := rl.Vector2{X: 800, Y: 800}
+func New(targetX float32, targetY float32, offsetX float32, offsetY float32) *GameCamera {
+	offset := rl.Vector2{X: offsetX, Y: offsetY}
+	target := rl.Vector2{X: targetX, Y: targetY}
 	return &GameCamera{
 		Camera2D: rl.NewCamera2D(offset, target, 0, 1),
 	}

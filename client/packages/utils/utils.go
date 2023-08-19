@@ -29,10 +29,10 @@ func RandRange(min int, max int) int {
 	return rand.Intn(max-min) + min
 }
 
-func GetScreenInfo() intf.ScreenInfo {
+func GetScreenInfo() *intf.ScreenInfo {
 	w := rl.GetScreenWidth()
 	h := rl.GetScreenHeight()
-	return intf.ScreenInfo{
+	return &intf.ScreenInfo{
 		Width:       w,
 		Height:      h,
 		RefreshRate: 60, // Tmp
