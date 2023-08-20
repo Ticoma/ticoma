@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"ticoma/internal/debug"
 	"ticoma/internal/packages/gamenode"
+	"ticoma/internal/packages/gamenode/cache"
 	"ticoma/internal/packages/gamenode/cache/interfaces"
 	"ticoma/internal/packages/gamenode/network/libp2p/node"
 )
@@ -16,10 +17,11 @@ import (
 type Player interface {
 	GetId() int
 	GetPeerID() string
+	GetCache() *cache.NodeCache
 	Move(posX int, posY int, destPosX int, destPosY int) error
 	Init(ctx context.Context, isRelay bool, nodeConfig *node.NodeConfig)
 	GetPos() *interfaces.Position
-	GetPlayersPos() *map[int]interfaces.Position
+	// GetPlayersPos() *map[int]interfaces.Position
 }
 
 type player struct {
@@ -65,13 +67,18 @@ func (p *player) GetPos() *interfaces.Position {
 	return pos
 }
 
-func (p *player) GetPlayersPos() *map[int]interfaces.Position {
-	s := p.NodeCache.GetAll()
-	pos := make(map[int]interfaces.Position)
-	for id, data := range s {
-		pos[id] = *data[1].Position
-	}
-	return &pos
+// Deprecated
+// func (p *player) GetPlayersPos() *map[int]interfaces.Position {
+// 	s := p.NodeCache.GetAll()
+// 	pos := make(map[int]interfaces.Position)
+// 	for id, data := range s {
+// 		pos[id] = *data[1].Position
+// 	}
+// 	return &pos
+// }
+
+func (p *player) GetCache() *cache.NodeCache {
+	return p.GameNode.NodeCache
 }
 
 func (p *player) GetPeerID() string {

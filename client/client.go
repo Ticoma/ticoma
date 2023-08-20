@@ -3,6 +3,7 @@ package client
 import (
 	"ticoma/client/packages/camera"
 	c "ticoma/client/packages/constants"
+	dr "ticoma/client/packages/drawing"
 	"ticoma/client/packages/drawing/panels"
 	"ticoma/client/packages/input/keyboard"
 	"ticoma/client/packages/input/mouse"
@@ -20,7 +21,7 @@ func Main(pc chan internal_player.Player) {
 
 	// Setup window, raylib
 	rl.InitWindow(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()), "Ticoma Client")
-	rl.ToggleFullscreen()
+	// rl.ToggleFullscreen()
 	defer rl.CloseWindow()
 	rl.SetTraceLog(4) // Disable unnecessary raylib logs
 	rl.SetTargetFPS(60)
@@ -44,21 +45,8 @@ func Main(pc chan internal_player.Player) {
 	rightPanel := rl.LoadRenderTexture(SIDE_PANEL_WIDTH, int32(screenConf.Height)) // Side panels
 	leftPanel := rl.LoadRenderTexture(SIDE_PANEL_WIDTH, int32(screenConf.Height))
 
-	// tmp, Draw map on world
+	// tmp, Draw map on world from texture
 	spawnTxt := rl.LoadTextureFromImage(spawnImg)
-	rl.BeginTextureMode(world)
-	rl.ClearBackground(rl.NewColor(0, 0, 0, 0))
-	rl.DrawTextureRec(spawnTxt, rl.Rectangle{
-		X:      0,
-		Y:      0,
-		Width:  float32(spawnTxt.Width) * gameCam.Zoom,
-		Height: float32(spawnTxt.Height) * gameCam.Zoom},
-		rl.Vector2{
-			X: 0,
-			Y: 0,
-		},
-		rl.White)
-	rl.EndTextureMode()
 
 	// Wait for player conn
 	p := <-pc
@@ -77,6 +65,10 @@ func Main(pc chan internal_player.Player) {
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
+
+		// Draw players
+		dr.DrawMap(&world, &spawnTxt, gameCam.Zoom)
+		dr.DrawPlayers(&world, p, gameCam.Zoom)
 
 		// Draw game
 		rl.BeginMode2D(gameCam.Camera2D)

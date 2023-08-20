@@ -9,7 +9,9 @@ import (
 )
 
 // GameNode consists of:
+//
 // - NetworkNode (libp2p client) for pubsub/ipfs communication (+ relay logic, if isRelay is set to true)
+//
 // - NodeCache to store own and other's package cache
 type GameNode struct {
 	*node.NetworkNode
