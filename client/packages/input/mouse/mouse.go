@@ -28,8 +28,12 @@ func HandleMouseInputs(cam *camera.GameCamera) {
 
 func handleScrollZoom(dir SCROLL_DIR, cam *camera.GameCamera) {
 	if dir == UP {
-		cam.Camera2D.Zoom += .1
+		if cam.Camera2D.Zoom < 1.25 {
+			cam.Camera2D.Zoom += .1
+		}
 	} else {
-		cam.Camera2D.Zoom -= .1
+		if cam.Camera2D.Zoom > 0.75 {
+			cam.Camera2D.Zoom -= .1
+		}
 	}
 }

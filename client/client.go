@@ -86,7 +86,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 
 		// Draw players
 		dr.DrawMap(&world, &spawnTxt, gameCam.Zoom)
-		dr.DrawPlayers(&world, p, gameCam.Zoom)
+		dr.DrawPlayers(&world, p)
 
 		// Draw chat
 		chatActive, textInputRec := panels.DrawChat(&leftPanel, p, chatTitleH, chatInput, chatMsgs, &font)
