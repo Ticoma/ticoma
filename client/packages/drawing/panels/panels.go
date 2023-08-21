@@ -80,28 +80,20 @@ func DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32,
 	textInputActive := rl.CheckCollisionPointRec(rl.GetMousePosition(), textInputRec)
 	sendBtnActive := rl.CheckCollisionPointRec(rl.GetMousePosition(), sendBtn)
 
-	// draw outlines if active
-
+	// draw outlines if active, react to send inputs
 	if textInputActive {
 		rl.DrawRectangleLinesEx(textInputRec, 2, rl.SkyBlue)
 		rl.SetMouseCursor(rl.MouseCursorIBeam)
-
+		// Enter press while typing
 		if rl.IsKeyPressed(rl.KeyEnter) {
-			sent := player.Chat(p, chatInput)
-			if sent {
-				chatInput = nil
-			}
+			player.Chat(p, chatInput)
 		}
 	}
-
 	if sendBtnActive {
 		rl.DrawRectangleLinesEx(sendBtn, 2, rl.Green)
-
+		// On click send button
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
-			sent := player.Chat(p, chatInput)
-			if sent {
-				chatInput = nil
-			}
+			player.Chat(p, chatInput)
 		}
 	}
 

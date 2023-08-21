@@ -40,6 +40,10 @@ func HandleChatInput(input []byte) []byte {
 
 	key := rl.GetCharPressed()
 
+	if len(input) == 0 && rl.IsKeyPressed(rl.KeySpace) {
+		return input
+	}
+
 	if key != 0 {
 		if key >= 32 && key <= 125 {
 			input = append(input, byte(key))

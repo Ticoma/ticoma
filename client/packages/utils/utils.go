@@ -24,19 +24,23 @@ func GetCommitHash() string {
 	return commitHash
 }
 
+// Setup resolution, window size, etc
+func GetScreenConf(width int, height int, fullscreen *bool) *intf.ScreenInfo {
+	screenConf := &intf.ScreenInfo{}
+	if *fullscreen { // if not fullscreen, make a quarter window
+		screenConf.Width = int32(width)
+		screenConf.Height = int32(height)
+	} else {
+		screenConf.Width = int32(width / 2)
+		screenConf.Height = int32(height / 2)
+	}
+	screenConf.RefreshRate = 60
+	return screenConf
+}
+
 // Gen random number in range - (inclusive, exclusive)
 func RandRange(min int, max int) int {
 	return rand.Intn(max-min) + min
-}
-
-func GetScreenInfo() *intf.ScreenInfo {
-	w := rl.GetScreenWidth()
-	h := rl.GetScreenHeight()
-	return &intf.ScreenInfo{
-		Width:       w,
-		Height:      h,
-		RefreshRate: 60, // Tmp
-	}
 }
 
 // Get a texture with specific Id from a spritesheet.

@@ -69,7 +69,6 @@ func (p *player) Chat(msg []byte) error {
 	data := []any{p.id, msg}
 	pkg := fmt.Sprintf(chatMsgSchema, data...)
 
-	// debug log
 	debug.DebugLog("[CHAT] Pkg: "+fmt.Sprintf("%v", pkg), debug.PLAYER)
 
 	err := p.GameNode.SendChatMsg(p.ctx, []byte(pkg))

@@ -1,7 +1,8 @@
 package interfaces
 
 type ScreenInfo struct {
-	Width       int
-	Height      int
+	MonitorId   int
+	Width       int32
+	Height      int32
 	RefreshRate int
 }

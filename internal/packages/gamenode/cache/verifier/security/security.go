@@ -139,7 +139,6 @@ func (sv *SecurityVerifier) ConstructADPT(pkgBytes []byte) (interfaces.ActionDat
 		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
 	}
 
-	fmt.Println(vals[0])
 	playerId, err := strconv.Atoi(vals[0])
 	if err != nil {
 		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't assign playerId from vals")
