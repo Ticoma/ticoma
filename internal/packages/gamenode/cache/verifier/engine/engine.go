@@ -12,9 +12,11 @@ import (
 type EngineVerifier struct{}
 
 // Engine ruleset
-const SECONDS_IN_MS = 1000
-const MAX_BLOCKS_TRAVEL_PER_SECOND = 4
-const MAX_VEL = float64(MAX_BLOCKS_TRAVEL_PER_SECOND) / float64(SECONDS_IN_MS)
+const (
+	SECONDS_IN_MS                = 1000
+	MAX_BLOCKS_TRAVEL_PER_SECOND = 4
+	MAX_VEL                      = float64(MAX_BLOCKS_TRAVEL_PER_SECOND) / float64(SECONDS_IN_MS)
+)
 
 // Engine verify functions
 
@@ -30,7 +32,6 @@ func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *intf.ActionDataPackageT
 
 	velocity := blocksTraveledTotal / float64(elapsedTime)
 
-	// DEBUG
 	debug.DebugLog("[ENGINE] VELOCITY: "+strconv.FormatFloat(velocity, 'E', -1, 32), debug.PLAYER)
 	debug.DebugLog("[ENGINE] MAX VELOCITY: "+strconv.FormatFloat(MAX_VEL, 'E', -1, 32), debug.PLAYER)
 	debug.DebugLog("[ENGINE] ELAPSED TIME: "+strconv.FormatInt(elapsedTime, 10), debug.PLAYER)

@@ -34,3 +34,23 @@ func HandleKeyboardMoveInput(p internal_player.Player, cam *camera.GameCamera, p
 		cam.Target.Y -= c.BLOCK_SIZE
 	}
 }
+
+// Handle key presses when chat is active (appends to value of provided input byte arr)
+func HandleChatInput(input []byte) []byte {
+
+	key := rl.GetCharPressed()
+
+	if key != 0 {
+		if key >= 32 && key <= 125 {
+			input = append(input, byte(key))
+		}
+	}
+
+	if rl.IsKeyPressed(rl.KeyBackspace) {
+		if len(input) > 0 {
+			input = input[:len(input)-1] // remove last char
+		}
+	}
+
+	return input
+}

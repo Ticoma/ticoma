@@ -41,7 +41,7 @@ func ExtractValsFromStrPkg(pkg string) []string {
 	debug.DebugLog("EXTRACT GOT"+pkg, debug.PLAYER)
 
 	// Order of ignored is important
-	var ignored = []string{"{", "}", "\"", ":", "playerId", "pubKey", "posX", "posY", "pos", "destPosX", "destPosY", "destPos"}
+	var ignored = []string{"{", "}", "\"", ":", "playerId", "pubKey", "posX", "posY", "pos", "destPosX", "destPosY", "destPos", "message"}
 	for i := 0; i < len(ignored); i++ {
 		pkg = strings.ReplaceAll(pkg, ignored[i], "")
 	}

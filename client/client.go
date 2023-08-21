@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"ticoma/client/packages/camera"
 	c "ticoma/client/packages/constants"
 	dr "ticoma/client/packages/drawing"
@@ -10,11 +11,15 @@ import (
 	"ticoma/client/packages/player"
 	utils "ticoma/client/packages/utils"
 	internal_player "ticoma/internal/packages/player"
+	"ticoma/types"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func Main(pc chan internal_player.Player) {
+var chatMsgs []string
+var chatInput []byte
+
+func Main(pc chan internal_player.Player, cc chan types.ChatMessage) {
 
 	// Load icon
 	icon := rl.LoadImage("../client/assets/logo/ticoma-logo-64.png")
@@ -51,14 +56,17 @@ func Main(pc chan internal_player.Player) {
 	// Wait for player conn
 	p := <-pc
 
+	// Activate chat listener
+	go ChatMsgListener(cc)
+
 	// Init player
 	player.InitPlayer(p, &playerMoved, spawnMapSize/2, spawnMapSize/2)
 
-	// Draw textures
+	// Draw textures that only need to be drawn once
 	panelColor := rl.DarkGray
 	panels.DrawSidePanelSkeleton(&leftPanel, float32(SIDE_PANEL_WIDTH), float32(screenConf.Height), &panelColor)
 	panels.DrawSidePanelSkeleton(&rightPanel, float32(SIDE_PANEL_WIDTH), float32(screenConf.Height), &panelColor)
-	panels.DrawTitleBlock(&leftPanel, 0, "Chat", &font)
+	chatTitleH := panels.DrawTitleBlock(&leftPanel, 0, "Chat", &font)
 	panels.DrawTitleBlock(&rightPanel, 0, "7357", &font)
 
 	for !rl.WindowShouldClose() {
@@ -70,6 +78,10 @@ func Main(pc chan internal_player.Player) {
 		dr.DrawMap(&world, &spawnTxt, gameCam.Zoom)
 		dr.DrawPlayers(&world, p, gameCam.Zoom)
 
+		// Draw chat
+		chatActive, textInputRec := panels.DrawChat(&leftPanel, p, chatTitleH, chatInput, chatMsgs, &font)
+		panels.DrawChatInput(&leftPanel, textInputRec, &font, chatInput)
+
 		// Draw game
 		rl.BeginMode2D(gameCam.Camera2D)
 		rl.DrawTextureRec(world.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(world.Texture.Width), Height: float32(-world.Texture.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
@@ -80,11 +92,24 @@ func Main(pc chan internal_player.Player) {
 		rl.DrawTextureRec(leftPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(leftPanel.Texture.Width), Height: float32(-leftPanel.Texture.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
 		rl.DrawTextureRec(rightPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(rightPanel.Texture.Width), Height: float32(-rightPanel.Texture.Height)}, rl.Vector2{X: float32(int32(screenConf.Width) - SIDE_PANEL_WIDTH), Y: 0}, rl.White)
 
-		keyboard.HandleKeyboardMoveInput(p, gameCam, &playerMoved)
+		// Ignore game keyboard inputs if user is typing in chat
+		if !chatActive {
+			keyboard.HandleKeyboardMoveInput(p, gameCam, &playerMoved)
+		} else {
+			chatInput = keyboard.HandleChatInput(chatInput)
+		}
 		mouse.HandleMouseInputs(gameCam)
 
 		rl.EndDrawing()
-
 	}
 
+}
+
+func ChatMsgListener(cc chan types.ChatMessage) {
+	for {
+		chat := <-cc
+		msg := fmt.Sprintf("[ player %d ]: %s", chat.PlayerId, chat.Message)
+		chatMsgs = append(chatMsgs, msg)
+		chatInput = nil
+	}
 }

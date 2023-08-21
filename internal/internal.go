@@ -9,6 +9,7 @@ import (
 	"ticoma/internal/packages/gamenode"
 	"ticoma/internal/packages/gamenode/network/libp2p/node"
 	"ticoma/internal/packages/player"
+	"ticoma/types"
 
 	"github.com/joho/godotenv"
 )
@@ -18,7 +19,7 @@ var nodeConfig = &node.NodeConfig{}
 var portFlag = flag.String("port", "1337", "Listening port (default 1337)")
 var idFlag = flag.Int("id", 0, "Player id")
 
-func Main(ctx context.Context, c chan player.Player, isRelay bool) {
+func Main(ctx context.Context, pc chan player.Player, cc chan types.ChatMessage, isRelay bool) {
 
 	// Load env
 	err := godotenv.Load()
@@ -41,15 +42,15 @@ func Main(ctx context.Context, c chan player.Player, isRelay bool) {
 	if isRelay {
 		runStandaloneGameNode(ctx)
 	} else {
-		runPlayerNode(c, ctx)
+		runPlayerNode(pc, cc, ctx)
 	}
 }
 
-func runPlayerNode(c chan player.Player, ctx context.Context) {
+func runPlayerNode(pc chan player.Player, cc chan types.ChatMessage, ctx context.Context) {
 	p := player.New(ctx, *idFlag)
-	p.Init(ctx, false, nodeConfig)
+	p.Init(ctx, cc, false, nodeConfig)
 	fmt.Printf("Player id: %d connected!\n", *idFlag)
-	c <- p
+	pc <- p
 }
 
 func runStandaloneGameNode(ctx context.Context) {

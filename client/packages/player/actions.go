@@ -15,6 +15,18 @@ import (
 // the client-side player position
 //
 
+// Like move, but single pkg -> it should fill both places in empty cache
+func InitPlayer(p internal_player.Player, moveState *bool, posX int, posY int) {
+	*moveState = true
+	err := p.Move(posX, posY, posX, posY)
+	if err != nil {
+		fmt.Println("[CLIENT] - Failed to init player! err: ", err)
+	}
+	time.Sleep(time.Millisecond * 300)
+	*moveState = false
+}
+
+// Move with engine-safe delay between pkgs
 func MovePlayer(p internal_player.Player, cam *camera.GameCamera, dir camera.DIRECTION, moveState *bool, posX int, posY int, destX int, destY int) {
 	*moveState = true
 	err := p.Move(posX, posY, destX, destY)
@@ -30,12 +42,12 @@ func MovePlayer(p internal_player.Player, cam *camera.GameCamera, dir camera.DIR
 	*moveState = false
 }
 
-func InitPlayer(p internal_player.Player, moveState *bool, posX int, posY int) {
-	*moveState = true
-	err := p.Move(posX, posY, posX, posY)
+// Send a message to chat
+func Chat(p internal_player.Player, msg []byte) bool {
+	err := p.Chat(msg)
 	if err != nil {
-		fmt.Println("[CLIENT] - Failed to init player! err: ", err)
+		fmt.Println("[CLIENT] - Failed to send chat msg, err: ", err)
+		return false
 	}
-	time.Sleep(time.Millisecond * 300)
-	*moveState = false
+	return true
 }

@@ -8,13 +8,25 @@ import (
 	"ticoma/internal/debug"
 	"ticoma/internal/packages/gamenode/cache/interfaces"
 	"ticoma/internal/packages/gamenode/cache/utils"
+	"ticoma/types"
 	"time"
 )
 
 // SecurityVerifier
 type SecurityVerifier struct{}
 
-func (sv *SecurityVerifier) GetPackageSchema() string {
+type PACKAGE_TYPE int
+
+const (
+	ADP PACKAGE_TYPE = iota
+	CHAT
+)
+
+// Returns a json schema of a package
+func (sv *SecurityVerifier) getSchemaAndPrefix(reqSchema PACKAGE_TYPE) (string, string, error) {
+
+	// Package schema collection
+	// const ADPPrefix = "ADP_" // TODO
 	const schemaADP = `{
 		playerId: int,
 		pubKey: string,
@@ -28,29 +40,52 @@ func (sv *SecurityVerifier) GetPackageSchema() string {
 		},
 	},`
 
-	return schemaADP
+	const chatPrefix = "CHAT_"
+	const schemaChat = `{
+		playerId: int,
+		message: string,
+	},`
+
+	switch reqSchema {
+	case ADP:
+		return schemaADP, "", nil
+	case CHAT:
+		return schemaChat, chatPrefix, nil
+	default:
+		return "", "", fmt.Errorf("[SEC VER] - Couldn't find requested schema")
+	}
 }
 
-func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
+// Verifies package types and returns
+// Str pkg without a prefix
+func (sv *SecurityVerifier) verifyPackageTypes(pkg []byte, pkgType PACKAGE_TYPE) (bool, string) {
 
-	schema := sv.GetPackageSchema()
+	schema, prefix, err := sv.getSchemaAndPrefix(pkgType)
+	if err != nil {
+		fmt.Println(err)
+		return false, ""
+	}
+
+	pkgStr := string(pkg)
+
+	// Trim prefix if needed
+	pkgStr = strings.TrimPrefix(pkgStr, prefix)
+
 	res := []byte{}
 	keySelected := false
 
 	// Anti spam
 	if len(pkg) == 0 {
-		return false
+		return false, ""
 	}
 
-	dec := json.NewDecoder(strings.NewReader(string(pkg)))
+	dec := json.NewDecoder(strings.NewReader(pkgStr))
 
 	for {
 		t, err := dec.Token()
 		if err != nil {
 			break
 		}
-
-		// fmt.Printf("[TEST] %v: %T\n", t, t)
 
 		switch v := t.(type) {
 		case json.Delim:
@@ -79,37 +114,35 @@ func (sv *SecurityVerifier) VerifyADPTypes(pkg []byte) bool {
 		}
 	}
 
-	// DEBUG
-
 	debug.DebugLog("[ADP TYPES] SCHEMA "+utils.StripString(schema, true), debug.PLAYER)
 	debug.DebugLog("[ADP TYPES RES "+utils.StripString(string(res), true), debug.PLAYER)
 
 	valid := strings.Compare(utils.StripString(schema, true), utils.StripString(string(res), true)) == 0
 
-	return valid
+	return valid, pkgStr
 }
 
-// Try to construct an ADPT based on provided string pkg
-// (Types of pkg should be verified at this point)
+// Verify pkg types and construct ADPT struct from byte pkg
 func (sv *SecurityVerifier) ConstructADPT(pkgBytes []byte) (interfaces.ActionDataPackageTimestamped, error) {
 
 	const EXPECTED_VAL_LENGTH_IN_ADP = 6 // [playerId, pubKey, posX, posY, destX, destY]
 
 	// Type check
-	validPkgTypes := sv.VerifyADPTypes(pkgBytes)
+	validPkgTypes, _ := sv.verifyPackageTypes(pkgBytes, ADP)
 	if !validPkgTypes {
-		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't verify package types.%s", "")
+		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't verify package types")
 	}
 
 	// If types are OK, try extract vals
 	vals := utils.ExtractValsFromStrPkg(string(pkgBytes))
 	if len(vals) != EXPECTED_VAL_LENGTH_IN_ADP {
-		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema.%s", "")
+		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
 	}
 
+	fmt.Println(vals[0])
 	playerId, err := strconv.Atoi(vals[0])
 	if err != nil {
-		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't assign playerId from vals.%s", "")
+		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't assign playerId from vals")
 	}
 
 	var positions []int
@@ -117,7 +150,7 @@ func (sv *SecurityVerifier) ConstructADPT(pkgBytes []byte) (interfaces.ActionDat
 	for i := 2; i < len(vals); i++ {
 		pos, err := strconv.Atoi(vals[i])
 		if err != nil {
-			return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Err while converting string val to int.%s", "")
+			return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Err while converting string val to int")
 		}
 		positions = append(positions, pos)
 	}
@@ -135,4 +168,38 @@ func (sv *SecurityVerifier) ConstructADPT(pkgBytes []byte) (interfaces.ActionDat
 	}
 
 	return ADPT, nil
+}
+
+// Verify pkg types and construct ChatPkg from byte pkg
+func (sv *SecurityVerifier) ConstructChatPkg(pkgBytes []byte) (types.ChatMessage, error) {
+
+	const EXPECTED_VAL_LENGTH_IN_CHAT_PKG = 2 // [playerId, message]
+
+	validPkgTypes, pkgStr := sv.verifyPackageTypes(pkgBytes, CHAT)
+	if !validPkgTypes {
+		return types.ChatMessage{}, fmt.Errorf("[SEC VER] - Couldn't verify package types")
+	}
+
+	// If types are OK, try extract vals
+	vals := utils.ExtractValsFromStrPkg(pkgStr)
+	if len(vals) != EXPECTED_VAL_LENGTH_IN_CHAT_PKG {
+		return types.ChatMessage{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
+	}
+
+	playerId, err := strconv.Atoi(vals[0])
+	if err != nil {
+		return types.ChatMessage{}, fmt.Errorf("[SEC VER] - Couldn't assign playerId from pkg vals")
+	}
+
+	timestamp := time.Now().UnixMilli()
+
+	chatPkg := types.ChatMessage{
+		Timestamp: timestamp,
+		PlayerId:  playerId,
+		Message:   vals[1],
+	}
+
+	debug.DebugLog(fmt.Sprintf("[SEC VER] - Chat pkg constructed! pkg: %+v\n", chatPkg), debug.PLAYER)
+
+	return chatPkg, nil
 }
