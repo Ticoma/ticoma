@@ -20,12 +20,14 @@ func main() {
 
 	clientF := flag.Bool("client", false, "true if internal + client, defaults to false")
 	relayF := flag.Bool("relay", false, "true if only want to run relay (seed standalone gamenode)")
+	fullscreenF := flag.Bool("fullscreen", false, "true if want to run in fullscreen mode")
+
 	flag.Parse()
 
 	go internal.Main(ctx, pc, cc, *relayF)
 	if *clientF {
 		fmt.Println("Starting client")
-		client.Main(pc, cc)
+		client.Main(pc, cc, fullscreenF)
 	}
 	fmt.Scanln()
 	cancel()
