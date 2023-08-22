@@ -38,14 +38,14 @@ func DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32,
 	textInputRec := rl.Rectangle{X: 2 * c.SIDE_PANEL_PADDING, Y: float32(panel.Texture.Height) - chatInputHeight + c.SIDE_PANEL_PADDING, Width: float32(panel.Texture.Width * 2 / 3), Height: chatInputHeight - 3*c.SIDE_PANEL_PADDING}
 	rl.DrawRectangleRec(textInputRec, rl.DarkGray)
 	// Send button ctn
-	sendBtn := rl.Rectangle{X: float32(panel.Texture.Width)*2/3 + 3*c.SIDE_PANEL_PADDING, Y: float32(panel.Texture.Height) - chatInputHeight + c.SIDE_PANEL_PADDING, Width: float32(panel.Texture.Width*1/3) - 5*c.SIDE_PANEL_PADDING, Height: chatInputHeight - 3*c.SIDE_PANEL_PADDING}
-	rl.DrawRectangleRec(sendBtn, rl.DarkGray)
+	sendBtnRec := rl.Rectangle{X: float32(panel.Texture.Width)*2/3 + 2*c.SIDE_PANEL_PADDING, Y: float32(panel.Texture.Height) - chatInputHeight + c.SIDE_PANEL_PADDING, Width: float32(panel.Texture.Width*1/3) - 4*c.SIDE_PANEL_PADDING, Height: chatInputHeight - 3*c.SIDE_PANEL_PADDING}
+	rl.DrawRectangleRec(sendBtnRec, rl.Black)
 
 	// Draw send button
 	textSize := rl.MeasureTextEx(*font, "Send", c.DEFAULT_FONT_SIZE, 0)
-	rl.DrawTextEx(*font, "Send", rl.Vector2{X: (float32(panel.Texture.Width)*2/3 + 3*c.SIDE_PANEL_PADDING) + 0.5*(float32(panel.Texture.Width*1/3)-5*c.SIDE_PANEL_PADDING) - textSize.X/2, Y: (float32(panel.Texture.Height) - chatInputHeight + c.SIDE_PANEL_PADDING) + 0.5*(chatInputHeight-3*c.SIDE_PANEL_PADDING) - textSize.Y/2}, c.DEFAULT_FONT_SIZE, 0, rl.White)
+	rl.DrawTextEx(*font, "Send", rl.Vector2{X: (float32(panel.Texture.Width)*2/3 + 2*c.SIDE_PANEL_PADDING) + 0.5*(float32(panel.Texture.Width*1/3)-4*c.SIDE_PANEL_PADDING) - textSize.X/2, Y: (float32(panel.Texture.Height) - chatInputHeight + c.SIDE_PANEL_PADDING) + 0.5*(chatInputHeight-3*c.SIDE_PANEL_PADDING) - textSize.Y/2}, c.DEFAULT_FONT_SIZE, 0, rl.White)
 
-	sendBtnHover := rl.CheckCollisionPointRec(rl.GetMousePosition(), sendBtn)
+	sendBtnHover := rl.CheckCollisionPointRec(rl.GetMousePosition(), sendBtnRec)
 
 	// Handle click while focusing over chat textinput
 	if len(chatInput) > 0 {

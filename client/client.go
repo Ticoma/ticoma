@@ -25,6 +25,7 @@ import (
 
 var chatMsgs []string
 var chatInput []byte
+var hold int
 
 func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen *bool) {
 
@@ -107,7 +108,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 		rl.DrawTextureRec(rightPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(rightPanel.Texture.Width), Height: float32(-rightPanel.Texture.Height)}, rl.Vector2{X: float32(int32(screenC.Width) - SIDE_PANEL_WIDTH), Y: 0}, rl.White)
 
 		// Handle inputs
-		chatInput = keyboard.HandleChatInput(chatInput)
+		chatInput, hold = keyboard.HandleChatInput(chatInput, hold)
 		mouse.HandleMouseInputs(gameCam)
 
 		rl.EndDrawing()
