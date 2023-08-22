@@ -6,6 +6,10 @@ import (
 	c "ticoma/client/packages/constants"
 	dr "ticoma/client/packages/drawing"
 	"ticoma/client/packages/drawing/panels"
+	left_panel "ticoma/client/packages/drawing/panels/left"
+
+	// right_panel "ticoma/client/packages/drawing/panels/right"
+
 	"ticoma/client/packages/input/keyboard"
 	"ticoma/client/packages/input/mouse"
 	"ticoma/client/packages/player"
@@ -74,8 +78,8 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 
 	// Draw textures that only need to be drawn once
 	panelColor := rl.DarkGray
-	panels.DrawSidePanelSkeleton(&leftPanel, float32(SIDE_PANEL_WIDTH), float32(screenC.Height), &panelColor)
-	panels.DrawSidePanelSkeleton(&rightPanel, float32(SIDE_PANEL_WIDTH), float32(screenC.Height), &panelColor)
+	panels.DrawSkeleton(&leftPanel, float32(SIDE_PANEL_WIDTH), float32(screenC.Height), &panelColor)
+	panels.DrawSkeleton(&rightPanel, float32(SIDE_PANEL_WIDTH), float32(screenC.Height), &panelColor)
 	chatTitleH := panels.DrawTitleBlock(&leftPanel, 0, "Chat", &font)
 	panels.DrawTitleBlock(&rightPanel, 0, "7357", &font)
 
@@ -89,8 +93,8 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 		dr.DrawPlayers(&world, p)
 
 		// Draw chat
-		chatActive, textInputRec := panels.DrawChat(&leftPanel, p, chatTitleH, chatInput, chatMsgs, &font)
-		panels.DrawChatInput(&leftPanel, textInputRec, &font, chatInput)
+		chatActive, textInputRec := left_panel.DrawChat(&leftPanel, p, chatTitleH, chatInput, chatMsgs, &font)
+		left_panel.DrawChatInputText(&leftPanel, textInputRec, &font, chatInput)
 
 		// Draw game
 		rl.BeginMode2D(gameCam.Camera2D)
