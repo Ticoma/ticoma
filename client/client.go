@@ -93,7 +93,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 		dr.DrawPlayers(&world, p)
 
 		// Draw chat
-		chatActive, textInputRec := left_panel.DrawChat(&leftPanel, p, chatTitleH, chatInput, chatMsgs, &font)
+		textInputRec := left_panel.DrawChat(&leftPanel, p, chatTitleH, chatInput, chatMsgs, &font)
 		left_panel.DrawChatInputText(&leftPanel, textInputRec, &font, chatInput)
 
 		// Draw game
@@ -106,12 +106,8 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 		rl.DrawTextureRec(leftPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(leftPanel.Texture.Width), Height: float32(-leftPanel.Texture.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
 		rl.DrawTextureRec(rightPanel.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(rightPanel.Texture.Width), Height: float32(-rightPanel.Texture.Height)}, rl.Vector2{X: float32(int32(screenC.Width) - SIDE_PANEL_WIDTH), Y: 0}, rl.White)
 
-		// Ignore game keyboard inputs if user is typing in chat
-		if !chatActive {
-			keyboard.HandleKeyboardMoveInput(p, gameCam, &playerMoved)
-		} else {
-			chatInput = keyboard.HandleChatInput(chatInput)
-		}
+		// Handle inputs
+		chatInput = keyboard.HandleChatInput(chatInput)
 		mouse.HandleMouseInputs(gameCam)
 
 		rl.EndDrawing()

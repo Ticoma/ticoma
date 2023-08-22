@@ -12,7 +12,7 @@ import (
 // Draws a chat block with textinput and send Button
 //
 // Returns [textInputActive state, textInputRect]
-func DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32, chatInput []byte, msgs []string, font *rl.Font) (bool, *rl.Rectangle) {
+func DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32, chatInput []byte, msgs []string, font *rl.Font) *rl.Rectangle {
 
 	chatInputHeight := float32(panel.Texture.Height / 10) // Reserve some space for input
 
@@ -45,31 +45,26 @@ func DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32,
 	textSize := rl.MeasureTextEx(*font, "Send", c.DEFAULT_FONT_SIZE, 0)
 	rl.DrawTextEx(*font, "Send", rl.Vector2{X: (float32(panel.Texture.Width)*2/3 + 3*c.SIDE_PANEL_PADDING) + 0.5*(float32(panel.Texture.Width*1/3)-5*c.SIDE_PANEL_PADDING) - textSize.X/2, Y: (float32(panel.Texture.Height) - chatInputHeight + c.SIDE_PANEL_PADDING) + 0.5*(chatInputHeight-3*c.SIDE_PANEL_PADDING) - textSize.Y/2}, c.DEFAULT_FONT_SIZE, 0, rl.White)
 
-	// Return chat active state (is user hovering textinput)
-	textInputActive := rl.CheckCollisionPointRec(rl.GetMousePosition(), textInputRec)
-	sendBtnActive := rl.CheckCollisionPointRec(rl.GetMousePosition(), sendBtn)
+	sendBtnHover := rl.CheckCollisionPointRec(rl.GetMousePosition(), sendBtn)
 
-	// Hovering over textinput (blue)
-	if textInputActive {
+	// Handle click while focusing over chat textinput
+	if len(chatInput) > 0 {
+		// Draw outline indicator
 		rl.DrawRectangleLinesEx(textInputRec, 2, rl.SkyBlue)
-		rl.SetMouseCursor(rl.MouseCursorIBeam)
-		// Enter press while typing
+
+		if sendBtnHover {
+			if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
+				player.Chat(p, chatInput)
+			}
+		}
+
 		if rl.IsKeyPressed(rl.KeyEnter) {
 			player.Chat(p, chatInput)
 		}
 	}
 
-	// Hovering over send button (green)
-	if sendBtnActive {
-		rl.DrawRectangleLinesEx(sendBtn, 2, rl.Green)
-		// On click send button
-		if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
-			player.Chat(p, chatInput)
-		}
-	}
-
 	rl.EndTextureMode()
-	return textInputActive, &textInputRec
+	return &textInputRec
 }
 
 // Draws the text inside chat input box
