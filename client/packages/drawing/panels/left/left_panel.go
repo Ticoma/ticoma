@@ -1,6 +1,7 @@
 package left
 
 import (
+	"fmt"
 	"ticoma/client/packages/player"
 
 	c "ticoma/client/packages/constants"
@@ -70,12 +71,32 @@ func DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32,
 // Draws the text inside chat input box
 func DrawChatInputText(panel *rl.RenderTexture2D, inputRec *rl.Rectangle, font *rl.Font, input []byte) {
 
+	var textOffset float32
+
 	rl.BeginTextureMode(*panel)
 
-	textSize := rl.MeasureTextEx(*font, string(input), c.DEFAULT_FONT_SIZE, 0)
-	inputRecX, centerInputRecY := inputRec.X+c.SIDE_PANEL_PADDING, inputRec.Y+0.5*inputRec.Height-0.5*textSize.Y
+	// Since the font is monospace, we can use any char here
+	charSize := rl.MeasureTextEx(*font, "a", c.DEFAULT_FONT_SIZE, 0) // in px
+	// Measurements
+	inputRecX, centerInputRecY := inputRec.X+c.SIDE_PANEL_PADDING, inputRec.Y+0.5*inputRec.Height-0.5*charSize.Y
+	inputBoxRealWidth := inputRec.Width - 3*c.SIDE_PANEL_PADDING
+	maxFittingChars := int(inputBoxRealWidth / charSize.X)
 
-	rl.DrawTextEx(*font, string(input), rl.Vector2{X: inputRecX, Y: centerInputRecY}, c.DEFAULT_FONT_SIZE, 0, rl.Black)
+	// Check if input is exceeding line width
+	if len(string(input)) > maxFittingChars {
+		// Draw only characters that fit in the box
+		textVisible := input[len(input)-maxFittingChars-1:]
+		textOffset = float32(maxFittingChars-len(textVisible)+1) * -charSize.X
+		fmt.Println(string(textVisible))
+		rl.DrawTextEx(*font, string(textVisible), rl.Vector2{X: inputRecX - textOffset, Y: centerInputRecY}, c.DEFAULT_FONT_SIZE, 0, rl.Black)
+		// Caret
+		rl.DrawTextEx(*font, "_", rl.Vector2{X: inputRecX - textOffset + float32(len(textVisible))*charSize.X, Y: centerInputRecY}, c.DEFAULT_FONT_SIZE, 0, rl.SkyBlue)
+	} else {
+		// Draw full textinput text
+		rl.DrawTextEx(*font, string(input), rl.Vector2{X: inputRecX - textOffset, Y: centerInputRecY}, c.DEFAULT_FONT_SIZE, 0, rl.Black)
+		// Caret
+		rl.DrawTextEx(*font, "_", rl.Vector2{X: inputRecX - textOffset + float32(len(input))*charSize.X, Y: centerInputRecY}, c.DEFAULT_FONT_SIZE, 0, rl.SkyBlue)
+	}
 
 	rl.EndTextureMode()
 

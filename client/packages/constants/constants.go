@@ -7,5 +7,6 @@ const (
 	BLOCK_SIZE = 64
 	// UI stuff
 	DEFAULT_FONT_SIZE  = 16
-	SIDE_PANEL_PADDING = 16 // padding around side panels
+	DEFAULT_PADDING    = 16
+	SIDE_PANEL_PADDING = DEFAULT_PADDING // padding around side panels
 )
