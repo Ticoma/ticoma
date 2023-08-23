@@ -2,26 +2,67 @@ package left
 
 import (
 	"fmt"
-	"ticoma/client/packages/player"
+	"ticoma/client/pkgs/drawing/panels"
+	"ticoma/client/pkgs/input/mouse"
+	"ticoma/client/pkgs/player"
+	"ticoma/client/pkgs/utils"
 
-	c "ticoma/client/packages/constants"
+	c "ticoma/client/pkgs/constants"
 	internal_player "ticoma/internal/packages/player"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-// Draws a chat block with textinput and send Button
-//
-// Returns [textInputActive state, textInputRect]
-func DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32, chatInput []byte, msgs []string, font *rl.Font) *rl.Rectangle {
+type LeftPanel struct {
+	*panels.SidePanel
+}
 
-	chatInputHeight := float32(panel.Texture.Height / 10) // Reserve some space for input
+func New(rt2d *rl.RenderTexture2D, width float32, height float32, renderPosX float32, renderPosY float32, bgColor *rl.Color, tabs panels.Tabs) *LeftPanel {
+	return &LeftPanel{
+		SidePanel: panels.New(rt2d, width, height, renderPosX, renderPosY, bgColor, tabs),
+	}
+}
+
+// Renders the panel to screen
+func (lp *LeftPanel) RenderPanel() {
+	rl.DrawTextureRec(lp.Txt.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(lp.Txt.Texture.Width), Height: float32(-lp.Txt.Texture.Height)}, rl.Vector2{X: lp.Pos.X, Y: lp.Pos.Y}, rl.White)
+}
+
+// Draw content for the active tab (content = everything except for panel navigation tabs)
+func (lp *LeftPanel) DrawContent(font *rl.Font) {
+
+	// Always draw tabs first
+	lp.DrawSkeleton()
+	lp.DrawPanelTabs(font, c.DEFAULT_FONT_SIZE)
+
+	// Content
+	switch lp.Tabs[lp.ActiveTab] {
+	// Chat
+	case lp.Tabs[0]:
+		lp.DrawPanelTitle(font, c.DEFAULT_FONT_SIZE)
+	case lp.Tabs[1]:
+		lp.DrawPanelTitle(font, c.DEFAULT_FONT_SIZE)
+	default:
+		lp.DrawPanelTitle(font, c.DEFAULT_FONT_SIZE)
+	}
+}
+
+// Draws a chat block with textinput and send Button
+func (lp *LeftPanel) DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32, chatInput []byte, msgs []string, font *rl.Font) {
+
+	// Reserve some space for tabs, textinput
+	chatInputHeight := float32(panel.Texture.Height / 10)
 
 	rl.BeginTextureMode(*panel)
 	rl.SetMouseCursor(rl.MouseCursorDefault)
 
 	// Draw chat block
-	rl.DrawRectangleRec(rl.Rectangle{X: c.SIDE_PANEL_PADDING, Y: yPos + 2*c.SIDE_PANEL_PADDING, Width: float32(panel.Texture.Width) - 2*c.SIDE_PANEL_PADDING, Height: float32(panel.Texture.Height) - chatInputHeight - yPos - 3*c.SIDE_PANEL_PADDING}, rl.Gray)
+	rl.DrawRectangleRec(rl.Rectangle{
+		X:      c.SIDE_PANEL_PADDING,
+		Y:      yPos + 2*c.SIDE_PANEL_PADDING,
+		Width:  float32(panel.Texture.Width) - 2*c.SIDE_PANEL_PADDING,
+		Height: float32(panel.Texture.Height) - chatInputHeight - yPos - 3*c.SIDE_PANEL_PADDING},
+		rl.Gray)
 
 	// Draw chat msgs
 	for i, msg := range msgs {
@@ -33,7 +74,7 @@ func DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32,
 
 	// Draw chat input
 	// Block
-	chatContainer := rl.Rectangle{X: c.SIDE_PANEL_PADDING, Y: float32(panel.Texture.Height) - chatInputHeight, Width: float32(panel.Texture.Width) - 2*c.SIDE_PANEL_PADDING, Height: chatInputHeight - c.SIDE_PANEL_PADDING}
+	chatContainer := rl.Rectangle{X: c.SIDE_PANEL_PADDING, Y: float32(panel.Texture.Height) - 2*chatInputHeight, Width: float32(panel.Texture.Width) - 2*c.SIDE_PANEL_PADDING, Height: 2*chatInputHeight - c.SIDE_PANEL_PADDING}
 	rl.DrawRectangleRec(chatContainer, rl.Gray)
 	// Textinput ctn
 	textInputRec := rl.Rectangle{X: 2 * c.SIDE_PANEL_PADDING, Y: float32(panel.Texture.Height) - chatInputHeight + c.SIDE_PANEL_PADDING, Width: float32(panel.Texture.Width * 2 / 3), Height: chatInputHeight - 3*c.SIDE_PANEL_PADDING}
@@ -46,7 +87,7 @@ func DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32,
 	textSize := rl.MeasureTextEx(*font, "Send", c.DEFAULT_FONT_SIZE, 0)
 	rl.DrawTextEx(*font, "Send", rl.Vector2{X: (float32(panel.Texture.Width)*2/3 + 2*c.SIDE_PANEL_PADDING) + 0.5*(float32(panel.Texture.Width*1/3)-4*c.SIDE_PANEL_PADDING) - textSize.X/2, Y: (float32(panel.Texture.Height) - chatInputHeight + c.SIDE_PANEL_PADDING) + 0.5*(chatInputHeight-3*c.SIDE_PANEL_PADDING) - textSize.Y/2}, c.DEFAULT_FONT_SIZE, 0, rl.White)
 
-	sendBtnHover := rl.CheckCollisionPointRec(rl.GetMousePosition(), sendBtnRec)
+	sendBtnHover := mouse.IsMouseHoveringRec(&sendBtnRec)
 
 	// Handle click while focusing over chat textinput
 	if len(chatInput) > 0 {
@@ -64,12 +105,14 @@ func DrawChat(panel *rl.RenderTexture2D, p internal_player.Player, yPos float32,
 		}
 	}
 
+	// Draw textinput
+	lp.drawChatInput(panel, &textInputRec, font, chatInput)
+
 	rl.EndTextureMode()
-	return &textInputRec
 }
 
 // Draws the text inside chat input box
-func DrawChatInputText(panel *rl.RenderTexture2D, inputRec *rl.Rectangle, font *rl.Font, input []byte) {
+func (lp *LeftPanel) drawChatInput(panel *rl.RenderTexture2D, inputRec *rl.Rectangle, font *rl.Font, input []byte) {
 
 	var textOffset float32
 
@@ -100,4 +143,15 @@ func DrawChatInputText(panel *rl.RenderTexture2D, inputRec *rl.Rectangle, font *
 
 	rl.EndTextureMode()
 
+}
+
+// Temp here, just to test tabs
+func DrawBuildInfo(panel *rl.RenderTexture2D, yPos float32, font *rl.Font) {
+
+	rl.BeginTextureMode(*panel)
+
+	hash := utils.GetCommitHash()[:6]
+	rl.DrawTextEx(*font, "ticoma git-"+hash, rl.Vector2{X: c.SIDE_PANEL_PADDING, Y: yPos + c.SIDE_PANEL_PADDING}, c.DEFAULT_FONT_SIZE, 0.25, rl.Black)
+
+	rl.EndTextureMode()
 }

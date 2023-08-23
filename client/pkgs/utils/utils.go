@@ -8,8 +8,8 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
-	c "ticoma/client/packages/constants"
-	intf "ticoma/client/packages/interfaces"
+	c "ticoma/client/pkgs/constants"
+	intf "ticoma/client/pkgs/interfaces"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )

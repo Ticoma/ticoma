@@ -1,7 +1,7 @@
 package center
 
 import (
-	c "ticoma/client/packages/constants"
+	c "ticoma/client/pkgs/constants"
 	internal_player "ticoma/internal/packages/player"
 
 	rl "github.com/gen2brain/raylib-go/raylib"

@@ -1,12 +1,12 @@
 package camera
 
 import (
-	c "ticoma/client/packages/constants"
+	c "ticoma/client/pkgs/constants"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type DIRECTION int
+type DIRECTION uint8
 
 const (
 	UP DIRECTION = iota
