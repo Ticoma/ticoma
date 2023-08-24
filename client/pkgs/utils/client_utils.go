@@ -38,6 +38,18 @@ func GetScreenConf(width int, height int, fullscreen *bool) *intf.ScreenInfo {
 	return screenConf
 }
 
+// Get substring of first N chars in string (if N > len, returns original string)
+func FirstN(s string, n int) string {
+	i := 0
+	for j := range s {
+		if i == n {
+			return s[:j]
+		}
+		i++
+	}
+	return s
+}
+
 // Gen random number in range - (inclusive, exclusive)
 func RandRange(min int, max int) int {
 	return rand.Intn(max-min) + min

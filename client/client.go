@@ -5,7 +5,10 @@ import (
 	"ticoma/client/pkgs/camera"
 	c "ticoma/client/pkgs/constants"
 	dr "ticoma/client/pkgs/drawing"
+
 	"ticoma/client/pkgs/drawing/panels/left"
+	"ticoma/client/pkgs/drawing/panels/right"
+
 	"ticoma/client/pkgs/input/keyboard"
 	"ticoma/client/pkgs/input/mouse"
 	"ticoma/client/pkgs/player"
@@ -19,10 +22,9 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var chatMsgs []string
 var chatInput []byte
+var chatMsgs []string
 var hold int
-var mousePos rl.Vector2
 
 func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen *bool) {
 
@@ -59,7 +61,6 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 
 	// Setup textures, panels
 	world := rl.LoadRenderTexture(spawnImg.Width, spawnImg.Height) // Full sized map
-	// rightPanel := rl.LoadRenderTexture(SIDE_PANEL_WIDTH, int32(screenC.Height)) // Side panels
 
 	// tmp, Draw map on world from texture
 	spawnTxt := rl.LoadTextureFromImage(spawnImg)
@@ -74,21 +75,23 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 	player.InitPlayer(p, &playerMoved, spawnMapSize/2, spawnMapSize/2)
 
 	// Init side panels
-	sidePanelColor := rl.DarkGray
-	leftPanelTabs := map[int][2]string{
+	leftTabs := map[int][2]string{
 		0: {"Chat", "C"},
-		1: {"Test", "T"},
+		1: {"Build info", "B"},
 		2: {"Tabssss bro", "Tb"},
 	}
-	leftPanelRt2D := rl.LoadRenderTexture(SIDE_PANEL_WIDTH, screenC.Height)
-	leftPanel := left.New(&leftPanelRt2D, float32(SIDE_PANEL_WIDTH), float32(screenC.Height), 0, 0, &sidePanelColor, leftPanelTabs)
+	leftPanel := left.New(float32(SIDE_PANEL_WIDTH), float32(screenC.Height), 0, 0, &c.COLOR_PANEL_BG, leftTabs)
+
+	rightTabs := map[int][2]string{
+		0: {"Inventory", "I"},
+		1: {"Settings", "S"},
+	}
+	rightPanel := right.New(float32(SIDE_PANEL_WIDTH), float32(screenC.Height), float32(int32(screenC.Width)-SIDE_PANEL_WIDTH), 0, &c.COLOR_PANEL_BG, rightTabs)
 
 	for !rl.WindowShouldClose() {
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
-
-		mousePos = rl.GetMousePosition()
 
 		// Draw players
 		dr.DrawMap(&world, &spawnTxt, gameCam.Zoom)
@@ -101,16 +104,18 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 		rl.EndMode2D()
 
 		// Render panels
-		leftPanel.DrawContent(&font)
+		rightPanel.DrawContent(&font)
+		rightPanel.RenderPanel(*screenC)
+
+		leftPanel.DrawContent(p, chatInput, chatMsgs, &font)
 		leftPanel.RenderPanel()
 
 		// Handle inputs
-		chatInput, hold = keyboard.HandleChatInput(chatInput, hold)
+		chatInput, hold = keyboard.HandleChatInput(leftPanel.ActiveTab, chatInput, hold)
 		mouse.HandleMouseInputs(gameCam)
 
 		rl.EndDrawing()
 	}
-
 }
 
 func ChatMsgListener(p internal_player.Player, cc chan types.ChatMessage) {

@@ -3,6 +3,7 @@ package player
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"ticoma/internal/debug"
 	"ticoma/internal/packages/gamenode"
 	"ticoma/internal/packages/gamenode/cache"
@@ -65,8 +66,12 @@ func (p *player) Move(posX int, posY int, destPosX int, destPosY int) error {
 
 func (p *player) Chat(msg []byte) error {
 
+	// Trim message from whitespace, tabs, nl dups first
+	trimmer := regexp.MustCompile(`\s+`)
+	msgTrim := trimmer.ReplaceAllString(string(msg), " ")
+
 	chatMsgSchema := `CHAT_{"playerId":%d,"message":"%s"}`
-	data := []any{p.id, msg}
+	data := []any{p.id, msgTrim}
 	pkg := fmt.Sprintf(chatMsgSchema, data...)
 
 	debug.DebugLog("[CHAT] Pkg: "+fmt.Sprintf("%v", pkg), debug.PLAYER)
