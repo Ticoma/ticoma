@@ -8,7 +8,7 @@ import (
 	"ticoma/client/pkgs/utils"
 
 	c "ticoma/client/pkgs/constants"
-	internal_player "ticoma/internal/packages/player"
+	// internal_player "ticoma/internal/packages/player"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -31,36 +31,36 @@ func (lp *LeftPanel) RenderPanel() {
 }
 
 // Draw content for the active tab (content = everything except for panel navigation tabs)
-func (lp *LeftPanel) DrawContent(p internal_player.Player, chatInput []byte, chatMsgs []string, font *rl.Font) {
+func (lp *LeftPanel) DrawContent(cp *player.ClientPlayer, chatInput []byte, chatMsgs []string) {
 
 	// Always draw tabs first
 	lp.SidePanel.DrawSkeleton()
-	lp.SidePanel.DrawPanelTabs(font, c.DEFAULT_FONT_SIZE)
+	lp.SidePanel.DrawPanelTabs()
 
 	// Content
 	switch lp.Tabs[lp.ActiveTab] {
 	// Chat
 	case lp.Tabs[0]:
 		// Drawing order: Tabs -> Chat input -> Title -> Chat
-		lp.DrawPanelTitle(font, c.DEFAULT_FONT_SIZE)
-		lp.DrawChatInput(p, font, chatInput)
-		lp.DrawChat(chatInput, chatMsgs, font)
+		lp.DrawPanelTitle()
+		lp.DrawChatInput(cp, chatInput)
+		lp.DrawChat(chatInput, chatMsgs)
 	case lp.Tabs[1]:
-		lp.DrawPanelTitle(font, c.DEFAULT_FONT_SIZE)
-		lp.DrawBuildInfo(font)
+		lp.DrawPanelTitle()
+		lp.DrawBuildInfo()
 	default:
-		lp.DrawPanelTitle(font, c.DEFAULT_FONT_SIZE)
+		lp.DrawPanelTitle()
 	}
 }
 
 // Draws a chat block with textinput and send Button
-func (lp *LeftPanel) DrawChat(chatInput []byte, msgs []string, font *rl.Font) {
+func (lp *LeftPanel) DrawChat(chatInput []byte, msgs []string) {
 
 	// Measurements
 	chatCtnY := lp.SidePanel.SpaceTaken.Top + c.SIDE_PANEL_PADDING
 	chatCtnW := float32(lp.SidePanel.Txt.Texture.Width) - 3*c.SIDE_PANEL_PADDING
 	chatCtnH := float32(lp.SidePanel.Txt.Texture.Height) - chatCtnY - lp.SidePanel.SpaceTaken.Bottom
-	charSize := rl.MeasureTextEx(*font, "a", c.DEFAULT_FONT_SIZE, 0)
+	charSize := rl.MeasureTextEx(c.DEFAULT_FONT, "a", c.DEFAULT_FONT_SIZE, 0)
 	maxCharsInLine := int(chatCtnW / charSize.X)
 
 	rl.BeginTextureMode(*lp.SidePanel.Txt)
@@ -83,19 +83,19 @@ func (lp *LeftPanel) DrawChat(chatInput []byte, msgs []string, font *rl.Font) {
 			// If long msg, chunk it
 			for j := 0; j < msgLines; j++ {
 				// Check how much content is left
-				if len(msg[j*maxCharsInLine:]) > maxCharsInLine {
+				if len(msg[j*maxCharsInLine:]) >= maxCharsInLine {
 					chunk := utils.FirstN(msg[j*maxCharsInLine:], maxCharsInLine)
-					drawChatMsg(chunk, font, c.DEFAULT_FONT_SIZE, 1.5*c.SIDE_PANEL_PADDING, float32((lines*50))+lp.SidePanel.SpaceTaken.Top+2.5*c.SIDE_PANEL_PADDING)
+					drawChatMsg(chunk, 1.5*c.SIDE_PANEL_PADDING, float32((lines*50))+lp.SidePanel.SpaceTaken.Top+2.5*c.SIDE_PANEL_PADDING)
 					lines++
 				} else {
 					chunk := msg[j*maxCharsInLine:]
-					drawChatMsg(chunk, font, c.DEFAULT_FONT_SIZE, 1.5*c.SIDE_PANEL_PADDING, float32((lines*50))+lp.SidePanel.SpaceTaken.Top+2.5*c.SIDE_PANEL_PADDING)
+					drawChatMsg(chunk, 1.5*c.SIDE_PANEL_PADDING, float32((lines*50))+lp.SidePanel.SpaceTaken.Top+2.5*c.SIDE_PANEL_PADDING)
 					lines++
 				}
 			}
 		} else {
 			// Single line msg
-			drawChatMsg(msg, font, c.DEFAULT_FONT_SIZE, 1.5*c.SIDE_PANEL_PADDING, float32((lines*50))+lp.SidePanel.SpaceTaken.Top+2.5*c.SIDE_PANEL_PADDING)
+			drawChatMsg(msg, 1.5*c.SIDE_PANEL_PADDING, float32((lines*50))+lp.SidePanel.SpaceTaken.Top+2.5*c.SIDE_PANEL_PADDING)
 			lines++
 		}
 	}
@@ -104,7 +104,7 @@ func (lp *LeftPanel) DrawChat(chatInput []byte, msgs []string, font *rl.Font) {
 }
 
 // Draws the text inside chat input box
-func (lp *LeftPanel) DrawChatInput(p internal_player.Player, font *rl.Font, chatInput []byte) {
+func (lp *LeftPanel) DrawChatInput(cp *player.ClientPlayer, chatInput []byte) {
 
 	// Dimensions
 	prevTakenB := lp.SidePanel.SpaceTaken.Bottom          // Need to update this at the end
@@ -142,8 +142,8 @@ func (lp *LeftPanel) DrawChatInput(p internal_player.Player, font *rl.Font, chat
 	rl.DrawRectangleRec(*sendRec, rl.Black) // change this later
 	// Send btn text
 	sendBtnMsg := "Send"
-	sendTextSize := rl.MeasureTextEx(*font, sendBtnMsg, c.DEFAULT_FONT_SIZE, 0)
-	rl.DrawTextEx(*font, sendBtnMsg, rl.Vector2{
+	sendTextSize := rl.MeasureTextEx(c.DEFAULT_FONT, sendBtnMsg, c.DEFAULT_FONT_SIZE, 0)
+	rl.DrawTextEx(c.DEFAULT_FONT, sendBtnMsg, rl.Vector2{
 		X: sendRec.X + sendRec.Width/2 - sendTextSize.X/2,
 		Y: sendRec.Y + sendRec.Height/2 - sendTextSize.Y/2,
 	}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_TEXT)
@@ -155,7 +155,7 @@ func (lp *LeftPanel) DrawChatInput(p internal_player.Player, font *rl.Font, chat
 
 	// Measurements
 	// Since the font is monospace, we can use any char here
-	charSize := rl.MeasureTextEx(*font, "a", c.DEFAULT_FONT_SIZE, 0) // in px
+	charSize := rl.MeasureTextEx(c.DEFAULT_FONT, "a", c.DEFAULT_FONT_SIZE, 0) // in px
 	inputRecX, centerInputRecY := inputRec.X+c.SIDE_PANEL_PADDING, inputRec.Y+0.5*inputRec.Height-0.5*charSize.Y
 	inputBoxRealWidth := inputRec.Width - 3*c.SIDE_PANEL_PADDING
 	maxFittingChars := int(inputBoxRealWidth / charSize.X)
@@ -167,10 +167,10 @@ func (lp *LeftPanel) DrawChatInput(p internal_player.Player, font *rl.Font, chat
 		// Draw only characters that fit in the textinput bounds
 		textVisible := chatInput[len(chatInput)-maxFittingChars-1:]
 		textOffset = float32(maxFittingChars-len(textVisible)+1) * -charSize.X
-		drawChatInput(string(textVisible), inputRecX-textOffset, centerInputRecY, caret, inputRecX-textOffset+float32(len(textVisible))*charSize.X, centerInputRecY, font, c.DEFAULT_FONT_SIZE)
+		drawChatInput(string(textVisible), inputRecX-textOffset, centerInputRecY, caret, inputRecX-textOffset+float32(len(textVisible))*charSize.X, centerInputRecY)
 	} else {
 		// Draw full input
-		drawChatInput(string(chatInput), inputRecX-textOffset, centerInputRecY, caret, inputRecX-textOffset+float32(len(chatInput))*charSize.X, centerInputRecY, font, c.DEFAULT_FONT_SIZE)
+		drawChatInput(string(chatInput), inputRecX-textOffset, centerInputRecY, caret, inputRecX-textOffset+float32(len(chatInput))*charSize.X, centerInputRecY)
 	}
 
 	// Handle send button click
@@ -178,12 +178,14 @@ func (lp *LeftPanel) DrawChatInput(p internal_player.Player, font *rl.Font, chat
 
 	if sendHover {
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
-			player.Chat(p, chatInput)
+			cp.Chat(chatInput)
+			// player.Chat(p, chatInput)
 		}
 	}
 
 	if rl.IsKeyPressed(rl.KeyEnter) {
-		player.Chat(p, chatInput)
+		cp.Chat(chatInput)
+		// player.Chat(p, chatInput)
 	}
 
 	rl.EndTextureMode()
@@ -193,13 +195,13 @@ func (lp *LeftPanel) DrawChatInput(p internal_player.Player, font *rl.Font, chat
 }
 
 // Temp here, just to test tabs
-func (lp *LeftPanel) DrawBuildInfo(font *rl.Font) {
+func (lp *LeftPanel) DrawBuildInfo() {
 
 	rl.BeginTextureMode(*lp.SidePanel.Txt)
 
 	hash := utils.GetCommitHash()[:6]
-	rl.DrawTextEx(*font, "ticoma client", rl.Vector2{X: c.SIDE_PANEL_PADDING, Y: lp.SidePanel.SpaceTaken.Top + c.SIDE_PANEL_PADDING}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_TEXT)
-	rl.DrawTextEx(*font, "git-"+hash, rl.Vector2{X: c.SIDE_PANEL_PADDING, Y: lp.SidePanel.SpaceTaken.Top + 40 + c.SIDE_PANEL_PADDING}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_TEXT)
+	rl.DrawTextEx(c.DEFAULT_FONT, "ticoma client", rl.Vector2{X: c.SIDE_PANEL_PADDING, Y: lp.SidePanel.SpaceTaken.Top + c.SIDE_PANEL_PADDING}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_TEXT)
+	rl.DrawTextEx(c.DEFAULT_FONT, "git-"+hash, rl.Vector2{X: c.SIDE_PANEL_PADDING, Y: lp.SidePanel.SpaceTaken.Top + 40 + c.SIDE_PANEL_PADDING}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_TEXT)
 
 	rl.EndTextureMode()
 }
@@ -207,17 +209,17 @@ func (lp *LeftPanel) DrawBuildInfo(font *rl.Font) {
 // Private funcs
 
 // Draws message content at given position
-func drawChatMsg(content string, font *rl.Font, fontSize int, xPos float32, yPos float32) {
-	rl.DrawTextEx(*font, content, rl.Vector2{
+func drawChatMsg(content string, xPos float32, yPos float32) {
+	rl.DrawTextEx(c.DEFAULT_FONT, content, rl.Vector2{
 		X: xPos,
 		Y: yPos,
 	}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_TEXT)
 }
 
 // Draws text in chat input box (input text + caret)
-func drawChatInput(content string, ctntX float32, ctntY float32, caret string, caretX float32, caretY float32, font *rl.Font, fontSize float32) {
+func drawChatInput(content string, ctntX float32, ctntY float32, caret string, caretX float32, caretY float32) {
 	// Text
-	rl.DrawTextEx(*font, content, rl.Vector2{X: ctntX, Y: ctntY}, fontSize, 0, c.COLOR_PANEL_TEXT)
+	rl.DrawTextEx(c.DEFAULT_FONT, content, rl.Vector2{X: ctntX, Y: ctntY}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_TEXT)
 	// Caret
-	rl.DrawTextEx(*font, caret, rl.Vector2{X: caretX, Y: caretY}, fontSize, 0, c.COLOR_PANEL_OUTLINE)
+	rl.DrawTextEx(c.DEFAULT_FONT, caret, rl.Vector2{X: caretX, Y: caretY}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_OUTLINE)
 }

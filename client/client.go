@@ -47,7 +47,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 	rl.SetWindowIcon(*icon)
 
 	// Load fonts, imgs
-	font := rl.LoadFontEx("../client/assets/fonts/ponderosa.regular.ttf", c.DEFAULT_FONT_SIZE*4, nil)
+	c.DEFAULT_FONT = rl.LoadFontEx("../client/assets/fonts/ponderosa.regular.ttf", int32(c.DEFAULT_FONT_SIZE)*4, nil)
 	spawnImg := rl.LoadImage("../client/assets/textures/map/spawn.png")
 
 	// Setup res, scaling
@@ -56,7 +56,6 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 
 	// Setup game
 	gameCam := camera.New(float32(spawnImg.Width/2), float32(spawnImg.Height/2), float32(screenC.Width/2), float32(screenC.Height/2))
-	playerMoved := false
 	spawnMapSize := 25 // In blocks (tmp)
 
 	// Setup textures, panels
@@ -71,8 +70,8 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 	// Activate chat listener
 	go ChatMsgListener(p, cc)
 
-	// Init player
-	player.InitPlayer(p, &playerMoved, spawnMapSize/2, spawnMapSize/2)
+	// Init ClientPlayer
+	clientPlayer := player.New(p, spawnMapSize/2, spawnMapSize/2)
 
 	// Init side panels
 	leftTabs := map[int][2]string{
@@ -99,20 +98,24 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 
 		// Draw game
 		rl.BeginMode2D(gameCam.Camera2D)
+		// Game scene
 		rl.DrawTextureRec(world.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(world.Texture.Width), Height: float32(-world.Texture.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
-		rl.DrawRectangleRec(rl.Rectangle{X: float32(p.GetPos().X * c.BLOCK_SIZE), Y: float32(p.GetPos().Y * c.BLOCK_SIZE), Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}, rl.Black)
+		// Player
+		rl.DrawRectangleRec(rl.Rectangle{X: float32(p.GetPos().X) * c.BLOCK_SIZE, Y: float32(p.GetPos().Y) * c.BLOCK_SIZE, Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}, rl.Black)
 		rl.EndMode2D()
 
+		gameViewRec := &rl.Rectangle{X: float32(SIDE_PANEL_WIDTH), Y: 0, Width: float32(screenC.Width) - float32(2*SIDE_PANEL_WIDTH), Height: float32(screenC.Height)}
+		mouse.HandleMouseInputs(clientPlayer, gameCam, gameViewRec, mouse.CENTER)
+
 		// Render panels
-		rightPanel.DrawContent(&font)
+		rightPanel.DrawContent()
 		rightPanel.RenderPanel(*screenC)
 
-		leftPanel.DrawContent(p, chatInput, chatMsgs, &font)
+		leftPanel.DrawContent(clientPlayer, chatInput, chatMsgs)
 		leftPanel.RenderPanel()
 
 		// Handle inputs
 		chatInput, hold = keyboard.HandleChatInput(leftPanel.ActiveTab, chatInput, hold)
-		mouse.HandleMouseInputs(gameCam)
 
 		rl.EndDrawing()
 	}

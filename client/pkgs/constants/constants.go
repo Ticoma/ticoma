@@ -12,17 +12,13 @@ var COLOR_PANEL_OUTLINE rl.Color = rl.NewColor(102, 191, 255, 255) // Skyblue
 var COLOR_PANEL_OUTLINE_TRANSPARENT rl.Color = rl.NewColor(102, 191, 255, 150)
 var COLOR_PANEL_TEXT rl.Color = rl.NewColor(220, 220, 220, 255)
 
-const (
-	// ===============================================
-	//Game
+// Fonts
+var DEFAULT_FONT rl.Font
 
-	BLOCK_SIZE = 64
+// Game
+var BLOCK_SIZE float32 = 64
 
-	// ===============================================
-	// UI
-
-	// Spacing
-	DEFAULT_FONT_SIZE          = 16
-	DEFAULT_PADDING    float32 = 16
-	SIDE_PANEL_PADDING float32 = DEFAULT_PADDING // padding around side panels
-)
+// UI , Scaling, Padding
+var DEFAULT_FONT_SIZE float32 = 16
+var DEFAULT_PADDING float32 = 16
+var SIDE_PANEL_PADDING float32 = DEFAULT_PADDING

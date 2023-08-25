@@ -1,6 +1,6 @@
 package gamemap
 
-import "ticoma/client/packages/utils"
+import "ticoma/client/pkgs/utils"
 
 type GameMap struct {
 	FrontLayer [][]MapBlock

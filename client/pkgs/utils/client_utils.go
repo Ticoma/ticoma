@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"math"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -55,6 +56,11 @@ func RandRange(min int, max int) int {
 	return rand.Intn(max-min) + min
 }
 
+// Round float to specified unit
+func FloatRound(x, unit float32) float32 {
+	return float32(math.Round(float64(x/unit)) * float64(unit))
+}
+
 // Get a texture with specific Id from a spritesheet.
 // Spritesheet must be a .png file
 func GetTextureFromId(textureId int, spritePath string) rl.Texture2D {
@@ -69,12 +75,12 @@ func GetTextureFromId(textureId int, spritePath string) rl.Texture2D {
 		fmt.Println("[UTILS] - Couldn't decode spritesheet. Err: ", err)
 	}
 
-	texturePosX := textureId * c.BLOCK_SIZE
-	texturePosY := (textureId / 8) * c.BLOCK_SIZE
+	texturePosX := textureId * int(c.BLOCK_SIZE)
+	texturePosY := textureId / 8 * int(c.BLOCK_SIZE)
 
 	img := spriteImg.(interface {
 		SubImage(r image.Rectangle) image.Image
-	}).SubImage(image.Rect(texturePosX, texturePosY, texturePosX+c.BLOCK_SIZE, texturePosY+c.BLOCK_SIZE))
+	}).SubImage(image.Rect(texturePosX, texturePosY, texturePosX+int(c.BLOCK_SIZE), texturePosY+int(c.BLOCK_SIZE)))
 
 	buf := new(bytes.Buffer)
 	err = png.Encode(buf, img)
@@ -84,7 +90,7 @@ func GetTextureFromId(textureId int, spritePath string) rl.Texture2D {
 
 	txtBytes := buf.Bytes()
 
-	textureImg := rl.NewImage(txtBytes, c.BLOCK_SIZE, c.BLOCK_SIZE, 0, rl.UncompressedR32g32b32a32)
+	textureImg := rl.NewImage(txtBytes, int32(c.BLOCK_SIZE), int32(c.BLOCK_SIZE), 0, rl.UncompressedR32g32b32a32)
 	texture2D := rl.LoadTextureFromImage(textureImg)
 
 	return texture2D

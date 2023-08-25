@@ -1,18 +1,14 @@
 package camera
 
 import (
-	c "ticoma/client/pkgs/constants"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type DIRECTION uint8
+type SCROLL_DIR int
 
 const (
-	UP DIRECTION = iota
+	UP SCROLL_DIR = iota
 	DOWN
-	LEFT
-	RIGHT
 )
 
 type GameCamera struct {
@@ -27,19 +23,15 @@ func New(targetX float32, targetY float32, offsetX float32, offsetY float32) *Ga
 	}
 }
 
-func (gc *GameCamera) MoveCamera(dir DIRECTION) {
+// Zoom camera in/out on mouse wheel
+func HandleScrollZoom(dir SCROLL_DIR, cam *GameCamera) {
 	if dir == UP {
-		gc.Camera2D.Offset.Y += c.BLOCK_SIZE
-	}
-	if dir == DOWN {
-		gc.Camera2D.Offset.Y -= c.BLOCK_SIZE
-	}
-	if dir == LEFT {
-		gc.Camera2D.Offset.X += c.BLOCK_SIZE
-	}
-	if dir == RIGHT {
-		gc.Camera2D.Offset.X -= c.BLOCK_SIZE
+		if cam.Camera2D.Zoom < 1.25 {
+			cam.Camera2D.Zoom += .1
+		}
+	} else {
+		if cam.Camera2D.Zoom > 0.75 {
+			cam.Camera2D.Zoom -= .1
+		}
 	}
 }
-
-func (gc *GameCamera) ChangeCameraZoom(val float32) {}

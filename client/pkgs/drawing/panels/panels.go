@@ -62,14 +62,14 @@ func (sp *SidePanel) DrawSkeleton() {
 }
 
 // Draw panel title (@top)
-func (sp *SidePanel) DrawPanelTitle(font *rl.Font, fontSize float32) {
+func (sp *SidePanel) DrawPanelTitle() {
 
 	titleCtnH := float32(sp.Txt.Texture.Height / 12) // Container full height (padding inside)
-	titleSize := rl.MeasureTextEx(*font, sp.Tabs[sp.ActiveTab][0], c.DEFAULT_FONT_SIZE, 0)
+	titleSize := rl.MeasureTextEx(c.DEFAULT_FONT, sp.Tabs[sp.ActiveTab][0], c.DEFAULT_FONT_SIZE, 0)
 
 	rl.BeginTextureMode(*sp.Txt)
 	rl.DrawRectangleRec(rl.Rectangle{X: c.SIDE_PANEL_PADDING, Y: c.SIDE_PANEL_PADDING, Width: float32(sp.Txt.Texture.Width) - 2*c.SIDE_PANEL_PADDING, Height: titleCtnH - float32(2*c.SIDE_PANEL_PADDING)}, c.COLOR_PANEL_CONTENT)
-	rl.DrawTextEx(*font, sp.Tabs[sp.ActiveTab][0], rl.Vector2{X: float32(sp.Txt.Texture.Width/2) - titleSize.X/2, Y: titleCtnH/2 - titleSize.Y/2}, fontSize, 0, c.COLOR_PANEL_TEXT)
+	rl.DrawTextEx(c.DEFAULT_FONT, sp.Tabs[sp.ActiveTab][0], rl.Vector2{X: float32(sp.Txt.Texture.Width/2) - titleSize.X/2, Y: titleCtnH/2 - titleSize.Y/2}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_TEXT)
 	rl.EndTextureMode()
 
 	// Update taken space
@@ -77,7 +77,7 @@ func (sp *SidePanel) DrawPanelTitle(font *rl.Font, fontSize float32) {
 }
 
 // Draw panel tab switcher (@bottom)
-func (sp *SidePanel) DrawPanelTabs(font *rl.Font, fontSize float32) {
+func (sp *SidePanel) DrawPanelTabs() {
 
 	tabsCtnH := float32(sp.Txt.Texture.Height / 12)
 	tabsCtnY := float32(sp.Txt.Texture.Height) - tabsCtnH + c.SIDE_PANEL_PADDING
@@ -96,9 +96,9 @@ func (sp *SidePanel) DrawPanelTabs(font *rl.Font, fontSize float32) {
 		}
 		rl.DrawRectangleRec(tabRec, c.COLOR_PANEL_CONTENT)
 		// Calculate shortcut text size
-		shSize := rl.MeasureTextEx(*font, tab[1], c.DEFAULT_FONT_SIZE, 0)
+		shSize := rl.MeasureTextEx(c.DEFAULT_FONT, tab[1], c.DEFAULT_FONT_SIZE, 0)
 		// Draw tab shortcuts
-		rl.DrawTextEx(*font, tab[1], rl.Vector2{
+		rl.DrawTextEx(c.DEFAULT_FONT, tab[1], rl.Vector2{
 			X: tabX + singleTabCtnW/2,
 			Y: tabsCtnY + ((tabsCtnH - 2*c.SIDE_PANEL_PADDING) / 2) - shSize.Y/2,
 		}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_TEXT)
