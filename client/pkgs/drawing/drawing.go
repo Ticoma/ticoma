@@ -28,3 +28,9 @@ func DrawPlayers(world *rl.RenderTexture2D, p internal_player.Player) {
 	}
 	rl.EndTextureMode()
 }
+
+// (Tmp) draws a block from block sprite
+func DrawBlock(blockTxt *rl.Texture2D, id int, mapX float32, mapY float32) {
+	blockRec := rl.Rectangle{X: float32(id) * c.BLOCK_SIZE, Y: 0, Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}
+	rl.DrawTextureRec(*blockTxt, blockRec, rl.Vector2{X: mapX * c.BLOCK_SIZE, Y: mapY * c.BLOCK_SIZE}, rl.White)
+}

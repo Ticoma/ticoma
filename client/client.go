@@ -49,6 +49,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 	// Load fonts, imgs
 	c.DEFAULT_FONT = rl.LoadFontEx("../client/assets/fonts/ponderosa.regular.ttf", int32(c.DEFAULT_FONT_SIZE)*4, nil)
 	spawnImg := rl.LoadImage("../client/assets/textures/map/spawn.png")
+	blocksImg := rl.LoadImage("../client/assets/textures/map/blocks.png")
 
 	// Setup res, scaling
 	SIDE_PANEL_WIDTH := int32((screenC.Width / 4))
@@ -62,6 +63,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 
 	// tmp, Draw map on world from texture
 	spawnTxt := rl.LoadTextureFromImage(spawnImg)
+	blocksTxt := rl.LoadTextureFromImage(blocksImg)
 
 	// Wait for player conn
 	p := <-pc
@@ -101,6 +103,8 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 		rl.DrawTextureRec(world.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(world.Texture.Width), Height: float32(-world.Texture.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
 		// Player
 		rl.DrawRectangleRec(rl.Rectangle{X: float32(p.GetPos().X) * c.BLOCK_SIZE, Y: float32(p.GetPos().Y) * c.BLOCK_SIZE, Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}, rl.Black)
+		// Test block
+		dr.DrawBlock(&blocksTxt, 3, 14, 14)
 		rl.EndMode2D()
 
 		// Game mouse input handler
