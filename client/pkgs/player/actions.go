@@ -18,10 +18,10 @@ import (
 
 type ClientPlayer struct {
 	InternalPlayer internal_player.Player // Internal player node
-	IsHoveringTile bool                   // Helpers - hoverTile, activeTile can't be nil, and 0,0 is a valid tile
-	IsActiveTile   bool
-	HoverTile      *interfaces.Tile // Currently hovered game tile (empty if )
-	ActiveTile     *interfaces.Tile // Clicked tile (destination of interaction)
+	IsActiveTile   bool                   // Helpers - hoverTile, activeTile can't be nil, and 0,0 is a valid tile
+	IsHoveringTile bool
+	HoverTile      *interfaces.Tile // Currently hovered game tile (empty if none)
+	ActiveTile     *interfaces.Tile // Clicked tile (destination of most recent move request)
 	IsMoving       bool             // Input blocker
 }
 
@@ -32,8 +32,8 @@ func New(p internal_player.Player, initPosX int, initPosY int) *ClientPlayer {
 	}
 	return &ClientPlayer{
 		InternalPlayer: p,
-		IsHoveringTile: false,
 		IsActiveTile:   false,
+		IsHoveringTile: false,
 		HoverTile:      &interfaces.Tile{},
 		ActiveTile:     &interfaces.Tile{},
 		IsMoving:       false,

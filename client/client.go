@@ -95,7 +95,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 
 		// Draw players
 		dr.DrawMap(&world, &spawnTxt, gameCam.Zoom)
-		dr.DrawPlayers(&world, p)
+		dr.DrawPlayers(&world, *clientPlayer)
 
 		// Draw game
 		rl.BeginMode2D(gameCam.Camera2D)
@@ -117,6 +117,9 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 
 		leftPanel.DrawContent(clientPlayer, chatInput, chatMsgs)
 		leftPanel.RenderPanel()
+
+		// Test coords
+		dr.DrawCoordinates(*clientPlayer, float32(SIDE_PANEL_WIDTH), 10)
 
 		// Handle inputs
 		chatInput, hold = keyboard.HandleChatInput(leftPanel.ActiveTab, chatInput, hold)
