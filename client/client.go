@@ -42,7 +42,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 	}
 
 	defer rl.CloseWindow()
-	rl.SetTraceLog(4) // Disable unnecessary raylib logs
+	rl.SetTraceLogLevel(rl.LogError)
 	rl.SetTargetFPS(60)
 	rl.SetWindowIcon(*icon)
 
@@ -52,11 +52,10 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 
 	// Setup res, scaling
 	SIDE_PANEL_WIDTH := int32((screenC.Width / 4))
-	// SCALING := screenC.Height / 1080
 
 	// Setup game
-	gameCam := camera.New(float32(spawnImg.Width/2), float32(spawnImg.Height/2), float32(screenC.Width/2), float32(screenC.Height/2))
-	spawnMapSize := 25 // In blocks (tmp)
+	gameCam := camera.New(float32(spawnImg.Width/2), float32(spawnImg.Height/2), float32(screenC.Width/2), float32((screenC.Height+8)/2)) // where is this 8px offset coming from??????
+	spawnMapSize := 25                                                                                                                    // In blocks (tmp)
 
 	// Setup textures, panels
 	world := rl.LoadRenderTexture(spawnImg.Width, spawnImg.Height) // Full sized map
@@ -104,8 +103,9 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 		rl.DrawRectangleRec(rl.Rectangle{X: float32(p.GetPos().X) * c.BLOCK_SIZE, Y: float32(p.GetPos().Y) * c.BLOCK_SIZE, Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}, rl.Black)
 		rl.EndMode2D()
 
+		// Game mouse input handler
 		gameViewRec := &rl.Rectangle{X: float32(SIDE_PANEL_WIDTH), Y: 0, Width: float32(screenC.Width) - float32(2*SIDE_PANEL_WIDTH), Height: float32(screenC.Height)}
-		mouse.HandleMouseInputs(clientPlayer, gameCam, gameViewRec, mouse.CENTER)
+		mouse.HandleMouseInputs(clientPlayer, gameCam, gameViewRec, mouse.GAME)
 
 		// Render panels
 		rightPanel.DrawContent()

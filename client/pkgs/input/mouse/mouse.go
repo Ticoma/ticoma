@@ -16,7 +16,7 @@ import (
 type PANEL_TYPE int
 
 const (
-	CENTER PANEL_TYPE = iota
+	GAME PANEL_TYPE = iota
 	LEFT
 	RIGHT
 )
@@ -34,13 +34,11 @@ func HandleMouseInputs(cp *player.ClientPlayer, cam *camera.GameCamera, targetRe
 	isMouseOnGamePanel := rl.CheckCollisionPointRec(mousePos, *targetRec)
 
 	if isMouseOnGamePanel {
-
-		// empty := [2]int {0, 0}
 		// Handle mouse input logic for specific panel
 		switch targetPanel {
-		case CENTER:
-			centerHandleZoom(cam)
-			centerHandleClick(cp, &mousePos, targetRec, cam)
+		case GAME:
+			gameHandleZoom(cam)
+			gameHandleClick(cp, &mousePos, targetRec, cam)
 		case LEFT:
 		case RIGHT:
 		default:
@@ -49,7 +47,7 @@ func HandleMouseInputs(cp *player.ClientPlayer, cam *camera.GameCamera, targetRe
 }
 
 // Input handler for zooming the game view
-func centerHandleZoom(cam *camera.GameCamera) {
+func gameHandleZoom(cam *camera.GameCamera) {
 	scroll := rl.GetMouseWheelMoveV().Y
 	if scroll != 0 {
 		if scroll > 0 {
@@ -61,7 +59,7 @@ func centerHandleZoom(cam *camera.GameCamera) {
 }
 
 // Input handler for all tile-related stuff
-func centerHandleClick(cp *player.ClientPlayer, mousePos *rl.Vector2, target *rl.Rectangle, cam *camera.GameCamera) {
+func gameHandleClick(cp *player.ClientPlayer, mousePos *rl.Vector2, target *rl.Rectangle, cam *camera.GameCamera) {
 
 	gameViewCenterX, gameViewCenterY := target.Width/2-c.BLOCK_SIZE/2, target.Height/2-c.BLOCK_SIZE/2 // center of visible game viewport
 	centerPos := cp.InternalPlayer.GetPos()                                                           // player is always in the center, so we'll use that as a reference point
@@ -72,7 +70,7 @@ func centerHandleClick(cp *player.ClientPlayer, mousePos *rl.Vector2, target *rl
 	bX := utils.FloatRound(mousePos.X, 64)
 	bY := utils.FloatRound(mousePosGameY-c.BLOCK_SIZE/2, 64)
 
-	// If there's an active tile, draw an outline around it
+	// If there's an active tile (destination), draw an outline around it
 	// if cp.IsActiveTile {
 	// 	xTileDiff := math.Abs(float64(centerPos.X) - float64(cp.ActiveTile.X))
 	// 	yTileDiff := float64(centerPos.Y) - float64(cp.ActiveTile.Y)
@@ -88,7 +86,7 @@ func centerHandleClick(cp *player.ClientPlayer, mousePos *rl.Vector2, target *rl
 
 	cursorSnapTile := rl.Rectangle{
 		X:      bX - c.BLOCK_SIZE/2,
-		Y:      bY, // Weird offset, check math later
+		Y:      bY,
 		Width:  c.BLOCK_SIZE,
 		Height: c.BLOCK_SIZE,
 	}

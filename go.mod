@@ -3,7 +3,7 @@ module ticoma
 go 1.20
 
 require (
-	github.com/gen2brain/raylib-go/raylib v0.0.0-20230719211022-1083eace2049
+	github.com/gen2brain/raylib-go/raylib v0.0.0-20230818184703-30cfef01daee
 	github.com/joho/godotenv v1.5.1
 	github.com/libp2p/go-libp2p v0.29.1
 	github.com/libp2p/go-libp2p-pubsub v0.9.3
