@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"ticoma/internal/debug"
-	"ticoma/internal/packages/gamenode/cache/interfaces"
-	"ticoma/internal/packages/gamenode/cache/utils"
+	"ticoma/internal/pkgs/gamenode/cache/interfaces"
+	"ticoma/internal/pkgs/gamenode/cache/utils"
 	"ticoma/types"
 	"time"
 )
@@ -25,8 +25,7 @@ const (
 // Returns a json schema of a package
 func (sv *SecurityVerifier) getSchemaAndPrefix(reqSchema PACKAGE_TYPE) (string, string, error) {
 
-	// Package schema collection
-	// const ADPPrefix = "ADP_" // TODO
+	const adpPrefix = "ADP_"
 	const schemaADP = `{
 		playerId: int,
 		pubKey: string,
@@ -48,7 +47,7 @@ func (sv *SecurityVerifier) getSchemaAndPrefix(reqSchema PACKAGE_TYPE) (string, 
 
 	switch reqSchema {
 	case ADP:
-		return schemaADP, "", nil
+		return schemaADP, adpPrefix, nil
 	case CHAT:
 		return schemaChat, chatPrefix, nil
 	default:
@@ -68,7 +67,12 @@ func (sv *SecurityVerifier) verifyPackageTypes(pkg []byte, pkgType PACKAGE_TYPE)
 
 	pkgStr := string(pkg)
 
-	// Trim prefix if needed
+	// Trim prefix first
+	pkgHasPrefix := strings.HasPrefix(pkgStr, prefix)
+	if !pkgHasPrefix {
+		fmt.Println("[SEC VER] - Pkg has no prefix")
+		return false, ""
+	}
 	pkgStr = strings.TrimPrefix(pkgStr, prefix)
 
 	res := []byte{}
@@ -128,13 +132,13 @@ func (sv *SecurityVerifier) ConstructADPT(pkgBytes []byte) (interfaces.ActionDat
 	const EXPECTED_VAL_LENGTH_IN_ADP = 6 // [playerId, pubKey, posX, posY, destX, destY]
 
 	// Type check
-	validPkgTypes, _ := sv.verifyPackageTypes(pkgBytes, ADP)
+	validPkgTypes, pkgStr := sv.verifyPackageTypes(pkgBytes, ADP)
 	if !validPkgTypes {
 		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't verify package types")
 	}
 
 	// If types are OK, try extract vals
-	vals := utils.ExtractValsFromStrPkg(string(pkgBytes))
+	vals := utils.ExtractValsFromStrPkg(pkgStr)
 	if len(vals) != EXPECTED_VAL_LENGTH_IN_ADP {
 		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
 	}

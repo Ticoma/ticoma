@@ -3,12 +3,11 @@ package player
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"ticoma/internal/debug"
-	"ticoma/internal/packages/gamenode"
-	"ticoma/internal/packages/gamenode/cache"
-	"ticoma/internal/packages/gamenode/cache/interfaces"
-	"ticoma/internal/packages/gamenode/network/libp2p/node"
+	"ticoma/internal/pkgs/gamenode"
+	"ticoma/internal/pkgs/gamenode/cache"
+	"ticoma/internal/pkgs/gamenode/cache/interfaces"
+	"ticoma/internal/pkgs/gamenode/network/libp2p/node"
 	"ticoma/types"
 )
 
@@ -48,12 +47,11 @@ func (p *player) Init(ctx context.Context, cc chan types.ChatMessage, isRelay bo
 
 func (p *player) Move(posX int, posY int, destPosX int, destPosY int) error {
 
-	// add ADP_ prefix here later
-	ADPSchema := `{"playerId":%d,"pubKey":"PUBKEY","pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`
+	// "ADP_" Prefix
+	ADPSchema := `ADP_{"playerId":%d,"pubKey":"PUBKEY","pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`
 	data := []any{p.id, posX, posY, destPosX, destPosY}
 	pkg := fmt.Sprintf(ADPSchema, data...)
 
-	// debug logs
 	debug.DebugLog("[MOVE] PACKAGE "+pkg, debug.PLAYER)
 	debug.DebugLog("[MOVE] CACHE "+fmt.Sprintf("%v", p.GameNode.NodeCache), debug.PLAYER)
 
@@ -66,12 +64,9 @@ func (p *player) Move(posX int, posY int, destPosX int, destPosY int) error {
 
 func (p *player) Chat(msg []byte) error {
 
-	// Trim message from whitespace, tabs, nl dups first
-	trimmer := regexp.MustCompile(`\s+`)
-	msgTrim := trimmer.ReplaceAllString(string(msg), " ")
-
+	// "CHAT_" Prefix
 	chatMsgSchema := `CHAT_{"playerId":%d,"message":"%s"}`
-	data := []any{p.id, msgTrim}
+	data := []any{p.id, msg}
 	pkg := fmt.Sprintf(chatMsgSchema, data...)
 
 	debug.DebugLog("[CHAT] Pkg: "+fmt.Sprintf("%v", pkg), debug.PLAYER)

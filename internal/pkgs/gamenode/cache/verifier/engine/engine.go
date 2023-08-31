@@ -5,7 +5,7 @@ import (
 	"math"
 	"strconv"
 	"ticoma/internal/debug"
-	intf "ticoma/internal/packages/gamenode/cache/interfaces"
+	intf "ticoma/internal/pkgs/gamenode/cache/interfaces"
 )
 
 // EngineVerifier

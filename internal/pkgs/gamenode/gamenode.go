@@ -7,8 +7,8 @@ import (
 	"ticoma/internal/debug"
 	"ticoma/types"
 
-	"ticoma/internal/packages/gamenode/cache"
-	"ticoma/internal/packages/gamenode/network/libp2p/node"
+	"ticoma/internal/pkgs/gamenode/cache"
+	"ticoma/internal/pkgs/gamenode/network/libp2p/node"
 )
 
 // GameNode consists of:

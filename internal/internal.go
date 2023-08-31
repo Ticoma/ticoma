@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"ticoma/internal/packages/gamenode"
-	"ticoma/internal/packages/gamenode/network/libp2p/node"
-	"ticoma/internal/packages/player"
+	"ticoma/internal/pkgs/gamenode"
+	"ticoma/internal/pkgs/gamenode/network/libp2p/node"
+	"ticoma/internal/pkgs/player"
 	"ticoma/types"
 
 	"github.com/joho/godotenv"
