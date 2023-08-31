@@ -5,8 +5,8 @@ import (
 
 	"fmt"
 	"ticoma/internal/debug"
-	"ticoma/internal/packages/gamenode/cache/interfaces"
-	"ticoma/internal/packages/gamenode/cache/verifier"
+	"ticoma/internal/pkgs/gamenode/cache/interfaces"
+	"ticoma/internal/pkgs/gamenode/cache/verifier"
 )
 
 type PrevAndCurrentADPT [2]interfaces.ActionDataPackageTimestamped // [ADPT, ADPT]

@@ -3,7 +3,7 @@ package keyboard
 import (
 	"ticoma/client/packages/camera"
 	"ticoma/client/packages/player"
-	internal_player "ticoma/internal/packages/player"
+	internal_player "ticoma/internal/pkgs/player"
 
 	c "ticoma/client/packages/constants"
 

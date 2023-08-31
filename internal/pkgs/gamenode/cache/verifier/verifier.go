@@ -1,8 +1,8 @@
 package verifier
 
 import (
-	"ticoma/internal/packages/gamenode/cache/verifier/engine"
-	"ticoma/internal/packages/gamenode/cache/verifier/security"
+	"ticoma/internal/pkgs/gamenode/cache/verifier/engine"
+	"ticoma/internal/pkgs/gamenode/cache/verifier/security"
 )
 
 type NodeVerifier struct {

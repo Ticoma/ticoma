@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 	"ticoma/internal/debug"
-	"ticoma/internal/packages/gamenode/cache/interfaces"
+	"ticoma/internal/pkgs/gamenode/cache/interfaces"
 )
 
 // Strip a string from any whitespaces, tabs, newline chars, etc...
@@ -23,7 +23,7 @@ func StripString(str string, removeLastCharToo bool) string {
 }
 
 // Conv ADPT to ADP (test util)
-func StripPkgFromTimestamp(adpt *interfaces.ActionDataPackageTimestamped) *interfaces.ActionDataPackage {
+func StripADPFromTimestamp(adpt *interfaces.ActionDataPackageTimestamped) *interfaces.ActionDataPackage {
 	adp := &interfaces.ActionDataPackage{
 		PlayerId:     adpt.PlayerId,
 		PubKey:       adpt.PubKey,
@@ -49,14 +49,15 @@ func ExtractValsFromStrPkg(pkg string) []string {
 }
 
 // ADP / ADPT interface object -> String conversion
-func StringifyPkg(pkg interface{}, trimLastChar bool) string {
+func StringifyADP(pkg interface{}, trimLastChar bool) string {
 	switch v := pkg.(type) {
 	case interfaces.ActionDataPackage, interfaces.ActionDataPackageTimestamped:
 		marshaled, err := json.Marshal(v)
 		if err != nil {
 			fmt.Println("[UTILS] Couldn't strngify ADP object. err: ", err)
 		}
-		return StripString(string(marshaled), trimLastChar)
+		// Add ADP Prefix
+		return "ADP_" + StripString(string(marshaled), trimLastChar)
 	default:
 		fmt.Println("[UTILS] Invalid function parameter.")
 		return ""

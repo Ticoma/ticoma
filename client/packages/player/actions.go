@@ -3,7 +3,7 @@ package player
 import (
 	"fmt"
 	"ticoma/client/packages/camera"
-	internal_player "ticoma/internal/packages/player"
+	internal_player "ticoma/internal/pkgs/player"
 	"time"
 )
 

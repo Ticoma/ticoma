@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"ticoma/internal/debug"
-	"ticoma/internal/packages/gamenode"
-	"ticoma/internal/packages/gamenode/cache"
-	"ticoma/internal/packages/gamenode/cache/interfaces"
-	"ticoma/internal/packages/gamenode/network/libp2p/node"
+	"ticoma/internal/pkgs/gamenode"
+	"ticoma/internal/pkgs/gamenode/cache"
+	"ticoma/internal/pkgs/gamenode/cache/interfaces"
+	"ticoma/internal/pkgs/gamenode/network/libp2p/node"
 	"ticoma/types"
 )
 

@@ -8,7 +8,7 @@ import (
 
 	"ticoma/client"
 	"ticoma/internal"
-	"ticoma/internal/packages/player"
+	"ticoma/internal/pkgs/player"
 	"ticoma/types"
 )
 

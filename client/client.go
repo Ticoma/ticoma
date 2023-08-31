@@ -11,7 +11,7 @@ import (
 	"ticoma/client/packages/player"
 
 	"ticoma/client/packages/utils"
-	internal_player "ticoma/internal/packages/player"
+	internal_player "ticoma/internal/pkgs/player"
 	"ticoma/types"
 
 	"github.com/fstanis/screenresolution"

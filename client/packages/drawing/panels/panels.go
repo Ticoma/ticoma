@@ -4,7 +4,7 @@ import (
 	c "ticoma/client/packages/constants"
 	"ticoma/client/packages/player"
 
-	internal_player "ticoma/internal/packages/player"
+	internal_player "ticoma/internal/pkgs/player"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )

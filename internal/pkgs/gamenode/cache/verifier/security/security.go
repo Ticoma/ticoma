@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"ticoma/internal/debug"
-	"ticoma/internal/packages/gamenode/cache/interfaces"
-	"ticoma/internal/packages/gamenode/cache/utils"
+	"ticoma/internal/pkgs/gamenode/cache/interfaces"
+	"ticoma/internal/pkgs/gamenode/cache/utils"
 	"ticoma/types"
 	"time"
 )
@@ -67,7 +67,12 @@ func (sv *SecurityVerifier) verifyPackageTypes(pkg []byte, pkgType PACKAGE_TYPE)
 
 	pkgStr := string(pkg)
 
-	// Trim prefix if needed
+	// Trim prefix first
+	pkgHasPrefix := strings.HasPrefix(pkgStr, prefix)
+	if !pkgHasPrefix {
+		fmt.Println("[SEC VER] - Pkg has no prefix")
+		return false, ""
+	}
 	pkgStr = strings.TrimPrefix(pkgStr, prefix)
 
 	res := []byte{}
