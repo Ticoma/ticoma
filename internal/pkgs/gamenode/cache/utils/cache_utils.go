@@ -11,7 +11,7 @@ import (
 	"ticoma/internal/pkgs/gamenode/cache/interfaces"
 )
 
-// Strip a string from any whitespaces, tabs, newline chars, etc...
+// Strip a string from any excessive whitespaces, carriage returns, tabs, etc.
 func StripString(str string, removeLastCharToo bool) string {
 	str = strings.Replace(str, " ", "", -1)
 	str = strings.Replace(str, "\t", "", -1)
