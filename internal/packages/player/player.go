@@ -47,12 +47,11 @@ func (p *player) Init(ctx context.Context, cc chan types.ChatMessage, isRelay bo
 
 func (p *player) Move(posX int, posY int, destPosX int, destPosY int) error {
 
-	// add ADP_ prefix here later
-	ADPSchema := `{"playerId":%d,"pubKey":"PUBKEY","pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`
+	// "ADP_" Prefix
+	ADPSchema := `ADP_{"playerId":%d,"pubKey":"PUBKEY","pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`
 	data := []any{p.id, posX, posY, destPosX, destPosY}
 	pkg := fmt.Sprintf(ADPSchema, data...)
 
-	// debug logs
 	debug.DebugLog("[MOVE] PACKAGE "+pkg, debug.PLAYER)
 	debug.DebugLog("[MOVE] CACHE "+fmt.Sprintf("%v", p.GameNode.NodeCache), debug.PLAYER)
 
@@ -65,6 +64,7 @@ func (p *player) Move(posX int, posY int, destPosX int, destPosY int) error {
 
 func (p *player) Chat(msg []byte) error {
 
+	// "CHAT_" Prefix
 	chatMsgSchema := `CHAT_{"playerId":%d,"message":"%s"}`
 	data := []any{p.id, msg}
 	pkg := fmt.Sprintf(chatMsgSchema, data...)
