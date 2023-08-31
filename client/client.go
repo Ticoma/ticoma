@@ -33,7 +33,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 
 	// Load screen conf
 	res := screenresolution.GetPrimary()
-	screenC := utils.GetScreenConf(res.Width, res.Height, fullscreen)
+	screenC := utils.ConfLaunchGameRes(res.Width, res.Height, fullscreen)
 
 	// Setup window, resolution, raylib
 	rl.InitWindow(screenC.Width, screenC.Height, "Ticoma Client")
@@ -103,7 +103,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 		rl.DrawTextureRec(world.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(world.Texture.Width), Height: float32(-world.Texture.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
 		// Player
 		rl.DrawRectangleRec(rl.Rectangle{X: float32(p.GetPos().X) * c.BLOCK_SIZE, Y: float32(p.GetPos().Y) * c.BLOCK_SIZE, Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}, rl.Black)
-		// Test block
+		// Test block (question mark)
 		dr.DrawBlock(&blocksTxt, 3, 14, 14)
 		rl.EndMode2D()
 
