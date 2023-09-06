@@ -64,6 +64,11 @@ func (p *player) Move(posX int, posY int, destPosX int, destPosY int) error {
 
 func (p *player) Chat(msg []byte) error {
 
+	// Ignore empty chat msgs
+	if len(msg) == 0 {
+		return fmt.Errorf("[PLAYER] - You can't send an empty msg!")
+	}
+
 	// "CHAT_" Prefix
 	chatMsgSchema := `CHAT_{"playerId":%d,"message":"%s"}`
 	data := []any{p.id, msg}

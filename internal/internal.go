@@ -29,7 +29,7 @@ func Main(ctx context.Context, pc chan player.Player, cc chan types.ChatMessage,
 
 	relayIp := os.Getenv("RELAY_IP")
 	relayAddr := os.Getenv("RELAY_ADDR")
-	relayPort := "1337"
+	relayPort := os.Getenv("RELAY_PORT")
 	nodeConfig.RelayAddr = relayAddr
 	nodeConfig.RelayPort = relayPort
 	nodeConfig.RelayIp = relayIp

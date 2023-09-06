@@ -13,7 +13,7 @@ func HandleChatInput(activeTabLeft int, input []byte, hold int) ([]byte, int) {
 	key := rl.GetCharPressed()
 
 	// Handle chat behavior
-	if activeTabLeft == 0 { // Chat is open TODO: This is bad. Make a global enum called inputMode with chat, prompt modes, etc.
+	if activeTabLeft == 0 {
 		// Ignore space when empty input
 		if len(input) == 0 && rl.IsKeyPressed(rl.KeySpace) {
 			return input, hold

@@ -18,8 +18,9 @@ type GameCamera struct {
 func New(targetX float32, targetY float32, offsetX float32, offsetY float32) *GameCamera {
 	offset := rl.Vector2{X: offsetX, Y: offsetY}
 	target := rl.Vector2{X: targetX, Y: targetY}
+	var defaultCamZoom float32 = 1.0
 	return &GameCamera{
-		Camera2D: rl.NewCamera2D(offset, target, 0, 1),
+		Camera2D: rl.NewCamera2D(offset, target, 0, defaultCamZoom),
 	}
 }
 

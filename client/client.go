@@ -50,6 +50,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 	c.DEFAULT_FONT = rl.LoadFontEx("../client/assets/fonts/ponderosa.regular.ttf", int32(c.DEFAULT_FONT_SIZE)*4, nil)
 	spawnImg := rl.LoadImage("../client/assets/textures/map/spawn.png")
 	blocksImg := rl.LoadImage("../client/assets/textures/map/blocks.png")
+	// TODO: Add assets unloading on exit / back to welcome screen
 
 	// Setup res, scaling
 	SIDE_PANEL_WIDTH := int32((screenC.Width / 4))

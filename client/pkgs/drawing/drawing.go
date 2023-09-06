@@ -33,7 +33,7 @@ func DrawPlayers(world *rl.RenderTexture2D, p player.ClientPlayer) {
 // (Tmp) draws current coordinates on the map
 func DrawCoordinates(p player.ClientPlayer, x float32, y float32) {
 	pPos := p.InternalPlayer.GetPos()
-	rl.DrawTextEx(c.DEFAULT_FONT, fmt.Sprintf("<%d, %d>", pPos.X, pPos.Y), rl.Vector2{X: x, Y: y}, c.DEFAULT_FONT_SIZE*2, 0, rl.Blue)
+	rl.DrawTextEx(c.DEFAULT_FONT, fmt.Sprintf("<%d, %d>", pPos.X, pPos.Y), rl.Vector2{X: x, Y: y}, c.DEFAULT_FONT_SIZE, 0, rl.Blue)
 }
 
 // (Tmp) draws a block from block sprite

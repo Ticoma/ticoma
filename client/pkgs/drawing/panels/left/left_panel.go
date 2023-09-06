@@ -8,7 +8,6 @@ import (
 	"ticoma/client/pkgs/utils"
 
 	c "ticoma/client/pkgs/constants"
-	// internal_player "ticoma/internal/packages/player"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -173,22 +172,20 @@ func (lp *LeftPanel) DrawChatInput(cp *player.ClientPlayer, chatInput []byte) {
 		drawChatInput(string(chatInput), inputRecX-textOffset, centerInputRecY, caret, inputRecX-textOffset+float32(len(chatInput))*charSize.X, centerInputRecY)
 	}
 
+	rl.EndTextureMode()
+
 	// Handle send button click
 	sendHover := mouse.IsMouseHoveringRec(sendRec)
 
 	if sendHover {
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
 			cp.Chat(chatInput)
-			// player.Chat(p, chatInput)
 		}
 	}
 
 	if rl.IsKeyPressed(rl.KeyEnter) {
 		cp.Chat(chatInput)
-		// player.Chat(p, chatInput)
 	}
-
-	rl.EndTextureMode()
 
 	// Update space taken
 	lp.SidePanel.SpaceTaken.Bottom = prevTakenB + float32(chatInputCtnH)
@@ -205,8 +202,6 @@ func (lp *LeftPanel) DrawBuildInfo() {
 
 	rl.EndTextureMode()
 }
-
-// Private funcs
 
 // Draws message content at given position
 func drawChatMsg(content string, xPos float32, yPos float32) {

@@ -45,14 +45,6 @@ func New(rt2d *rl.RenderTexture2D, width float32, height float32, x float32, y f
 	}
 }
 
-// NOTE: I dont think this is going to be needed, but keeping it just in case
-// // Clears the panel texture with panel's bgColor
-// func (sp *SidePanel) Clear() {
-// 	rl.BeginTextureMode(*sp.Txt)
-// 	rl.ClearBackground(*sp.BgColor)
-// 	rl.EndTextureMode()
-// }
-
 // Draw the side panel skeleton (plain bg rectangle)
 func (sp *SidePanel) DrawSkeleton() {
 	rl.BeginTextureMode(*sp.Txt)
@@ -103,20 +95,20 @@ func (sp *SidePanel) DrawPanelTabs() {
 			Y: tabsCtnY + ((tabsCtnH - 2*c.SIDE_PANEL_PADDING) / 2) - shSize.Y/2,
 		}, c.DEFAULT_FONT_SIZE, 0, c.COLOR_PANEL_TEXT)
 
-		// Get bounds of tab panel on the screen, not on the texture itself
-		screenTabRecPos := rl.Rectangle{
+		// Get collision rec of tabs container
+		tabsColRec := rl.Rectangle{
 			X:      sp.Pos.X + tabX + c.SIDE_PANEL_PADDING,
 			Y:      tabsCtnY,
 			Width:  singleTabCtnW,
 			Height: tabsCtnH - 2*c.SIDE_PANEL_PADDING,
 		}
-		isHoveringTab := mouse.IsMouseHoveringRec(&screenTabRecPos)
+		isHoveringTab := mouse.IsMouseHoveringRec(&tabsColRec)
 
 		// Draw outline for currently active tab
 		if sp.ActiveTab == i {
 			rl.DrawRectangleLinesEx(tabRec, 2, c.COLOR_PANEL_OUTLINE)
 		} else if sp.ActiveTab != i && isHoveringTab {
-			rl.DrawRectangleLinesEx(tabRec, 2, rl.Black)
+			rl.DrawRectangleLinesEx(tabRec, 2, c.COLOR_PANEL_BG)
 		}
 
 		// Handle tab switching logic

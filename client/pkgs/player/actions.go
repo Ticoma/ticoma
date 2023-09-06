@@ -9,11 +9,11 @@ import (
 )
 
 //
-// Player package
+// Player actions package
 // High-level internal_player interface wrapper for Client
 //
-// E.g. Move Action calls underlying Player interface (Move) and Updates
-// the client-side player position
+// E.g. Move Action calls underlying Player interface (Move request) and Updates
+// the client-side player position on success
 //
 
 type ClientPlayer struct {
@@ -40,17 +40,6 @@ func New(p internal_player.Player, initPosX int, initPosY int) *ClientPlayer {
 	}
 }
 
-// Like move, but single pkg -> it should fill both places in empty cache
-// func InitPlayer(p internal_player.Player, moveState *bool, posX int, posY int) {
-// 	*moveState = true
-// 	err := p.Move(posX, posY, posX, posY)
-// 	if err != nil {
-// 		fmt.Println("[CLIENT] - Failed to init player! err: ", err)
-// 	}
-// 	time.Sleep(time.Millisecond * 300)
-// 	*moveState = false
-// }
-
 // Move with engine-safe delay between pkgs
 func (cp *ClientPlayer) MovePlayer(cam *camera.GameCamera, destX int, destY int) {
 	cp.IsMoving = true
@@ -61,7 +50,7 @@ func (cp *ClientPlayer) MovePlayer(cam *camera.GameCamera, destX int, destY int)
 		fmt.Println("[CLIENT] - Failed to move (1), err: ", err)
 	}
 	time.Sleep(time.Millisecond * 300)
-	// Move arrive (2)
+	// Move arrive request (2)
 	err = cp.InternalPlayer.Move(destX, destY, destX, destY)
 	if err != nil {
 		fmt.Println("[CLIENT] - Failed to move (2), err: ", err)

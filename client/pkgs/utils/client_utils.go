@@ -32,7 +32,10 @@ func ConfLaunchGameRes(width int, height int, fullscreen *bool) *intf.ScreenInfo
 		screenConf.Width = int32(width / 2)
 		screenConf.Height = int32(height / 2)
 	}
+
+	// Ignore this for now
 	screenConf.RefreshRate = 60
+	// TODO: Add scale factor, UI scaling for different screens
 	return screenConf
 }
 
@@ -53,7 +56,7 @@ func RandRange(min int, max int) int {
 	return rand.Intn(max-min) + min
 }
 
-// Round float to specified unit
+// Round float to specified unit - (upwards i think?)
 func FloatRound(x, unit float32) float32 {
 	return float32(math.Round(float64(x/unit)) * float64(unit))
 }
