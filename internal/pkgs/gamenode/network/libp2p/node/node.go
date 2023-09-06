@@ -4,9 +4,10 @@ import (
 	"context"
 	"ticoma/internal/debug"
 	"ticoma/internal/pkgs/gamenode/network/libp2p/node/host"
-	"ticoma/internal/pkgs/gamenode/network/utils"
 
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	"github.com/libp2p/go-libp2p/core/peer"
+	ma "github.com/multiformats/go-multiaddr"
 )
 
 type NetworkNode struct {
@@ -39,7 +40,7 @@ func (nn *NetworkNode) Init(ctx context.Context, isRelay bool, nodeConfig *NodeC
 	}
 
 	if !isRelay {
-		relayInfo := utils.ConvertToAddrInfo(nodeConfig.RelayIp, nodeConfig.RelayAddr, nodeConfig.RelayPort)
+		relayInfo := convertToAddrInfo(nodeConfig.RelayIp, nodeConfig.RelayAddr, nodeConfig.RelayPort)
 		nn.Host.ConnectToRelay(ctx, *relayInfo)
 		debug.DebugLog("Connected to relay!", debug.NETWORK)
 	}
@@ -60,4 +61,19 @@ func (nn *NetworkNode) Init(ctx context.Context, isRelay bool, nodeConfig *NodeC
 	nn.Topic = topic
 	nn.Sub = sub
 	nn.isRelay = isRelay
+}
+
+// Convert string address data -> addrInfo struct
+func convertToAddrInfo(ip, id, port string) *peer.AddrInfo {
+	m, err := ma.NewMultiaddr("/ip4/" + ip + "/tcp/" + port + "/p2p/" + id)
+	if err != nil {
+		panic(err)
+	}
+
+	addrInfo, err := peer.AddrInfoFromP2pAddr(m)
+	if err != nil {
+		panic(err)
+	}
+
+	return addrInfo
 }

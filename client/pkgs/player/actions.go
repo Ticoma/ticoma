@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"ticoma/client/pkgs/camera"
 	"ticoma/client/pkgs/interfaces"
-	internal_player "ticoma/internal/packages/player"
+	internal_player "ticoma/internal/pkgs/player"
 	"time"
 )
 
