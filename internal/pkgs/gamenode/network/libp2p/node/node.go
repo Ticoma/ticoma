@@ -2,8 +2,10 @@ package node
 
 import (
 	"context"
+	"fmt"
 	"ticoma/internal/debug"
 	"ticoma/internal/pkgs/gamenode/network/libp2p/node/host"
+	"time"
 
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -61,6 +63,8 @@ func (nn *NetworkNode) Init(ctx context.Context, isRelay bool, nodeConfig *NodeC
 	nn.Topic = topic
 	nn.Sub = sub
 	nn.isRelay = isRelay
+
+	go nn.PerformSnapshot(ctx)
 }
 
 // Convert string address data -> addrInfo struct
@@ -76,4 +80,28 @@ func convertToAddrInfo(ip, id, port string) *peer.AddrInfo {
 	}
 
 	return addrInfo
+}
+
+// Snapshot timer prototype
+func (nn *NetworkNode) PerformSnapshot(ctx context.Context) {
+	var ts int64
+	var tick <-chan time.Time
+
+	for {
+		ts = time.Now().UnixMilli()
+		if ts%60000 == 0 {
+			tick = time.Tick(time.Minute)
+			nn.SnapshotMsg(ctx, time.Now().String())
+			break
+		}
+	}
+
+	for ctime := range tick {
+		nn.SnapshotMsg(ctx, ctime.String())
+	}
+}
+
+func (nn *NetworkNode) SnapshotMsg(ctx context.Context, time string) {
+	nodeId := nn.Host.GetPeerInfo().ID.String()
+	nn.Topic.Publish(ctx, []byte(fmt.Sprintf("Hello from node %s. Time: %v", nodeId, time)))
 }
