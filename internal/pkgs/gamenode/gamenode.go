@@ -2,12 +2,8 @@ package gamenode
 
 import (
 	"context"
-	"fmt"
 
-	// "strings"
-	// "ticoma/internal/debug"
-	"ticoma/types"
-
+	"ticoma/internal/debug"
 	"ticoma/internal/pkgs/gamenode/cache"
 	"ticoma/internal/pkgs/gamenode/network/libp2p/node"
 )
@@ -16,7 +12,7 @@ import (
 //
 // - NetworkNode (libp2p client) for pubsub/ipfs communication (+ relay logic, if isRelay is set to true)
 //
-// - NodeCache to store own and other's package cache
+// - NodeCache to store other players' states
 type GameNode struct {
 	*node.NetworkNode
 	*cache.NodeCache
@@ -35,60 +31,40 @@ func (gn *GameNode) Init(ctx context.Context, isRelay bool, nodeConfig *node.Nod
 	gn.NetworkNode.Init(ctx, isRelay, nodeConfig)
 }
 
-// Listens for incoming packages on the pubsub network, and verifies each message through the NodeCache verifier
-// Also forwards chat messages to their own channel
-func (gn *GameNode) ListenForPkgs(ctx context.Context, cc chan types.ChatMessage) {
-	for {
+// Listens for incoming requests on the pubsub and forwards them to Cache
+//
+// Sends request to client after its verified
+func (gn *GameNode) ListenForReqs(ctx context.Context, reqch chan interface{}) {
 
-		// detect message on topic
+	var peerID string
+	var data []byte
+
+	for {
+		// Listen for game requests on pubsub
 		msg, err := gn.NetworkNode.Sub.Next(ctx)
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Println(string(msg.Data))
+		peerID = msg.ReceivedFrom.String()
+		data = msg.Data
 
-		// listen for chat messages (CHAT_ prefix)
-		// if strings.HasPrefix(string(msg.Data), "CHAT_") {
-		// 	chatPkg, err := gn.NodeVerifier.SecurityVerifier.ConstructChatPkg(msg.Data)
-		// 	if err != nil {
-		// 		debug.DebugLog("[PLAYER NODE] - Coulnd't verify chat pkg. Err: "+err.Error(), debug.NETWORK)
-		// 	}
-		// 	cc <- chatPkg
-		// }
+		// Ignore requests from self
+		if peerID == gn.NetworkNode.Host.GetPeerInfo().ID.String() {
+			continue
+		}
 
-		// listen for game packages
-		// if msg.ReceivedFrom != gn.NetworkNode.Host.GetPeerInfo().ID { // don't echo own msgs
-		// 	debug.DebugLog("[PLAYER NODE] - Peer "+msg.ReceivedFrom.Pretty()+" : "+string(msg.Message.Data), debug.NETWORK)
-		// 	err := gn.NodeCache.Put(msg.Message.Data)
-		// 	if err != nil {
-		// 		debug.DebugLog("[PLAYER NODE] - I couldn't verify a package coming from "+msg.ReceivedFrom.Pretty()+"\nPkg: "+string(msg.Message.Data)+"\n "+err.Error(), debug.NETWORK)
-		// 	} else {
-		// 		debug.DebugLog("\n[PLAYER NODE] - Pkg from: "+msg.ReceivedFrom.Pretty()+" Verified !!! \n", debug.NETWORK)
-		// 	}
-		// } else {
-		// 	debug.DebugLog("[PLAYER NODE] - I just sent a package: "+string(msg.Message.Data), debug.NETWORK)
-		// }
+		req, err := gn.NodeCache.Put(peerID, data)
+		if err != nil {
+			debug.DebugLog("[PLAYER NODE] - Failed to process request. Err: "+err.Error(), debug.NETWORK)
+		}
+
+		// Once verified, send req to client
+		reqch <- req
 	}
 }
 
-// Publishes ADP package to topic
-func (gn *GameNode) SendADPPkg(ctx context.Context, pkg []byte) error {
-	err := gn.NodeCache.Put(pkg)
-	if err != nil {
-		return fmt.Errorf("[PLAYER NODE] - I couldn't verify my own package!: " + err.Error())
-	}
-	gn.NetworkNode.Topic.Publish(ctx, pkg)
-	return nil
-}
-
-// Publish chat msg to topic
-func (gn *GameNode) SendChatMsg(ctx context.Context, pkg []byte) error {
-	_, err := gn.SecurityVerifier.ConstructChatPkg(pkg)
-	if err != nil {
-		return fmt.Errorf("[PLAYER NODE] - Couldn't verify chat pkg, err: " + err.Error())
-	}
-
-	gn.NetworkNode.Topic.Publish(ctx, pkg)
-	return nil
+func (gn *GameNode) SendRequest(ctx context.Context, data *[]byte) {
+	gn.NetworkNode.Topic.Publish(ctx, *data)
+	debug.DebugLog("[PLAYER NODE] - I just sent a request: "+string(*data), debug.NETWORK)
 }

@@ -3,65 +3,36 @@ package utils
 // Utils package for /nodes/ module
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
 	"ticoma/internal/debug"
-	"ticoma/internal/pkgs/gamenode/cache/interfaces"
 )
 
-// Strip a string from any whitespaces, tabs, newline chars, etc...
-func StripString(str string, removeLastCharToo bool) string {
+// Strip a string from any whitespaces, tabs, newlines and carriage returns
+func StripString(str string, shouldRemoveLastChar bool) string {
 	str = strings.Replace(str, " ", "", -1)
 	str = strings.Replace(str, "\t", "", -1)
 	str = strings.Replace(str, "\n", "", -1)
-	if removeLastCharToo {
+	str = strings.Replace(str, "\r", "", -1)
+	if shouldRemoveLastChar {
 		str = strings.TrimSuffix(str, ",")
 	}
 	return str
 }
 
-// Conv ADPT to ADP (test util)
-func StripADPFromTimestamp(adpt *interfaces.ActionDataPackageTimestamped) *interfaces.ActionDataPackage {
-	adp := &interfaces.ActionDataPackage{
-		PlayerId:     adpt.PlayerId,
-		PubKey:       adpt.PubKey,
-		Position:     &interfaces.Position{X: adpt.Position.X, Y: adpt.Position.Y},
-		DestPosition: &interfaces.DestPosition{X: adpt.DestPosition.X, Y: adpt.DestPosition.Y},
-	}
-	return adp
-}
+// Extract values from a json stringified request (in-place)
+func ExtractValsFromStrPkg(reqData string, ignoredStrings []string) []string {
 
-// Extract all the values of fields from a published Pkg
-// Pkg types must be OK
-// This needs some improvement
-func ExtractValsFromStrPkg(pkg string) []string {
-
-	debug.DebugLog("EXTRACT GOT"+pkg, debug.PLAYER)
+	debug.DebugLog("[CACHE_UTILS] - Extracted values: "+reqData, debug.PLAYER)
 
 	// Order of ignored is important
-	var ignored = []string{"{", "}", "\"", ":", "playerId", "pubKey", "posX", "posY", "pos", "destPosX", "destPosY", "destPos", "message"}
+	var ignoredGenericJson = []string{"{", "}", "\"", ":"}
+	ignored := append(ignoredGenericJson, ignoredStrings...)
 	for i := 0; i < len(ignored); i++ {
-		pkg = strings.ReplaceAll(pkg, ignored[i], "")
+		reqData = strings.ReplaceAll(reqData, ignored[i], "")
 	}
-	return strings.Split(pkg, ",")
-}
-
-// ADP / ADPT interface object -> String conversion
-func StringifyADP(pkg interface{}, trimLastChar bool) string {
-	switch v := pkg.(type) {
-	case interfaces.ActionDataPackage, interfaces.ActionDataPackageTimestamped:
-		marshaled, err := json.Marshal(v)
-		if err != nil {
-			fmt.Println("[UTILS] Couldn't strngify ADP object. err: ", err)
-		}
-		// Add ADP Prefix
-		return "ADP_" + StripString(string(marshaled), trimLastChar)
-	default:
-		fmt.Println("[UTILS] Invalid function parameter.")
-		return ""
-	}
+	return strings.Split(reqData, ",")
 }
 
 // Get all: Field names (nested), Field types(optional), Json tags (optional) of a struct (can be empty)

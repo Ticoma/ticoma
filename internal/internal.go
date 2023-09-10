@@ -49,10 +49,10 @@ func Main(ctx context.Context, pc chan player.Player, cc chan types.ChatMessage,
 }
 
 func runPlayerNode(pc chan player.Player, cc chan types.ChatMessage, ctx context.Context) {
-	p := player.New(ctx, 0)
-	p.Init(ctx, cc, false, &nodeConfig)
-	fmt.Printf("Player id: %d connected!\n", 0)
-	pc <- p
+	// p := player.New(ctx, 0)
+	// p.Init(ctx, cc, false, &nodeConfig)
+	// fmt.Printf("Player id: %d connected!\n", 0)
+	// pc <- p
 }
 
 func runStandaloneGameNode(ctx context.Context) {

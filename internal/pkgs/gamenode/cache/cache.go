@@ -1,96 +1,130 @@
 package cache
 
 import (
-	// "fmt"
-
 	"fmt"
 	"ticoma/internal/debug"
-	"ticoma/internal/pkgs/gamenode/cache/interfaces"
 	"ticoma/internal/pkgs/gamenode/cache/verifier"
+	"ticoma/internal/pkgs/gamenode/cache/verifier/security"
+	"ticoma/types"
 )
 
-type PrevAndCurrentADPT [2]interfaces.ActionDataPackageTimestamped // [ADPT, ADPT]
-type Store map[int]PrevAndCurrentADPT                              // NodeCache internal memory model => [Prev ADPT, Current ADPT]
-
 type NodeCache struct {
-	*CacheStore
+	Memory
 	*verifier.NodeVerifier
 }
 
-type CacheStore struct {
-	Store
+type PlayerStates struct {
+	Prev *types.Player
+	Curr *types.Player
 }
 
-// NodeCache functions
+type Memory map[string]PlayerStates
 
 func New() *NodeCache {
 	v := verifier.New()
 	return &NodeCache{
-		CacheStore:   &CacheStore{},
+		Memory:       Memory{},
 		NodeVerifier: v,
 	}
 }
 
-func (nc *NodeCache) GetAll() Store {
-	return nc.CacheStore.Store
+func (nc *NodeCache) GetAll() Memory {
+	return nc.Memory
 }
 
-func (nc *NodeCache) GetCache(id int) PrevAndCurrentADPT {
-	cache := nc.CacheStore.Store[id]
-	// fmt.Println("CACHE", cache)
-	return cache
+func (nc *NodeCache) GetPlayer(peerID string) PlayerStates {
+	return nc.Memory[peerID]
 }
 
-func (nc *NodeCache) GetPrevious(id int) interfaces.ActionDataPackageTimestamped {
-	return nc.CacheStore.Store[id][0]
+func (nc *NodeCache) GetPrevPlayerPos(peerID string) *types.Player {
+	return nc.Memory[peerID].Prev
 }
 
-func (nc *NodeCache) GetCurrent(id int) interfaces.ActionDataPackageTimestamped {
-	return nc.CacheStore.Store[id][1]
+func (nc *NodeCache) GetCurrPlayerPos(peerID string) *types.Player {
+	return nc.Memory[peerID].Curr
 }
 
-// Put new package to NodeCache
+// Put new data to NodeCache
 //
-// (move stack to the left and delete oldest package from cache)
-func (nc *NodeCache) Put(pkgBytes []byte) error {
+// Returns automatically constructed request interface (based on data preifx)
+func (nc *NodeCache) Put(peerID string, data []byte) (interface{}, error) {
 
-	// Try construct adpt
-	pkg, err := nc.NodeVerifier.SecurityVerifier.ConstructADPT(pkgBytes)
+	// TODO : Add instant req decline if !nc.Memory[peerID].Prev/Curr.isOnline
+
+	// Construct request
+	req, err := nc.NodeVerifier.SecurityVerifier.ReqFromBytes(&peerID, &data)
 	if err != nil {
-		return fmt.Errorf("[NODE CACHE] - ADPT Construct err: %w", err)
+		return nil, fmt.Errorf("[NODE CACHE] - Req not accepted. Err: %v", err)
 	}
 
-	// init cache map if first pkg
-	if len(nc.CacheStore.Store) == 0 {
-		nc.CacheStore.Store = make(Store)
+	// Pass to cache req handler
+	reqS, err := nc.handleRequest(req)
+	if err != nil {
+		return nil, fmt.Errorf("[NODE CACHE] - Req not accepted. Err: %v", err)
 	}
 
-	// if there's no cache and a package arrives, it means it's the first package
-	if nc.CacheStore.Store[pkg.PlayerId][0] == (interfaces.ActionDataPackageTimestamped{}) || nc.CacheStore.Store[pkg.PlayerId][1] == (interfaces.ActionDataPackageTimestamped{}) {
-		var store PrevAndCurrentADPT
-		store[0], store[1] = pkg, pkg
-		nc.CacheStore.Store[pkg.PlayerId] = store
-		debug.DebugLog("[NODE CACHE] - First pkg from: "+string(rune(pkg.PlayerId)), debug.PLAYER)
+	return reqS, nil
+}
+
+// Automatically format request and process it
+func (nc *NodeCache) handleRequest(req types.Request) (interface{}, error) {
+	reqPrefix, err := nc.SecurityVerifier.DetectReqPrefix(req.Data)
+	if err != nil {
+		return nil, fmt.Errorf("[NODE CACHE] - Err while verifying req prefix: %v", err)
+	}
+
+	reqDataStr, err := nc.VerifyReqTypes(reqPrefix, req.Data)
+	if err != nil {
+		return nil, fmt.Errorf("[NODE CACHE] Coulnd't verify req types. Err: %v", err)
+	}
+
+	// Create a struct based on request prefix, data
+	reqS, err := nc.AutoConstructRequest(reqPrefix, reqDataStr)
+	if err != nil {
+		return nil, fmt.Errorf("[NODE CACHE] - Couldn't construct req. Err: %v", err)
+	}
+
+	switch reqPrefix {
+	case security.MOVE_PREFIX:
+		err := nc.updatePlayerPos(req.PeerID, reqS.(*types.PlayerPosition))
+		return reqS, err
+	case security.CHAT_PREFIX:
+		return reqS, nil
+	default:
+		return nil, fmt.Errorf("[NODE CACHE] - Unknown request (unsupported prefix). %s", "")
+	}
+}
+
+func (nc *NodeCache) updatePlayerPos(peerID string, pp *types.PlayerPosition) error {
+	// Init cache map if first request
+	if len(nc.Memory) == 0 {
+		nc.Memory = make(Memory)
+	}
+
+	// Init playerState if needed
+	if nc.Memory[peerID].Prev == nil || nc.Memory[peerID].Curr == nil {
+		var states PlayerStates
+		states.Prev.Position, states.Curr.Position = pp.Position, pp.Position
+		nc.Memory[peerID] = states
+		debug.DebugLog(fmt.Sprintf("[NODE CACHE] - First pkg from peerID: %s", peerID), debug.PLAYER)
 		return nil
 	}
 
-	validPos := nc.EngineVerifier.VerifyLastMovePos(nc.CacheStore.Store[pkg.PlayerId][1].DestPosition, pkg.Position)
-	if !validPos {
-		return fmt.Errorf("[NODE CACHE] - Coulnd't verify move direction or position.%s", "")
+	// Verify velocity
+	currPos := nc.Memory[peerID].Curr.PlayerPosition
+	validVel := nc.EngineVerifier.VerifyMoveVelocity(currPos, pp)
+	if !validVel {
+		return fmt.Errorf("[NODE CACHE] - Coulnd't verify move direction or position. %s", "")
 	}
 
-	curr := nc.CacheStore.Store[pkg.PlayerId][1]
-	validMove := nc.EngineVerifier.VerifyPlayerMovement(&curr, &pkg)
+	// Verify move position sequence
+	validMove := nc.EngineVerifier.VerifyMoveDirection(currPos.DestPosition, pp.Position)
 
 	if !validMove {
-		return fmt.Errorf("[NODE CACHE] - Engine couldn't verify move.%s", "")
+		return fmt.Errorf("[NODE CACHE] - Engine couldn't verify move. %s", "")
 	}
 
-	// push stack to the left
-	cache := PrevAndCurrentADPT{
-		curr, pkg,
-	}
-	nc.CacheStore.Store[pkg.PlayerId] = cache
+	// Update playerStates with new data (move pStates stack)
+	nc.Memory[peerID].Prev.Position, nc.Memory[peerID].Curr.Position = (*types.Position)(currPos.DestPosition), pp.Position
 	return nil
-
 }
