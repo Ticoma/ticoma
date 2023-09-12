@@ -8,14 +8,13 @@ import (
 	"ticoma/internal/pkgs/gamenode"
 	"ticoma/internal/pkgs/gamenode/network/libp2p/node"
 	"ticoma/internal/pkgs/player"
-	"ticoma/types"
 
 	"github.com/joho/godotenv"
 )
 
 var nodeConfig node.NodeConfig
 
-func Main(ctx context.Context, pc chan player.Player, cc chan types.ChatMessage, isRelay bool) {
+func Main(ctx context.Context, pc chan player.Player, rc chan interface{}, isRelay bool) {
 
 	// Load env
 	err := godotenv.Load()
@@ -44,15 +43,15 @@ func Main(ctx context.Context, pc chan player.Player, cc chan types.ChatMessage,
 	if isRelay {
 		runStandaloneGameNode(ctx)
 	} else {
-		runPlayerNode(pc, cc, ctx)
+		runPlayerNode(pc, rc, ctx)
 	}
 }
 
-func runPlayerNode(pc chan player.Player, cc chan types.ChatMessage, ctx context.Context) {
-	// p := player.New(ctx, 0)
-	// p.Init(ctx, cc, false, &nodeConfig)
-	// fmt.Printf("Player id: %d connected!\n", 0)
-	// pc <- p
+func runPlayerNode(pc chan player.Player, rc chan interface{}, ctx context.Context) {
+	p := player.New(ctx, 0)
+	p.Init(ctx, rc, false, &nodeConfig)
+	fmt.Printf("Player id: %d connected!\n", 0)
+	pc <- p
 }
 
 func runStandaloneGameNode(ctx context.Context) {

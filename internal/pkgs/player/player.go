@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"ticoma/internal/debug"
 	"ticoma/internal/pkgs/gamenode"
 	"ticoma/internal/pkgs/gamenode/cache"
 	"ticoma/internal/pkgs/gamenode/network/libp2p/node"
@@ -15,13 +16,12 @@ import (
 // This interface is sent to client module once a connection to pubsub is established
 // the client is able to perform certain actions using this interface and is limited to its functions
 type Player interface {
-	GetId() int
 	GetPeerID() string
 	GetCache() *cache.NodeCache
-	Move(posX int, posY int, destPosX int, destPosY int) error
-	Chat(msg []byte) error
-	Init(ctx context.Context, cc chan types.ChatMessage, isRelay bool, nodeConfig *node.NodeConfig)
-	// GetPos() *interfaces.Position
+	Move(posX *int, posY *int, destPosX *int, destPosY *int) error
+	Chat(msg *[]byte)
+	Init(ctx context.Context, reqch chan interface{}, isRelay bool, nodeConfig *node.NodeConfig)
+	GetPos() *types.Position
 }
 
 type player struct {
@@ -42,31 +42,47 @@ func (p *player) Init(ctx context.Context, reqch chan interface{}, isRelay bool,
 	go p.GameNode.ListenForReqs(ctx, reqch)
 }
 
-func (p *player) Move(posX int, posY int, destPosX int, destPosY int) error {
+//
+// Request-related funcs
+//
 
-	// "MOVE" Prefix
-	prefix := "MOVE_"
-	pos := types.Position{
-		X: posX,
-		Y: posY,
-	}
-	destPos := types.DestPosition{
-		X: destPosX,
-		Y: destPosY,
-	}
-	pp := &types.PlayerPosition{
-		Position:     &pos,
-		DestPosition: &destPos,
-	}
+func (p *player) Move(posX *int, posY *int, destPosX *int, destPosY *int) error {
+
+	prefix := []byte("MOVE_")
+	pos := types.Position{X: *posX, Y: *posY}
+	destPos := types.DestPosition{X: *destPosX, Y: *destPosY}
+	pp := &types.PlayerPosition{Position: &pos, DestPosition: &destPos}
 
 	moveReqJSON, err := json.Marshal(pp)
 	if err != nil {
-		return fmt.Errorf("[PLAYER] - Failed to serialize request. Err: ", err)
+		return fmt.Errorf("[PLAYER] - Failed to serialize request. Err: %v", err)
 	}
-	moveReq := prefix + string(moveReqJSON)
-	fmt.Println(moveReq)
-	return nil
+	var moveReq []byte = append(prefix, moveReqJSON...)
+	fmt.Println("MOVE REQ: ", string(moveReq)) //tmp
+	p.SendRequest(p.ctx, &moveReq)
 
-	// debug.DebugLog("[MOVE] PACKAGE "+pkg, debug.PLAYER)
-	// debug.DebugLog("[MOVE] CACHE "+fmt.Sprintf("%v", p.GameNode.NodeCache), debug.PLAYER)
+	debug.DebugLog("[MOVE] Sending move req: "+string(moveReq), debug.PLAYER)
+	return nil
+}
+
+func (p *player) Chat(msg *[]byte) {
+	prefix := []byte("CHAT_")
+	var chatReq []byte = append(prefix, *msg...)
+	p.SendRequest(p.ctx, &chatReq)
+}
+
+//
+// Getters
+//
+
+func (p *player) GetCache() *cache.NodeCache {
+	return p.GetCache()
+}
+
+func (p *player) GetPeerID() string {
+	return p.GetPeerID()
+}
+
+func (p *player) GetPos() *types.Position {
+	return p.GetCurrPlayerPos(p.GameNode.Host.GetPeerInfo().String())
 }

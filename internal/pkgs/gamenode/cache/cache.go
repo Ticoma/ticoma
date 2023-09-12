@@ -36,12 +36,12 @@ func (nc *NodeCache) GetPlayer(peerID string) PlayerStates {
 	return nc.Memory[peerID]
 }
 
-func (nc *NodeCache) GetPrevPlayerPos(peerID string) *types.Player {
-	return nc.Memory[peerID].Prev
+func (nc *NodeCache) GetPrevPlayerPos(peerID string) *types.Position {
+	return nc.Memory[peerID].Prev.Position
 }
 
-func (nc *NodeCache) GetCurrPlayerPos(peerID string) *types.Player {
-	return nc.Memory[peerID].Curr
+func (nc *NodeCache) GetCurrPlayerPos(peerID string) *types.Position {
+	return nc.Memory[peerID].Curr.Position
 }
 
 // Put new data to NodeCache
