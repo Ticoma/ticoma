@@ -32,8 +32,18 @@ func (nc *NodeCache) GetAll() Memory {
 	return nc.Memory
 }
 
+// Did such peerID ever create an account / play?
+func (nc *NodeCache) playerExists(peerID string) bool {
+	_, exists := nc.Memory[peerID]
+	if exists {
+		return nc.Memory[peerID].prev.IsOnline
+	} else {
+		return false
+	}
+}
+
 // Is peerID currently online?
-func (nc *NodeCache) isPlayerOnline(peerID string) bool {
+func (nc *NodeCache) playerOnline(peerID string) bool {
 	_, exists := nc.Memory[peerID]
 	if exists {
 		return nc.Memory[peerID].curr.IsOnline
@@ -44,7 +54,7 @@ func (nc *NodeCache) isPlayerOnline(peerID string) bool {
 
 // Get full playerState
 func (nc *NodeCache) GetPlayer(peerID string) PlayerStates {
-	if nc.isPlayerOnline(peerID) {
+	if nc.playerOnline(peerID) {
 		return nc.Memory[peerID]
 	} else {
 		return PlayerStates{}
@@ -52,7 +62,7 @@ func (nc *NodeCache) GetPlayer(peerID string) PlayerStates {
 }
 
 func (nc *NodeCache) GetPrevPlayerPos(peerID string) types.Position {
-	if nc.isPlayerOnline(peerID) {
+	if nc.playerOnline(peerID) {
 		return *nc.Memory[peerID].prev.Position
 	} else {
 		return types.Position{}
@@ -60,7 +70,7 @@ func (nc *NodeCache) GetPrevPlayerPos(peerID string) types.Position {
 }
 
 func (nc *NodeCache) GetCurrPlayerPos(peerID string) types.Position {
-	if nc.isPlayerOnline(peerID) {
+	if nc.playerOnline(peerID) {
 		return *nc.Memory[peerID].curr.Position
 	} else {
 		return types.Position{}
@@ -89,7 +99,7 @@ func (nc *NodeCache) Put(peerID string, data []byte) (interface{}, error) {
 	return reqS, nil
 }
 
-// Automatically format request and process it
+// Main request handler and sorter
 func (nc *NodeCache) handleRequest(req types.Request) (interface{}, error) {
 	reqPrefix, err := nc.SecurityVerifier.DetectReqPrefix(req.Data)
 	if err != nil {
@@ -115,15 +125,70 @@ func (nc *NodeCache) handleRequest(req types.Request) (interface{}, error) {
 		return reqS, err
 	case security.CHAT_PREFIX:
 		return reqS, nil
+	case security.REGISTER_PREFIX, security.DELETE_ACC_PREFIX, security.LOGIN_PREFIX, security.LOGOUT_PREFIX:
+		err := nc.handleAccountRequest(req.PeerID, reqPrefix)
+		return reqS, err
 	default:
 		return nil, fmt.Errorf("[NODE CACHE] - Unknown request (unsupported prefix). %s", "")
+	}
+}
+
+// Sub-handler for all account-related requests
+func (nc *NodeCache) handleAccountRequest(peerID string, reqPrefix string) error {
+	switch reqPrefix {
+	case security.REGISTER_PREFIX:
+		return nc.registerPlayer(peerID)
+	case security.DELETE_ACC_PREFIX:
+		return nc.deletePlayer(peerID)
+	case security.LOGIN_PREFIX:
+		return nc.loginPlayer(peerID)
+	case security.LOGOUT_PREFIX:
+		return nc.logoutPlayer(peerID)
+	default:
+		return fmt.Errorf("[NODE CACHE] - Unknown account related request.")
+	}
+}
+
+func (nc *NodeCache) loginPlayer(peerID string) error {
+	if nc.playerOnline(peerID) {
+		return fmt.Errorf("[NODE CACHE] - Player is already logged in.")
+	} else {
+		nc.Memory[peerID].curr.IsOnline = true
+		return nil
+	}
+}
+
+func (nc *NodeCache) logoutPlayer(peerID string) error {
+	if nc.playerOnline(peerID) {
+		nc.Memory[peerID].curr.IsOnline = false
+		return nil
+	} else {
+		return fmt.Errorf("[NODE CACHE] - Failed to logout. Player is already logged out.")
+	}
+}
+
+func (nc *NodeCache) registerPlayer(peerID string) error {
+	if nc.playerExists(peerID) {
+		return fmt.Errorf("[NODE CACHE] - Failed to register player. Already exists.")
+	} else {
+		nc.Memory[peerID].prev.IsOnline = true
+		return nil
+	}
+}
+
+func (nc *NodeCache) deletePlayer(peerID string) error {
+	if nc.playerExists(peerID) {
+		nc.Memory[peerID] = PlayerStates{} // Clear
+		return nil
+	} else {
+		return fmt.Errorf("[NODE CACHE] - Failed to delete player. Account doesn't exist.")
 	}
 }
 
 func (nc *NodeCache) updatePlayerPos(peerID string, pp types.PlayerPosition) error {
 
 	// Ignore if affected player is offline
-	if !nc.isPlayerOnline(peerID) {
+	if !nc.playerOnline(peerID) {
 		return fmt.Errorf("[NODE CACHE] - Can't update pos. Player is offline!")
 	}
 

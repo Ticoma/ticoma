@@ -17,7 +17,20 @@ type SecurityVerifier struct{}
 
 // Request schemas and prefixes
 const (
-	// Move
+
+	//
+	// Account-related
+	//
+
+	REGISTER_PREFIX   = "REGISTER_"
+	DELETE_ACC_PREFIX = "DELETEACC_"
+	LOGIN_PREFIX      = "LOGIN_"
+	LOGOUT_PREFIX     = "LOGOUT_"
+
+	//
+	// Game-related
+	//
+
 	MOVE_PREFIX = "MOVE_"
 	MOVE_SCHEMA = `{
 		pos: {
@@ -29,7 +42,6 @@ const (
 			destPosY: int,
 		},
 	}`
-	// Chat
 	CHAT_PREFIX = "CHAT_"
 	CHAT_SCHEMA = `{
 		peerId: string,
@@ -55,6 +67,8 @@ func (sv *SecurityVerifier) getReqSchema(reqPrefix string) (string, error) {
 		return MOVE_SCHEMA, nil
 	case CHAT_PREFIX:
 		return CHAT_SCHEMA, nil
+	case REGISTER_PREFIX, DELETE_ACC_PREFIX, LOGIN_PREFIX, LOGOUT_PREFIX:
+		return "", nil
 	default:
 		return "", fmt.Errorf("[SEC VER] - Couldn't find schema of request with this prefix: %s", reqPrefix)
 	}
@@ -113,9 +127,6 @@ func (sv *SecurityVerifier) VerifyReqTypes(prefix string, reqData []byte) (strin
 
 	debug.DebugLog("[SEC VER] - Schema types: "+utils.StripString(schema, false), debug.PLAYER)
 	debug.DebugLog("[SEC VER] - Req types: "+string(res), debug.PLAYER)
-
-	// fmt.Println("SCHEMA ", schema)
-	// fmt.Println("RES ", string(res))
 
 	valid := strings.Compare(utils.StripString(schema, false), utils.StripString(string(res), true)) == 0
 	if !valid {
