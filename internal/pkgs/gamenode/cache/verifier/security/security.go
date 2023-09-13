@@ -45,7 +45,6 @@ func (sv *SecurityVerifier) DetectReqPrefix(reqData []byte) (string, error) {
 		return "", fmt.Errorf("[SEC VER] - Prefix not found in request.%s", "")
 	}
 	prefix := string(reqData[:index+1])
-	fmt.Println("PREFIX : ", prefix)
 	return prefix, nil
 }
 
@@ -165,14 +164,14 @@ func (sv *SecurityVerifier) constructMoveReq(data string) (types.PlayerPosition,
 
 	vals := utils.ExtractValsFromStrPkg(data, IGNORED_STRINGS_IN_MOVE)
 	if len(vals) != EXPECTED_VAL_LEN_IN_MOVE {
-		return types.PlayerPosition{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
+		return types.PlayerPosition{Position: &types.Position{}, DestPosition: &types.DestPosition{}}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
 	}
 
 	var positions []int
 	for i := 0; i < len(vals); i++ {
 		pos, err := strconv.Atoi(vals[i])
 		if err != nil {
-			return types.PlayerPosition{}, fmt.Errorf("[SEC VER] - Err while converting string val to int")
+			return types.PlayerPosition{Position: &types.Position{}, DestPosition: &types.DestPosition{}}, fmt.Errorf("[SEC VER] - Err while converting string val to int")
 		}
 		positions = append(positions, pos)
 	}

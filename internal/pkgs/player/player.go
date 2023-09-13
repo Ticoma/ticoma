@@ -17,11 +17,11 @@ import (
 // the client is able to perform certain actions using this interface and is limited to its functions
 type Player interface {
 	GetPeerID() string
-	GetCache() *cache.NodeCache
+	GetCache() cache.Memory
 	Move(posX *int, posY *int, destPosX *int, destPosY *int) error
 	Chat(msg *[]byte)
 	Init(ctx context.Context, reqch chan interface{}, isRelay bool, nodeConfig *node.NodeConfig)
-	GetPos() *types.Position
+	GetPos() types.Position
 }
 
 type player struct {
@@ -29,7 +29,7 @@ type player struct {
 	ctx context.Context
 }
 
-func New(ctx context.Context, id int) *player {
+func New(ctx context.Context) *player {
 	gn := gamenode.New()
 	return &player{
 		GameNode: gn,
@@ -75,14 +75,14 @@ func (p *player) Chat(msg *[]byte) {
 // Getters
 //
 
-func (p *player) GetCache() *cache.NodeCache {
-	return p.GetCache()
+func (p *player) GetCache() cache.Memory {
+	return p.GameNode.Memory
 }
 
 func (p *player) GetPeerID() string {
-	return p.GetPeerID()
+	return p.GameNode.NetworkNode.Host.GetPeerInfo().ID.String()
 }
 
-func (p *player) GetPos() *types.Position {
-	return p.GetCurrPlayerPos(p.GameNode.Host.GetPeerInfo().String())
+func (p *player) GetPos() types.Position {
+	return p.GameNode.GetCurrPlayerPos(p.GetPeerID())
 }

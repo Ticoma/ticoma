@@ -8,7 +8,7 @@ import (
 
 func getDebugVal() int {
 	dm, err := strconv.Atoi(os.Getenv("DEBUG"))
-	if dm != 0 && err != nil {
+	if err != nil {
 		panic("[SETUP] - Couldn't parse debug mode value from .env")
 	}
 	return dm
