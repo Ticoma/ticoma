@@ -17,8 +17,9 @@ func TestGetAll(t *testing.T) {
 	// Get all on just initialized cache
 	c := cache.New()
 	all := c.GetAll()
-	assert.Equal(t, cache.Memory{}, all)
-	assert.Equal(t, cache.PlayerStates{}, all["test"])
+	allVal := *all
+	assert.Equal(t, &cache.Memory{}, all)
+	assert.Equal(t, cache.PlayerStates{}, allVal["test"])
 }
 
 func TestGetPlayer(t *testing.T) {
@@ -69,7 +70,7 @@ func TestMove(t *testing.T) {
 	c := cache.New()
 
 	// First make sure cache is empty on init
-	assert.Equal(t, cache.Memory{}, c.GetAll())
+	assert.Equal(t, &cache.Memory{}, c.GetAll())
 	assert.Equal(t, &cache.PlayerStates{}, c.GetPlayer(playerID))
 
 	// The player doesn't exist, so we need to register first.
@@ -127,5 +128,6 @@ func TestMove(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, 13, c.GetPlayer(playerID).Curr.Position.X)
 	assert.Equal(t, 13, c.GetPlayer(playerID).Curr.Position.Y)
+	assert.NotEqual(t, &cache.Memory{}, c.GetAll())
 
 }
