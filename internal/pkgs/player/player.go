@@ -21,7 +21,7 @@ type Player interface {
 	Move(posX *int, posY *int, destPosX *int, destPosY *int) error
 	Chat(msg *[]byte)
 	Init(ctx context.Context, reqch chan interface{}, isRelay bool, nodeConfig *node.NodeConfig)
-	GetPos() types.Position
+	GetPos() types.PlayerPosition
 }
 
 type player struct {
@@ -83,6 +83,6 @@ func (p *player) GetPeerID() string {
 	return p.GameNode.NetworkNode.Host.GetPeerInfo().ID.String()
 }
 
-func (p *player) GetPos() types.Position {
-	return p.GameNode.GetCurrPlayerPos(p.GetPeerID())
+func (p *player) GetPos() types.PlayerPosition {
+	return *p.GameNode.GetCurrPlayerPos(p.GetPeerID())
 }

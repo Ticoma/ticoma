@@ -35,8 +35,32 @@ func TestGetPlayerPositions(t *testing.T) {
 	prev := c.GetPrevPlayerPos(playerID)
 	curr := c.GetCurrPlayerPos(playerID)
 	// Player not yet initialized, so cache will return an empty struct
-	assert.Equal(t, types.Position{}, prev)
-	assert.Equal(t, types.Position{}, curr)
+	assert.Equal(t, &types.PlayerPosition{}, prev)
+	assert.Equal(t, &types.PlayerPosition{}, curr)
+
+	// Register should set player's pos and destPos to {13, 13}
+	_, err := c.Put(playerID, []byte("REGISTER_"))
+
+	assert.NoError(t, err)
+
+	expectedPos := &types.PlayerPosition{
+		Timestamp:    0,
+		Position:     types.Position{X: 13, Y: 13},
+		DestPosition: types.DestPosition{X: 13, Y: 13},
+	}
+
+	prev = c.GetPrevPlayerPos(playerID)
+	curr = c.GetCurrPlayerPos(playerID)
+	prev.Timestamp, curr.Timestamp = 0, 0 // Ignore the timestamp
+
+	assert.Equal(t, expectedPos.Position.X, prev.Position.X)
+	assert.Equal(t, expectedPos.Position.X, curr.Position.X)
+	assert.Equal(t, expectedPos.Position.Y, prev.Position.Y)
+	assert.Equal(t, expectedPos.Position.Y, curr.Position.Y)
+	assert.Equal(t, expectedPos.DestPosition.X, prev.DestPosition.X)
+	assert.Equal(t, expectedPos.DestPosition.X, curr.DestPosition.X)
+	assert.Equal(t, expectedPos.DestPosition.Y, prev.DestPosition.Y)
+	assert.Equal(t, expectedPos.DestPosition.Y, curr.DestPosition.Y)
 
 }
 

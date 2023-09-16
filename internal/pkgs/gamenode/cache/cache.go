@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+const SPAWN_POS_X = 13
+const SPAWN_POS_Y = 13
+
 type NodeCache struct {
 	Memory
 	*verifier.NodeVerifier
@@ -44,7 +47,7 @@ func (nc *NodeCache) playerExists(peerID string) bool {
 	}
 }
 
-// Is peerID Currently online?
+// Is peerID currently online?
 func (nc *NodeCache) playerOnline(peerID string) bool {
 	_, exists := nc.Memory[peerID]
 	if exists {
@@ -64,19 +67,23 @@ func (nc *NodeCache) GetPlayer(peerID string) *PlayerStates {
 	}
 }
 
-func (nc *NodeCache) GetPrevPlayerPos(peerID string) types.Position {
+// Get previous player position (must be online)
+func (nc *NodeCache) GetPrevPlayerPos(peerID string) *types.PlayerPosition {
 	if nc.playerOnline(peerID) {
-		return nc.Memory[peerID].Prev.Position
+		p := nc.Memory[peerID]
+		return &p.Prev.PlayerPosition
 	} else {
-		return types.Position{}
+		return &types.PlayerPosition{}
 	}
 }
 
-func (nc *NodeCache) GetCurrPlayerPos(peerID string) types.Position {
+// Get previous player position (must be online)
+func (nc *NodeCache) GetCurrPlayerPos(peerID string) *types.PlayerPosition {
 	if nc.playerOnline(peerID) {
-		return nc.Memory[peerID].Curr.Position
+		p := nc.Memory[peerID]
+		return &p.Curr.PlayerPosition
 	} else {
-		return types.Position{}
+		return &types.PlayerPosition{}
 	}
 }
 
@@ -155,57 +162,53 @@ func (nc *NodeCache) handleAccountRequest(peerID string, reqPrefix string) error
 }
 
 func (nc *NodeCache) loginPlayer(peerID string) error {
-	debug.DebugLog(fmt.Sprintf("[NODE CACHE] - Player %s Login request", peerID), debug.PLAYER)
 	if nc.playerOnline(peerID) {
 		return fmt.Errorf("[NODE CACHE] - Player is already logged in.")
 	} else {
 		p := nc.Memory[peerID]
 		p.Curr.IsOnline = true
 		nc.Memory[peerID] = p
+		debug.DebugLog(fmt.Sprintf("[NODE CACHE] - Player %s logged in", peerID), debug.PLAYER)
 		return nil
 	}
 }
 
 func (nc *NodeCache) logoutPlayer(peerID string) error {
-	debug.DebugLog(fmt.Sprintf("[NODE CACHE] - Player %s Logout request", peerID), debug.PLAYER)
 	if nc.playerOnline(peerID) {
 		p := nc.Memory[peerID]
 		p.Curr.IsOnline = false
 		nc.Memory[peerID] = p
+		debug.DebugLog(fmt.Sprintf("[NODE CACHE] - Player %s logged out", peerID), debug.PLAYER)
 		return nil
 	} else {
-		return fmt.Errorf("[NODE CACHE] - Failed to logout. Player is already logged out.")
+		return fmt.Errorf("[NODE CACHE] - Failed to logout. Player is already logged out")
 	}
 }
 
 func (nc *NodeCache) registerPlayer(peerID string) error {
-	debug.DebugLog(fmt.Sprintf("[NODE CACHE] - Player %s Register request", peerID), debug.PLAYER)
 	if nc.playerExists(peerID) {
 		return fmt.Errorf("[NODE CACHE] - Failed to register player. Already exists.")
 	} else {
+		// Create a playerState @ spawnPos with current timestamp, set status to online
 		p := nc.GetPlayer(peerID)
-		// Online state
-		p.Prev.IsOnline = true
-		p.Curr.IsOnline = true
-		// Init spawn position
+		p.Prev.IsOnline, p.Curr.IsOnline = true, true
 		ts := time.Now().UnixMilli()
-		debug.DebugLog(fmt.Sprintf("TIMESTAMP REGISTER: %d", ts), debug.PLAYER)
 		spawnPos := types.PlayerPosition{
 			Timestamp:    ts,
-			Position:     types.Position{X: 13, Y: 13},     // SPAWN POS (CHANGE LATER)
-			DestPosition: types.DestPosition{X: 13, Y: 13}, // SPAWN POS (CHANGE LATER)
+			Position:     types.Position{X: SPAWN_POS_X, Y: SPAWN_POS_Y},
+			DestPosition: types.DestPosition{X: SPAWN_POS_X, Y: SPAWN_POS_Y},
 		}
-		p.Prev.PlayerPosition = spawnPos
-		p.Curr.PlayerPosition = spawnPos
+		p.Prev.PlayerPosition, p.Curr.PlayerPosition = spawnPos, spawnPos
 		nc.Memory[peerID] = *p
+		debug.DebugLog(fmt.Sprintf("[NODE CACHE] - Player %s created an account", peerID), debug.PLAYER)
 		return nil
 	}
 }
 
 func (nc *NodeCache) deletePlayer(peerID string) error {
-	debug.DebugLog(fmt.Sprintf("[NODE CACHE] - Player %s Delete acc request", peerID), debug.PLAYER)
 	if nc.playerExists(peerID) {
 		nc.Memory[peerID] = PlayerStates{}
+		debug.DebugLog(fmt.Sprintf("[NODE CACHE] - Player %s deleted their account", peerID), debug.PLAYER)
 		return nil
 	} else {
 		return fmt.Errorf("[NODE CACHE] - Failed to delete player. Account doesn't exist.")
