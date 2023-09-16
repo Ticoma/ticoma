@@ -119,8 +119,8 @@ func TestAutoReqConstruct(t *testing.T) {
 	moveReqData := fmt.Sprintf(`{"pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`, 1, 1, 2, 2)
 	expectedMoveReq := types.PlayerPosition{
 		Timestamp:    0,
-		Position:     &types.Position{X: 1, Y: 1},
-		DestPosition: &types.DestPosition{X: 2, Y: 2},
+		Position:     types.Position{X: 1, Y: 1},
+		DestPosition: types.DestPosition{X: 2, Y: 2},
 	}
 	moveReqIntf, err := nv.AutoConstructRequest(moveReqPrefix, moveReqData)
 	moveReq := moveReqIntf.(types.PlayerPosition)

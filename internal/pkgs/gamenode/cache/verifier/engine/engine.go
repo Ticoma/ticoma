@@ -3,7 +3,6 @@ package engine
 import (
 	"fmt"
 	"math"
-	"strconv"
 	"ticoma/internal/debug"
 	"ticoma/types"
 )
@@ -31,9 +30,7 @@ func (ev *EngineVerifier) VerifyMoveVelocity(start *types.PlayerPosition, end *t
 
 	velocity := blocksTraveledTotal / float64(elapsedTime)
 
-	debug.DebugLog("[ENGINE] VELOCITY: "+strconv.FormatFloat(velocity, 'E', -1, 32), debug.PLAYER)
-	debug.DebugLog("[ENGINE] MAX VELOCITY: "+strconv.FormatFloat(MAX_VEL, 'E', -1, 32), debug.PLAYER)
-	debug.DebugLog("[ENGINE] ELAPSED TIME: "+strconv.FormatInt(elapsedTime, 10), debug.PLAYER)
+	debug.DebugLog(fmt.Sprintf("[ENGINE VER] - Move vel info: Velocity: %f, Max Vel: %f, Elapsed Time: %d\n[ENGINE VER] - First mv: { pos{%d, %d}, dest{%d, %d}}, End pos: { pos{%d, %d}, dest{%d, %d}}", velocity, MAX_VEL, elapsedTime, start.Position.X, start.Position.Y, start.DestPosition.X, start.DestPosition.Y, end.Position.X, end.Position.Y, end.DestPosition.X, end.DestPosition.Y), debug.PLAYER)
 
 	if velocity > MAX_VEL {
 		msg := fmt.Sprintf("[ERR] Engine player movement verification (velocity too high).\nVelocity: %f\nMax acceptable velocity: %f\n", velocity, MAX_VEL)

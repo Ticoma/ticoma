@@ -175,14 +175,14 @@ func (sv *SecurityVerifier) constructMoveReq(data string) (types.PlayerPosition,
 
 	vals := utils.ExtractValsFromStrPkg(data, IGNORED_STRINGS_IN_MOVE)
 	if len(vals) != EXPECTED_VAL_LEN_IN_MOVE {
-		return types.PlayerPosition{Position: &types.Position{}, DestPosition: &types.DestPosition{}}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
+		return types.PlayerPosition{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
 	}
 
 	var positions []int
 	for i := 0; i < len(vals); i++ {
 		pos, err := strconv.Atoi(vals[i])
 		if err != nil {
-			return types.PlayerPosition{Position: &types.Position{}, DestPosition: &types.DestPosition{}}, fmt.Errorf("[SEC VER] - Err while converting string val to int")
+			return types.PlayerPosition{}, fmt.Errorf("[SEC VER] - Err while converting string val to int")
 		}
 		positions = append(positions, pos)
 	}
@@ -190,8 +190,8 @@ func (sv *SecurityVerifier) constructMoveReq(data string) (types.PlayerPosition,
 	ts := time.Now().UnixMilli()
 	playerPos := types.PlayerPosition{
 		Timestamp:    ts,
-		Position:     &types.Position{X: positions[0], Y: positions[1]},
-		DestPosition: &types.DestPosition{X: positions[2], Y: positions[3]},
+		Position:     types.Position{X: positions[0], Y: positions[1]},
+		DestPosition: types.DestPosition{X: positions[2], Y: positions[3]},
 	}
 	return playerPos, nil
 }

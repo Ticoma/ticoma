@@ -51,7 +51,7 @@ func (p *player) Move(posX *int, posY *int, destPosX *int, destPosY *int) error 
 	prefix := []byte("MOVE_")
 	pos := types.Position{X: *posX, Y: *posY}
 	destPos := types.DestPosition{X: *destPosX, Y: *destPosY}
-	pp := &types.PlayerPosition{Position: &pos, DestPosition: &destPos}
+	pp := &types.PlayerPosition{Position: pos, DestPosition: destPos}
 
 	moveReqJSON, err := json.Marshal(pp)
 	if err != nil {

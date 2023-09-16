@@ -19,19 +19,19 @@ type DestPosition struct {
 }
 
 type Player struct {
-	IsOnline        bool `json:"isOnline"`
-	*PlayerGameData `json:"playerGameData"`
+	IsOnline       bool `json:"isOnline"`
+	PlayerGameData `json:"playerGameData"`
 }
 
 type PlayerGameData struct {
 	Nick string
-	*PlayerPosition
+	PlayerPosition
 }
 
 type PlayerPosition struct {
-	Timestamp     int64 `json:"timestamp"`
-	*Position     `json:"pos"`
-	*DestPosition `json:"destPos"`
+	Timestamp    int64 `json:"timestamp"`
+	Position     `json:"pos"`
+	DestPosition `json:"destPos"`
 }
 
 type ChatMessage struct {
