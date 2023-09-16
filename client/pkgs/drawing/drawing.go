@@ -19,20 +19,18 @@ func DrawMap(world *rl.RenderTexture2D, txt *rl.Texture2D, zoom float32) {
 
 // Draw all online players on world texture
 func DrawPlayers(world *rl.RenderTexture2D, p player.ClientPlayer) {
-	cMap := p.InternalPlayer.GetCache().CacheStore.Store
+	cheMap := p.InternalPlayer.GetCache()
 	rl.BeginTextureMode(*world)
-	for _, elem := range cMap {
-		if p.InternalPlayer.GetId() != elem[0].PlayerId { // ignore self
-			pos := elem[1].Position
-			rl.DrawRectangleRec(rl.Rectangle{X: float32(pos.X) * c.BLOCK_SIZE, Y: float32(pos.Y) * c.BLOCK_SIZE, Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}, rl.Purple)
-		}
+	for _, player := range *cheMap {
+		pos := player.Curr.Position
+		rl.DrawRectangleRec(rl.Rectangle{X: float32(pos.X) * c.BLOCK_SIZE, Y: float32(pos.Y) * c.BLOCK_SIZE, Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}, rl.Purple)
 	}
 	rl.EndTextureMode()
 }
 
 // (Tmp) draws current coordinates on the map
 func DrawCoordinates(p player.ClientPlayer, x float32, y float32) {
-	pPos := p.InternalPlayer.GetPos()
+	pPos := p.InternalPlayer.GetPos().Position
 	rl.DrawTextEx(c.DEFAULT_FONT, fmt.Sprintf("<%d, %d>", pPos.X, pPos.Y), rl.Vector2{X: x, Y: y}, c.DEFAULT_FONT_SIZE, 0, rl.Blue)
 }
 

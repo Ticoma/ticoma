@@ -41,7 +41,7 @@ func (nc *NodeCache) Put(peerID string, data []byte) (*interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("[NODE CACHE] - Req not accepted. Err: %v", err)
 	}
-	debug.DebugLog(fmt.Sprintf("[CACHE] - Request constructed. Data: {peerID: %s, data: %s}", req.PeerID, string(req.Data)), debug.PLAYER)
+	debug.DebugLog(fmt.Sprintf("[CACHE] - Request constructed. Data: {peerID: %s, data: \"%s\"}", req.PeerID, string(req.Data)), debug.PLAYER)
 
 	// Pass to cache req handler
 	reqS, err := nc.handleRequest(req)

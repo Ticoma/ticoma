@@ -2,6 +2,7 @@ package gamenode
 
 import (
 	"context"
+	"fmt"
 
 	"ticoma/internal/debug"
 	"ticoma/internal/pkgs/gamenode/cache"
@@ -43,7 +44,7 @@ func (gn *GameNode) ListenForReqs(ctx context.Context, reqch chan interface{}) {
 		// Listen for game requests on pubsub
 		msg, err := gn.NetworkNode.Sub.Next(ctx)
 		if err != nil {
-			panic(err)
+			fmt.Errorf("[GAME NODE] - Error while reading msg from pubsub. Err: %s", err.Error())
 		}
 
 		peerID = msg.ReceivedFrom.String()
@@ -56,7 +57,7 @@ func (gn *GameNode) ListenForReqs(ctx context.Context, reqch chan interface{}) {
 
 		req, err := gn.NodeCache.Put(peerID, data)
 		if err != nil {
-			debug.DebugLog("[PLAYER NODE] - Failed to process request. Err: "+err.Error(), debug.NETWORK)
+			debug.DebugLog("[GAME NODE] - Failed to process request. Err: "+err.Error(), debug.NETWORK)
 		}
 
 		// Once verified, send req to client
@@ -64,7 +65,11 @@ func (gn *GameNode) ListenForReqs(ctx context.Context, reqch chan interface{}) {
 	}
 }
 
-func (gn *GameNode) SendRequest(ctx context.Context, data *[]byte) {
-	gn.NetworkNode.Topic.Publish(ctx, *data)
-	debug.DebugLog("[PLAYER NODE] - I just sent a request: "+string(*data), debug.NETWORK)
+func (gn *GameNode) SendRequest(ctx context.Context, data *[]byte) error {
+	err := gn.NetworkNode.Topic.Publish(ctx, *data)
+	if err != nil {
+		return fmt.Errorf("[GAME NODE] - Failed to send request. err: %s", err.Error())
+	}
+	debug.DebugLog("[GAME NODE] - Request sent: "+string(*data), debug.NETWORK)
+	return nil
 }

@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"ticoma/client/pkgs/camera"
 	c "ticoma/client/pkgs/constants"
 	dr "ticoma/client/pkgs/drawing"
@@ -15,7 +14,6 @@ import (
 
 	"ticoma/client/pkgs/utils"
 	internal_player "ticoma/internal/pkgs/player"
-	"ticoma/types"
 
 	"github.com/fstanis/screenresolution"
 
@@ -26,7 +24,7 @@ var chatInput []byte
 var chatMsgs []string
 var hold int
 
-func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen *bool) {
+func Main(pc chan internal_player.Player, psc chan bool, fullscreen *bool) {
 
 	// Load icon
 	icon := rl.LoadImage("../client/assets/logo/ticoma-logo-64.png")
@@ -56,8 +54,8 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 	SIDE_PANEL_WIDTH := int32((screenC.Width / 4))
 
 	// Setup game
-	gameCam := camera.New(float32(spawnImg.Width/2), float32(spawnImg.Height/2), float32(screenC.Width/2), float32((screenC.Height+8)/2)) // where is this 8px offset coming from??????
-	spawnMapSize := 25                                                                                                                    // In blocks (tmp)
+	gameCam := camera.New(float32(spawnImg.Width/2), float32(spawnImg.Height/2), float32(screenC.Width/2), float32((screenC.Height)/2))
+	spawnMapSize := 25
 
 	// Setup textures, panels
 	world := rl.LoadRenderTexture(spawnImg.Width, spawnImg.Height) // Full sized map
@@ -70,7 +68,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 	p := <-pc
 
 	// Activate chat listener
-	go ChatMsgListener(p, cc)
+	// go ChatMsgListener(p, cc)
 
 	// Init ClientPlayer
 	clientPlayer := player.New(p, spawnMapSize/2, spawnMapSize/2)
@@ -103,7 +101,7 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 		// Game scene
 		rl.DrawTextureRec(world.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(world.Texture.Width), Height: float32(-world.Texture.Height)}, rl.Vector2{X: 0, Y: 0}, rl.White)
 		// Player
-		rl.DrawRectangleRec(rl.Rectangle{X: float32(p.GetPos().X) * c.BLOCK_SIZE, Y: float32(p.GetPos().Y) * c.BLOCK_SIZE, Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}, rl.Black)
+		rl.DrawRectangleRec(rl.Rectangle{X: float32(p.GetPos().Position.X) * c.BLOCK_SIZE, Y: float32(p.GetPos().Position.Y) * c.BLOCK_SIZE, Width: c.BLOCK_SIZE, Height: c.BLOCK_SIZE}, rl.Black)
 		// Test block (question mark)
 		dr.DrawBlock(&blocksTxt, 3, 14, 14)
 		rl.EndMode2D()
@@ -129,13 +127,13 @@ func Main(pc chan internal_player.Player, cc chan types.ChatMessage, fullscreen 
 	}
 }
 
-func ChatMsgListener(p internal_player.Player, cc chan types.ChatMessage) {
-	for {
-		chat := <-cc
-		msg := fmt.Sprintf("[player %d]: %s", chat.PlayerId, chat.Message)
-		chatMsgs = append(chatMsgs, msg)
-		if p.GetId() == chat.PlayerId { // if the msg arrived from us - clear input
-			chatInput = nil
-		}
-	}
-}
+// func ChatMsgListener(p internal_player.Player, cc chan types.ChatMessage) {
+// 	for {
+// 		chat := <-cc
+// 		msg := fmt.Sprintf("[player %d]: %s", chat.PlayerId, chat.Message)
+// 		chatMsgs = append(chatMsgs, msg)
+// 		if p.GetId() == chat.PlayerId { // if the msg arrived from us - clear input
+// 			chatInput = nil
+// 		}
+// 	}
+// }

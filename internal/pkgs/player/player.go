@@ -7,6 +7,7 @@ import (
 	"ticoma/internal/debug"
 	"ticoma/internal/pkgs/gamenode"
 	"ticoma/internal/pkgs/gamenode/cache"
+	"ticoma/internal/pkgs/gamenode/cache/verifier/security"
 	"ticoma/internal/pkgs/gamenode/network/libp2p/node"
 	"ticoma/types"
 )
@@ -17,9 +18,9 @@ import (
 // the client is able to perform certain actions using this interface and is limited to its functions
 type Player interface {
 	GetPeerID() string
-	GetCache() cache.Memory
+	GetCache() *cache.Memory
 	Move(posX *int, posY *int, destPosX *int, destPosY *int) error
-	Chat(msg *[]byte)
+	Chat(msg *[]byte) error
 	Init(ctx context.Context, reqch chan interface{}, isRelay bool, nodeConfig *node.NodeConfig)
 	GetPos() types.PlayerPosition
 }
@@ -43,40 +44,54 @@ func (p *player) Init(ctx context.Context, reqch chan interface{}, isRelay bool,
 }
 
 //
-// Request-related funcs
+// Account requests
+//
+
+func (p *player) Register() error {
+	// TODO: add nickname support
+	pfx := []byte(security.REGISTER_PREFIX)
+	p.SendRequest(p.ctx, &pfx)
+	return nil
+}
+
+//
+// Game requests
 //
 
 func (p *player) Move(posX *int, posY *int, destPosX *int, destPosY *int) error {
 
-	prefix := []byte("MOVE_")
+	pfx := []byte(security.MOVE_PREFIX)
 	pos := types.Position{X: *posX, Y: *posY}
 	destPos := types.DestPosition{X: *destPosX, Y: *destPosY}
 	pp := &types.PlayerPosition{Position: pos, DestPosition: destPos}
 
 	moveReqJSON, err := json.Marshal(pp)
 	if err != nil {
-		return fmt.Errorf("[PLAYER] - Failed to serialize request. Err: %v", err)
+		return fmt.Errorf("[PLAYER] - Failed to serialize request. Err: %s", err.Error())
 	}
-	var moveReq []byte = append(prefix, moveReqJSON...)
-	fmt.Println("MOVE REQ: ", string(moveReq)) //tmp
+	var moveReq []byte = append(pfx, moveReqJSON...)
 	p.SendRequest(p.ctx, &moveReq)
 
 	debug.DebugLog("[MOVE] Sending move req: "+string(moveReq), debug.PLAYER)
 	return nil
 }
 
-func (p *player) Chat(msg *[]byte) {
-	prefix := []byte("CHAT_")
-	var chatReq []byte = append(prefix, *msg...)
-	p.SendRequest(p.ctx, &chatReq)
+func (p *player) Chat(msg *[]byte) error {
+	pfx := []byte("CHAT_")
+	var reqData []byte = append(pfx, *msg...)
+	err := p.SendRequest(p.ctx, &reqData)
+	if err != nil {
+		return fmt.Errorf("[PLAYER] - Failed to send chat message. Err: %s", err.Error())
+	}
+	return nil
 }
 
 //
 // Getters
 //
 
-func (p *player) GetCache() cache.Memory {
-	return p.GameNode.Memory
+func (p *player) GetCache() *cache.Memory {
+	return p.GameNode.GetAll()
 }
 
 func (p *player) GetPeerID() string {
