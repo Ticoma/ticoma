@@ -3,9 +3,8 @@ package engine
 import (
 	"fmt"
 	"math"
-	"strconv"
 	"ticoma/internal/debug"
-	intf "ticoma/internal/pkgs/gamenode/cache/interfaces"
+	"ticoma/types"
 )
 
 // EngineVerifier
@@ -21,35 +20,29 @@ const (
 // Engine verify functions
 
 // Checks if the player traversed too many blocks in a short amount of time
-func (ev *EngineVerifier) VerifyPlayerMovement(startPkg *intf.ActionDataPackageTimestamped, endPkg *intf.ActionDataPackageTimestamped) bool {
-
-	startPos := startPkg.Position
-	endPos := endPkg.Position
-	elapsedTime := endPkg.Timestamp - startPkg.Timestamp
+func (ev *EngineVerifier) VerifyMoveVelocity(start *types.PlayerPosition, end *types.PlayerPosition) bool {
+	startPos := start.Position
+	endPos := end.Position
+	elapsedTime := end.Timestamp - start.Timestamp
 	blocksTraveledX := math.Abs(float64(endPos.X) - float64(startPos.X))
 	blocksTraveledY := math.Abs(float64(endPos.Y) - float64(startPos.Y))
 	blocksTraveledTotal := blocksTraveledX + blocksTraveledY
 
 	velocity := blocksTraveledTotal / float64(elapsedTime)
 
-	debug.DebugLog("[ENGINE] VELOCITY: "+strconv.FormatFloat(velocity, 'E', -1, 32), debug.PLAYER)
-	debug.DebugLog("[ENGINE] MAX VELOCITY: "+strconv.FormatFloat(MAX_VEL, 'E', -1, 32), debug.PLAYER)
-	debug.DebugLog("[ENGINE] ELAPSED TIME: "+strconv.FormatInt(elapsedTime, 10), debug.PLAYER)
+	debug.DebugLog(fmt.Sprintf("[ENGINE VER] - Move vel info: Velocity: %f, Max Vel: %f, Elapsed Time: %d\n[ENGINE VER] - First mv: { pos{%d, %d}, dest{%d, %d}}, End pos: { pos{%d, %d}, dest{%d, %d}}", velocity, MAX_VEL, elapsedTime, start.Position.X, start.Position.Y, start.DestPosition.X, start.DestPosition.Y, end.Position.X, end.Position.Y, end.DestPosition.X, end.DestPosition.Y), debug.PLAYER)
 
 	if velocity > MAX_VEL {
-		msg := fmt.Sprintf("[ERR] Engine player movement verification (velocity too high)\nVelocity: %f, max acceptable velocity: %f", velocity, MAX_VEL)
+		msg := fmt.Sprintf("[ERR] Engine player movement verification (velocity too high).\nVelocity: %f\nMax acceptable velocity: %f\n", velocity, MAX_VEL)
 		debug.DebugLog(msg, debug.PLAYER)
 		return false
 	}
-
 	return true
-
 }
 
-// Checks if destPos of last package matches the pos of currently arriving package
-func (ev *EngineVerifier) VerifyLastMovePos(lastDestPos *intf.DestPosition, pos *intf.Position) bool {
-	verX := lastDestPos.X == pos.X
-	verY := lastDestPos.Y == pos.Y
+// Checks if destPos of last move req matches the pos of next req
+func (ev *EngineVerifier) VerifyMoveDirection(lastDestPos *types.DestPosition, pos *types.Position) bool {
+	verX, verY := lastDestPos.X == pos.X, lastDestPos.Y == pos.Y
 	if !verX || !verY {
 		return false
 	} else {

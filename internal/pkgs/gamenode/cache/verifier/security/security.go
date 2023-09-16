@@ -3,10 +3,10 @@ package security
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"ticoma/internal/debug"
-	"ticoma/internal/pkgs/gamenode/cache/interfaces"
 	"ticoma/internal/pkgs/gamenode/cache/utils"
 	"ticoma/types"
 	"time"
@@ -15,20 +15,24 @@ import (
 // SecurityVerifier
 type SecurityVerifier struct{}
 
-type PACKAGE_TYPE int
-
+// Request schemas and prefixes
 const (
-	ADP PACKAGE_TYPE = iota
-	CHAT
-)
 
-// Returns a json schema of a package
-func (sv *SecurityVerifier) getSchemaAndPrefix(reqSchema PACKAGE_TYPE) (string, string, error) {
+	//
+	// Account-related
+	//
 
-	const adpPrefix = "ADP_"
-	const schemaADP = `{
-		playerId: int,
-		pubKey: string,
+	REGISTER_PREFIX   = "REGISTER_"
+	DELETE_ACC_PREFIX = "DELETEACC_"
+	LOGIN_PREFIX      = "LOGIN_"
+	LOGOUT_PREFIX     = "LOGOUT_"
+
+	//
+	// Game-related
+	//
+
+	MOVE_PREFIX = "MOVE_"
+	MOVE_SCHEMA = `{
 		pos: {
 			posX: int,
 			posY: int,
@@ -37,57 +41,60 @@ func (sv *SecurityVerifier) getSchemaAndPrefix(reqSchema PACKAGE_TYPE) (string, 
 			destPosX: int,
 			destPosY: int,
 		},
-	},`
-
-	const chatPrefix = "CHAT_"
-	const schemaChat = `{
-		playerId: int,
+	}`
+	CHAT_PREFIX = "CHAT_"
+	CHAT_SCHEMA = `{
+		peerId: string,
 		message: string,
-	},`
+	}`
+)
 
-	switch reqSchema {
-	case ADP:
-		return schemaADP, adpPrefix, nil
-	case CHAT:
-		return schemaChat, chatPrefix, nil
+// Checks if there's a prefix in req data and if so, returns it
+func (sv *SecurityVerifier) DetectReqPrefix(reqData []byte) (string, error) {
+	prefixChar := "_"
+	index := strings.Index(string(reqData), prefixChar)
+	if index == -1 {
+		return "", fmt.Errorf("[SEC VER] - Prefix not found in request.%s", "")
+	}
+	prefix := string(reqData[:index+1])
+	return prefix, nil
+}
+
+// Returns a json schema of a request
+func (sv *SecurityVerifier) getReqSchema(reqPrefix string) (string, error) {
+	switch reqPrefix {
+	case MOVE_PREFIX:
+		return MOVE_SCHEMA, nil
+	case CHAT_PREFIX:
+		return CHAT_SCHEMA, nil
+	case REGISTER_PREFIX, DELETE_ACC_PREFIX, LOGIN_PREFIX, LOGOUT_PREFIX:
+		return "", nil
 	default:
-		return "", "", fmt.Errorf("[SEC VER] - Couldn't find requested schema")
+		return "", fmt.Errorf("[SEC VER] - Couldn't find schema of request with this prefix: %s", reqPrefix)
 	}
 }
 
-// Verifies package types and returns
-// Str pkg without a prefix
-func (sv *SecurityVerifier) verifyPackageTypes(pkg []byte, pkgType PACKAGE_TYPE) (bool, string) {
+// Verifies package types and returns Req data as string (no prefix)
+func (sv *SecurityVerifier) VerifyReqTypes(prefix string, reqData []byte) (string, error) {
 
-	schema, prefix, err := sv.getSchemaAndPrefix(pkgType)
+	schema, err := sv.getReqSchema(prefix)
 	if err != nil {
-		fmt.Println(err)
-		return false, ""
+		return "", fmt.Errorf("[SEC VER] - Err while getting req schema: %v", err)
 	}
 
-	pkgStr := string(pkg)
-
-	// Trim prefix first
-	pkgHasPrefix := strings.HasPrefix(pkgStr, prefix)
-	if !pkgHasPrefix {
-		fmt.Println("[SEC VER] - Pkg has no prefix")
-		return false, ""
-	}
-	pkgStr = strings.TrimPrefix(pkgStr, prefix)
-
+	reqStr := strings.TrimPrefix(string(reqData), prefix)
 	res := []byte{}
 	keySelected := false
 
-	// Anti spam
-	if len(pkg) == 0 {
-		return false, ""
-	}
-
-	dec := json.NewDecoder(strings.NewReader(pkgStr))
+	dec := json.NewDecoder(strings.NewReader(reqStr))
 
 	for {
 		t, err := dec.Token()
 		if err != nil {
+			if err != io.EOF {
+				// fmt.Println(err)
+				debug.DebugLog(fmt.Sprintf("Err while decoding req: %v", err), debug.PLAYER)
+			}
 			break
 		}
 
@@ -118,91 +125,93 @@ func (sv *SecurityVerifier) verifyPackageTypes(pkg []byte, pkgType PACKAGE_TYPE)
 		}
 	}
 
-	debug.DebugLog("[ADP TYPES] SCHEMA "+utils.StripString(schema, true), debug.PLAYER)
-	debug.DebugLog("[ADP TYPES RES "+utils.StripString(string(res), true), debug.PLAYER)
+	debug.DebugLog("[SEC VER] - Schema types: "+utils.StripString(schema, false), debug.PLAYER)
+	debug.DebugLog("[SEC VER] - Req types: "+string(res), debug.PLAYER)
 
-	valid := strings.Compare(utils.StripString(schema, true), utils.StripString(string(res), true)) == 0
-
-	return valid, pkgStr
+	valid := strings.Compare(utils.StripString(schema, false), utils.StripString(string(res), true)) == 0
+	if !valid {
+		return "", fmt.Errorf("[SEC VER] - Couldn't validate request data with schema. %s", "")
+	}
+	return reqStr, nil
 }
 
-// Verify pkg types and construct ADPT struct from byte pkg
-func (sv *SecurityVerifier) ConstructADPT(pkgBytes []byte) (interfaces.ActionDataPackageTimestamped, error) {
+// Request interface from raw pubsub data
+func (sv *SecurityVerifier) ReqFromBytes(peerID *string, data *[]byte) (types.Request, error) {
 
-	const EXPECTED_VAL_LENGTH_IN_ADP = 6 // [playerId, pubKey, posX, posY, destX, destY]
-
-	// Type check
-	validPkgTypes, pkgStr := sv.verifyPackageTypes(pkgBytes, ADP)
-	if !validPkgTypes {
-		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't verify package types")
+	if peerID == nil || data == nil {
+		return types.Request{}, fmt.Errorf("[SEC VER] - Null peerID or reqData pointer")
 	}
 
-	// If types are OK, try extract vals
-	vals := utils.ExtractValsFromStrPkg(pkgStr)
-	if len(vals) != EXPECTED_VAL_LENGTH_IN_ADP {
-		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
+	if len(*peerID) == 0 || len(*data) == 0 {
+		return types.Request{}, fmt.Errorf("[SEC VER] - PeerID or reqData is empty?")
 	}
 
-	playerId, err := strconv.Atoi(vals[0])
-	if err != nil {
-		return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Couldn't assign playerId from vals")
+	req := types.Request{
+		PeerID: *peerID,
+		Data:   *data,
+	}
+	return req, nil
+}
+
+// construct request based on prefix
+func (sv *SecurityVerifier) AutoConstructRequest(prefix string, data string) (interface{}, error) {
+	switch prefix {
+	case MOVE_PREFIX:
+		moveReq, err := sv.constructMoveReq(data)
+		return moveReq, err
+	case CHAT_PREFIX:
+		chatReq, err := sv.constructChatReq(data)
+		return chatReq, err
+	default:
+		return nil, nil
+	}
+}
+
+// construct PlayerPosition from req data
+func (sv *SecurityVerifier) constructMoveReq(data string) (types.PlayerPosition, error) {
+
+	const EXPECTED_VAL_LEN_IN_MOVE = 4 // [posX, posY, destPosX, destPosY]
+	var IGNORED_STRINGS_IN_MOVE = []string{"posX", "posY", "pos", "destPosX", "destPosY", "destPos"}
+
+	vals := utils.ExtractValsFromStrPkg(data, IGNORED_STRINGS_IN_MOVE)
+	if len(vals) != EXPECTED_VAL_LEN_IN_MOVE {
+		return types.PlayerPosition{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
 	}
 
 	var positions []int
-	// conv vals[2:5] to ints
-	for i := 2; i < len(vals); i++ {
+	for i := 0; i < len(vals); i++ {
 		pos, err := strconv.Atoi(vals[i])
 		if err != nil {
-			return interfaces.ActionDataPackageTimestamped{}, fmt.Errorf("[SEC VER] - Err while converting string val to int")
+			return types.PlayerPosition{}, fmt.Errorf("[SEC VER] - Err while converting string val to int")
 		}
 		positions = append(positions, pos)
 	}
 
-	timestamp := time.Now().UnixMilli()
-
-	ADPT := interfaces.ActionDataPackageTimestamped{
-		ActionDataPackage: &interfaces.ActionDataPackage{
-			PlayerId:     playerId,
-			PubKey:       vals[1],
-			Position:     &interfaces.Position{X: positions[0], Y: positions[1]},
-			DestPosition: &interfaces.DestPosition{X: positions[2], Y: positions[3]},
-		},
-		Timestamp: timestamp,
+	ts := time.Now().UnixMilli()
+	playerPos := types.PlayerPosition{
+		Timestamp:    ts,
+		Position:     types.Position{X: positions[0], Y: positions[1]},
+		DestPosition: types.DestPosition{X: positions[2], Y: positions[3]},
 	}
-
-	return ADPT, nil
+	return playerPos, nil
 }
 
-// Verify pkg types and construct ChatPkg from byte pkg
-func (sv *SecurityVerifier) ConstructChatPkg(pkgBytes []byte) (types.ChatMessage, error) {
+// construct ChatMessage from req data
+func (sv *SecurityVerifier) constructChatReq(data string) (types.ChatMessage, error) {
 
-	const EXPECTED_VAL_LENGTH_IN_CHAT_PKG = 2 // [playerId, message]
+	const EXPECTED_VAL_LEN_IN_CHAT = 2 // [message, peerId]
+	var IGNORED_STRINGS_IN_CHAT = []string{"message", "peerId"}
 
-	validPkgTypes, pkgStr := sv.verifyPackageTypes(pkgBytes, CHAT)
-	if !validPkgTypes {
-		return types.ChatMessage{}, fmt.Errorf("[SEC VER] - Couldn't verify package types")
-	}
-
-	// If types are OK, try extract vals
-	vals := utils.ExtractValsFromStrPkg(pkgStr)
-	if len(vals) != EXPECTED_VAL_LENGTH_IN_CHAT_PKG {
+	vals := utils.ExtractValsFromStrPkg(data, IGNORED_STRINGS_IN_CHAT)
+	if len(vals) != EXPECTED_VAL_LEN_IN_CHAT {
 		return types.ChatMessage{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
 	}
 
-	playerId, err := strconv.Atoi(vals[0])
-	if err != nil {
-		return types.ChatMessage{}, fmt.Errorf("[SEC VER] - Couldn't assign playerId from pkg vals")
-	}
-
-	timestamp := time.Now().UnixMilli()
-
+	ts := time.Now().UnixMilli()
 	chatPkg := types.ChatMessage{
-		Timestamp: timestamp,
-		PlayerId:  playerId,
+		PeerID:    vals[0],
+		Timestamp: ts,
 		Message:   vals[1],
 	}
-
-	debug.DebugLog(fmt.Sprintf("[SEC VER] - Chat pkg constructed! pkg: %+v\n", chatPkg), debug.PLAYER)
-
 	return chatPkg, nil
 }

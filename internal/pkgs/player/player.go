@@ -2,11 +2,11 @@ package player
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"ticoma/internal/debug"
 	"ticoma/internal/pkgs/gamenode"
 	"ticoma/internal/pkgs/gamenode/cache"
-	"ticoma/internal/pkgs/gamenode/cache/interfaces"
 	"ticoma/internal/pkgs/gamenode/network/libp2p/node"
 	"ticoma/types"
 )
@@ -16,86 +16,73 @@ import (
 // This interface is sent to client module once a connection to pubsub is established
 // the client is able to perform certain actions using this interface and is limited to its functions
 type Player interface {
-	GetId() int
 	GetPeerID() string
-	GetCache() *cache.NodeCache
-	Move(posX int, posY int, destPosX int, destPosY int) error
-	Chat(msg []byte) error
-	Init(ctx context.Context, cc chan types.ChatMessage, isRelay bool, nodeConfig *node.NodeConfig)
-	GetPos() *interfaces.Position
+	GetCache() cache.Memory
+	Move(posX *int, posY *int, destPosX *int, destPosY *int) error
+	Chat(msg *[]byte)
+	Init(ctx context.Context, reqch chan interface{}, isRelay bool, nodeConfig *node.NodeConfig)
+	GetPos() types.PlayerPosition
 }
 
 type player struct {
-	id int
 	*gamenode.GameNode
 	ctx context.Context
 }
 
-func New(ctx context.Context, id int) Player {
+func New(ctx context.Context) *player {
 	gn := gamenode.New()
 	return &player{
-		id:       id,
 		GameNode: gn,
 		ctx:      ctx,
 	}
 }
 
-func (p *player) Init(ctx context.Context, cc chan types.ChatMessage, isRelay bool, nodeConfig *node.NodeConfig) {
+func (p *player) Init(ctx context.Context, reqch chan interface{}, isRelay bool, nodeConfig *node.NodeConfig) {
 	p.GameNode.Init(ctx, isRelay, nodeConfig)
-	go p.GameNode.ListenForPkgs(ctx, cc)
+	go p.GameNode.ListenForReqs(ctx, reqch)
 }
 
-func (p *player) Move(posX int, posY int, destPosX int, destPosY int) error {
+//
+// Request-related funcs
+//
 
-	// "ADP_" Prefix
-	ADPSchema := `ADP_{"playerId":%d,"pubKey":"PUBKEY","pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`
-	data := []any{p.id, posX, posY, destPosX, destPosY}
-	pkg := fmt.Sprintf(ADPSchema, data...)
+func (p *player) Move(posX *int, posY *int, destPosX *int, destPosY *int) error {
 
-	debug.DebugLog("[MOVE] PACKAGE "+pkg, debug.PLAYER)
-	debug.DebugLog("[MOVE] CACHE "+fmt.Sprintf("%v", p.GameNode.NodeCache), debug.PLAYER)
+	prefix := []byte("MOVE_")
+	pos := types.Position{X: *posX, Y: *posY}
+	destPos := types.DestPosition{X: *destPosX, Y: *destPosY}
+	pp := &types.PlayerPosition{Position: pos, DestPosition: destPos}
 
-	err := p.GameNode.SendADPPkg(p.ctx, []byte(pkg))
+	moveReqJSON, err := json.Marshal(pp)
 	if err != nil {
-		return fmt.Errorf("[PLAYER] - Couldn't move. Err: " + err.Error())
+		return fmt.Errorf("[PLAYER] - Failed to serialize request. Err: %v", err)
 	}
+	var moveReq []byte = append(prefix, moveReqJSON...)
+	fmt.Println("MOVE REQ: ", string(moveReq)) //tmp
+	p.SendRequest(p.ctx, &moveReq)
+
+	debug.DebugLog("[MOVE] Sending move req: "+string(moveReq), debug.PLAYER)
 	return nil
 }
 
-func (p *player) Chat(msg []byte) error {
-
-	// Ignore empty chat msgs
-	if len(msg) == 0 {
-		return fmt.Errorf("[PLAYER] - You can't send an empty msg!")
-	}
-
-	// "CHAT_" Prefix
-	chatMsgSchema := `CHAT_{"playerId":%d,"message":"%s"}`
-	data := []any{p.id, msg}
-	pkg := fmt.Sprintf(chatMsgSchema, data...)
-
-	debug.DebugLog("[CHAT] Pkg: "+fmt.Sprintf("%v", pkg), debug.PLAYER)
-
-	err := p.GameNode.SendChatMsg(p.ctx, []byte(pkg))
-	if err != nil {
-		return fmt.Errorf("[PLAYER] - Couldn't send chat message. Err: " + err.Error())
-	}
-	return nil
+func (p *player) Chat(msg *[]byte) {
+	prefix := []byte("CHAT_")
+	var chatReq []byte = append(prefix, *msg...)
+	p.SendRequest(p.ctx, &chatReq)
 }
 
-func (p *player) GetPos() *interfaces.Position {
-	pos := p.NodeCache.GetCurrent(p.id).Position
-	return pos
-}
+//
+// Getters
+//
 
-func (p *player) GetCache() *cache.NodeCache {
-	return p.GameNode.NodeCache
+func (p *player) GetCache() cache.Memory {
+	return p.GameNode.Memory
 }
 
 func (p *player) GetPeerID() string {
-	return p.GameNode.Host.GetPeerInfo().ID.String()
+	return p.GameNode.NetworkNode.Host.GetPeerInfo().ID.String()
 }
 
-func (p *player) GetId() int {
-	return p.id
+func (p *player) GetPos() types.PlayerPosition {
+	return *p.GameNode.GetCurrPlayerPos(p.GetPeerID())
 }

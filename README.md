@@ -63,3 +63,5 @@ Currently the .env file consists of:
 ```
 * `RELAY_ADDR` - PeerID of Relay node to join pubsub
 * `RELAY_IP` - Public IPv4 address of relay node
+* `RELAY_PORT` - The port your relay is running on
+* `PORT` - Port to setup local libp2p node on
