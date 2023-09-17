@@ -17,12 +17,14 @@ import (
 // This interface is sent to client module once a connection to pubsub is established
 // the client is able to perform certain actions using this interface and is limited to its functions
 type Player interface {
-	GetPeerID() string
-	GetCache() *cache.Memory
+	Register() error
+	Login() error
 	Move(posX *int, posY *int, destPosX *int, destPosY *int) error
 	Chat(msg *[]byte) error
 	Init(ctx context.Context, reqch chan interface{}, isRelay bool, nodeConfig *node.NodeConfig)
-	GetPos() types.PlayerPosition
+	GetPeerID() string
+	GetCache() *cache.Memory
+	GetPos() *types.PlayerPosition
 }
 
 type player struct {
@@ -41,6 +43,7 @@ func New(ctx context.Context) *player {
 func (p *player) Init(ctx context.Context, reqch chan interface{}, isRelay bool, nodeConfig *node.NodeConfig) {
 	p.GameNode.Init(ctx, isRelay, nodeConfig)
 	go p.GameNode.ListenForReqs(ctx, reqch)
+	go p.GameNode.PerformSnapshot(ctx)
 }
 
 //
@@ -50,8 +53,14 @@ func (p *player) Init(ctx context.Context, reqch chan interface{}, isRelay bool,
 func (p *player) Register() error {
 	// TODO: add nickname support
 	pfx := []byte(security.REGISTER_PREFIX)
-	p.SendRequest(p.ctx, &pfx)
-	return nil
+	err := p.SendRequest(p.ctx, &pfx)
+	return err
+}
+
+func (p *player) Login() error {
+	pfx := []byte(security.LOGIN_PREFIX)
+	err := p.SendRequest(p.ctx, &pfx)
+	return err
 }
 
 //
@@ -98,6 +107,6 @@ func (p *player) GetPeerID() string {
 	return p.GameNode.NetworkNode.Host.GetPeerInfo().ID.String()
 }
 
-func (p *player) GetPos() types.PlayerPosition {
-	return *p.GameNode.GetCurrPlayerPos(p.GetPeerID())
+func (p *player) GetPos() *types.PlayerPosition {
+	return p.GameNode.GetCurrPlayerPos(p.GetPeerID())
 }

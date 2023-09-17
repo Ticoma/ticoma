@@ -73,7 +73,7 @@ func (h *Libp2pHost) ConnectToPubsub(ctx context.Context, topicName string, isRe
 		panic(err)
 	}
 
-	debug.DebugLog("Connected to topic: "+topicName, debug.NETWORK)
+	debug.DebugLog("[NETWORK NODE] - Connected to topic: "+topicName, debug.NETWORK)
 	return topic, sub
 }
 

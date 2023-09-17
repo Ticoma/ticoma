@@ -34,7 +34,7 @@ func New() *NodeCache {
 // Auto detect request type and try to put new data in Cache
 //
 // Returns automatically constructed request interface (based on data preifx)
-func (nc *NodeCache) Put(peerID string, data []byte) (*interface{}, error) {
+func (nc *NodeCache) Put(peerID string, data []byte) (interface{}, error) {
 
 	// Construct request
 	req, err := nc.NodeVerifier.SecurityVerifier.ReqFromBytes(&peerID, &data)
@@ -54,7 +54,7 @@ func (nc *NodeCache) Put(peerID string, data []byte) (*interface{}, error) {
 }
 
 // Main request handler and sorter
-func (nc *NodeCache) handleRequest(req types.Request) (*interface{}, error) {
+func (nc *NodeCache) handleRequest(req types.Request) (interface{}, error) {
 
 	// Detect prefix from request data
 	reqPrefix, err := nc.SecurityVerifier.DetectReqPrefix(req.Data)

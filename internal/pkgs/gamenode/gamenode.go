@@ -32,9 +32,8 @@ func (gn *GameNode) Init(ctx context.Context, isRelay bool, nodeConfig *node.Nod
 	gn.NetworkNode.Init(ctx, isRelay, nodeConfig)
 }
 
-// Listens for incoming requests on the pubsub and forwards them to Cache
-//
-// Sends request to client after its verified
+// Listen for incoming requests on Topic and put them in Cache.
+// Forwards request to client if it gets verified
 func (gn *GameNode) ListenForReqs(ctx context.Context, reqch chan interface{}) {
 
 	var peerID string
@@ -44,7 +43,7 @@ func (gn *GameNode) ListenForReqs(ctx context.Context, reqch chan interface{}) {
 		// Listen for game requests on pubsub
 		msg, err := gn.NetworkNode.Sub.Next(ctx)
 		if err != nil {
-			fmt.Errorf("[GAME NODE] - Error while reading msg from pubsub. Err: %s", err.Error())
+			debug.DebugLog(fmt.Sprintf("[GAME NODE] - Error while reading msg from pubsub. Err: %s", err.Error()), debug.NETWORK)
 		}
 
 		peerID = msg.ReceivedFrom.String()
@@ -60,16 +59,23 @@ func (gn *GameNode) ListenForReqs(ctx context.Context, reqch chan interface{}) {
 			debug.DebugLog("[GAME NODE] - Failed to process request. Err: "+err.Error(), debug.NETWORK)
 		}
 
-		// Once verified, send req to client
-		reqch <- req
+		// If valid req, forward to client
+		if req != nil {
+			reqch <- req
+		}
 	}
 }
 
+// Send a request to the network and Put in own cache
 func (gn *GameNode) SendRequest(ctx context.Context, data *[]byte) error {
-	err := gn.NetworkNode.Topic.Publish(ctx, *data)
+	err := gn.Topic.Publish(ctx, *data)
 	if err != nil {
-		return fmt.Errorf("[GAME NODE] - Failed to send request. err: %s", err.Error())
+		return fmt.Errorf("[GAME NODE] - Failed to send request. Err: %s", err.Error())
 	}
-	debug.DebugLog("[GAME NODE] - Request sent: "+string(*data), debug.NETWORK)
+	debug.DebugLog(fmt.Sprintf("I just sent a request: data: %s", string(*data)), debug.NETWORK)
+	_, err = gn.NodeCache.Put(gn.Host.GetPeerInfo().ID.String(), *data)
+	if err != nil {
+		return fmt.Errorf("[GAME NODE] - Failed to Put request. Err: %s", err.Error())
+	}
 	return nil
 }

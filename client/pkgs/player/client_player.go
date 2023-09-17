@@ -17,6 +17,7 @@ import (
 //
 
 type ClientPlayer struct {
+	IsOnline       bool
 	InternalPlayer internal_player.Player // Interface passed from internal
 	IsActiveTile   bool                   // Helpers - hoverTile, activeTile can't be nil, and 0,0 is a valid tile
 	IsHoveringTile bool
@@ -25,13 +26,10 @@ type ClientPlayer struct {
 	IsMoving       bool             // Input blocker
 }
 
-func New(p internal_player.Player, initPosX int, initPosY int) *ClientPlayer {
-	// err := p.
-	// if err != nil {
-	// 	fmt.Println("[CLIENT] - Failed to init player! err: ", err)
-	// }
+func New(p *internal_player.Player) *ClientPlayer {
 	return &ClientPlayer{
-		InternalPlayer: p,
+		IsOnline:       false,
+		InternalPlayer: *p,
 		IsActiveTile:   false,
 		IsHoveringTile: false,
 		HoverTile:      &interfaces.Tile{},
@@ -40,7 +38,28 @@ func New(p internal_player.Player, initPosX int, initPosY int) *ClientPlayer {
 	}
 }
 
-// Move with engine-safe delay between pkgs
+// Send a REGISTER_ request from Client
+func (cp *ClientPlayer) Register() {
+	err := cp.InternalPlayer.Register()
+	if err != nil {
+		fmt.Println("[CLIENT] - Failed to register. Err: " + err.Error())
+		return
+	}
+	// Change state if OK
+	cp.IsOnline = true
+}
+
+// Send a LOGIN_ request from Client
+func (cp *ClientPlayer) Login() {
+	err := cp.InternalPlayer.Login()
+	if err != nil {
+		fmt.Println("[CLIENT] - Failed to login. Err: " + err.Error())
+		return
+	}
+	cp.IsOnline = true
+}
+
+// Send two MOVE_ requests with engine-safe cooldown
 func (cp *ClientPlayer) MovePlayer(cam *camera.GameCamera, destX int, destY int) {
 	cp.IsMoving = true
 	currPos := cp.InternalPlayer.GetPos().Position

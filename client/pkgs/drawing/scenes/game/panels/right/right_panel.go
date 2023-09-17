@@ -1,7 +1,7 @@
 package right
 
 import (
-	"ticoma/client/pkgs/drawing/panels"
+	"ticoma/client/pkgs/drawing/scenes/game/panels"
 
 	intf "ticoma/client/pkgs/interfaces"
 

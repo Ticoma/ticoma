@@ -44,27 +44,16 @@ func (nn *NetworkNode) Init(ctx context.Context, isRelay bool, nodeConfig *NodeC
 	if !isRelay {
 		relayInfo := convertToAddrInfo(nodeConfig.RelayIp, nodeConfig.RelayAddr, nodeConfig.RelayPort)
 		nn.Host.ConnectToRelay(ctx, *relayInfo)
-		debug.DebugLog("Connected to relay!", debug.NETWORK)
+		debug.DebugLog("[NETWORK NODE] - Connected to relay!", debug.NETWORK)
 	}
 
-	topic, sub := nn.Host.ConnectToPubsub(ctx, "ticoma1", isRelay)
-	debug.DebugLog("Connected to pubsub!", debug.NETWORK)
-
-	// Storage (ipfs filesystem) tests
-	// h := nn.Host.GetHost()
-	// s := storage.New()
-	// s.StartServer(ctx, h)
-	// s.Add("Hello")
-	// s.Add("World!")
-	// // fmt.Println(cid, err)
-	// data, _ := s.GetLocal(ctx)
-	// fmt.Println(data)
+	topicName := "ticoma1"
+	topic, sub := nn.Host.ConnectToPubsub(ctx, topicName, isRelay)
+	debug.DebugLog("[NETWORK NODE] - Connected to pubsub!", debug.NETWORK)
 
 	nn.Topic = topic
 	nn.Sub = sub
 	nn.isRelay = isRelay
-
-	go nn.PerformSnapshot(ctx)
 }
 
 // Convert string address data -> addrInfo struct
@@ -84,24 +73,25 @@ func convertToAddrInfo(ip, id, port string) *peer.AddrInfo {
 
 // Snapshot timer prototype
 func (nn *NetworkNode) PerformSnapshot(ctx context.Context) {
-	var ts int64
-	var tick <-chan time.Time
+	debug.DebugLog("[NETWORK NODE] - Snapshot ticker started", debug.NETWORK)
+	snapshotTick := ticker()
 
 	for {
-		ts = time.Now().UnixMilli()
-		if ts%60000 == 0 {
-			tick = time.Tick(time.Minute)
-			nn.SnapshotMsg(ctx, time.Now().String())
-			break
-		}
-	}
-
-	for ctime := range tick {
-		nn.SnapshotMsg(ctx, ctime.String())
+		<-snapshotTick.C
+		snapshotTick = ticker()
+		nn.SnapshotMsg(ctx, time.Now().UnixMilli())
 	}
 }
 
-func (nn *NetworkNode) SnapshotMsg(ctx context.Context, time string) {
-	nodeId := nn.Host.GetPeerInfo().ID.String()
-	nn.Topic.Publish(ctx, []byte(fmt.Sprintf("Hello from node %s. Time: %v", nodeId, time)))
+// Returns a new ticker that triggers at the start of each minute
+func ticker() *time.Ticker {
+	return time.NewTicker(time.Second * time.Duration(60-time.Now().Second()))
+}
+
+func (nn *NetworkNode) SnapshotMsg(ctx context.Context, ms int64) {
+	time := time.Unix(0, ms*int64(time.Millisecond))
+	err := nn.Topic.Publish(ctx, []byte(fmt.Sprintf("Snapshot tick. Time: %v", time)))
+	if err != nil {
+		debug.DebugLog(fmt.Sprintf("[NETWORK NODE] - Err while performing snapshot. Err: %s", err.Error()), debug.NETWORK)
+	}
 }

@@ -11,8 +11,6 @@ import (
 )
 
 func main() {
-
-	psc := make(chan bool)         // channel for Player state
 	pc := make(chan player.Player) // channel for Player interface
 	rc := make(chan interface{})   // channel for network requests
 	ctx, cancel := context.WithCancel(context.Background())
@@ -26,7 +24,7 @@ func main() {
 	go internal.Main(ctx, pc, rc, *relayF)
 	if *clientF {
 		fmt.Println("Starting client")
-		client.Main(pc, psc, fullscreenF)
+		client.Main(pc, rc, fullscreenF)
 	}
 	fmt.Scanln()
 	cancel()
