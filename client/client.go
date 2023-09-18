@@ -34,12 +34,7 @@ func Main(pc chan internal_player.Player, crc chan types.CachedRequest, fullscre
 	rl.SetTargetFPS(60)
 	rl.SetWindowIcon(*icon)
 
-	// Request listener
-	go requestListener(crc)
-
-	// Game state / scene handler
-	sceneHandler = scene_handler.New()
-	sceneHandler.GameRunning = true
+	go listenForCachedRequests(crc)
 
 	// Load fonts, imgs
 	c.DEFAULT_FONT = rl.LoadFontEx("../client/assets/fonts/clacon2.ttf", int32(c.DEFAULT_FONT_SIZE)*6, nil)
@@ -49,6 +44,10 @@ func Main(pc chan internal_player.Player, crc chan types.CachedRequest, fullscre
 	p := <-pc
 	// Init client side player instance
 	cp := player.New(&p)
+
+	// Game state / scene handler
+	sceneHandler = scene_handler.New()
+	sceneHandler.GameRunning = true
 
 	for sceneHandler.GameRunning {
 
@@ -75,7 +74,7 @@ func exit() {
 	rl.UnloadImage(icon)
 }
 
-func requestListener(rc chan types.CachedRequest) {
+func listenForCachedRequests(rc chan types.CachedRequest) {
 	for {
 		chdReq := <-rc
 		sceneHandler.HandleCachedRequest(chdReq)

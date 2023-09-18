@@ -50,11 +50,6 @@ func (gn *GameNode) ListenForReqs(ctx context.Context, crc chan types.CachedRequ
 		peerID = msg.ReceivedFrom.String()
 		data = msg.Data
 
-		// Ignore requests from self
-		// if peerID == gn.NetworkNode.Host.GetPeerInfo().ID.String() {
-		// 	continue
-		// }
-
 		req, pfx, err := gn.NodeCache.Put(peerID, data)
 		if err != nil {
 			debug.DebugLog("[GAME NODE] - Failed to process request. Err: "+err.Error(), debug.NETWORK)
@@ -78,13 +73,5 @@ func (gn *GameNode) SendRequest(ctx context.Context, data *[]byte) error {
 	if err != nil {
 		return fmt.Errorf("[GAME NODE] - Failed to send request. Err: %s", err.Error())
 	}
-	// debug.DebugLog(fmt.Sprintf("I just sent a request: data: %s", string(*data)), debug.NETWORK)
-	// req, err := gn.NodeCache.Put(gn.Host.GetPeerInfo().ID.String(), *data)
-	// if err != nil {
-	// 	return fmt.Errorf("[GAME NODE] - Failed to Put request. Err: %s", err.Error())
-	// }
-	// if req != nil {
-	// 	reqch <- req
-	// }
 	return nil
 }
