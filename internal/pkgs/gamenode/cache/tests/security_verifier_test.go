@@ -60,7 +60,7 @@ func TestReqPrefixDetection(t *testing.T) {
 	randomReqData := []byte(`++#$#z{awdawdwad}''....\`)
 
 	validMoveReqData := []byte(fmt.Sprintf(`MOVE_{pos: {posX:%d,posY:%d,},destPos: {destPosX:%d,destPosY:%d,},},`, 1, 1, 2, 2))
-	validChatReqData := []byte(fmt.Sprintf(`CHAT_{peerId:"%s",message:"%s",},`, testPeerID, testMsg))
+	validChatReqData := []byte(fmt.Sprintf(`CHAT_{message:"%s",},`, testMsg))
 
 	_, err0 := nv.DetectReqPrefix(unknownReqData)
 	_, err1 := nv.DetectReqPrefix(noPrefixReqData)
@@ -88,7 +88,7 @@ func TestReqTypesVerification(t *testing.T) {
 	moveReqPrefix := "MOVE_"
 	moveReqData := []byte(fmt.Sprintf(`{"pos": {"posX":%d,"posY":%d},"destPos": {"destPosX":%d,"destPosY":%d}}`, 1, 1, 2, 2))
 	chatReqPrefix := "CHAT_"
-	chatReqData := []byte(fmt.Sprintf(`{"peerId":"%s","message":"%s"}`, testPeerID, msg))
+	chatReqData := []byte(fmt.Sprintf(`{"message":"%s"}`, msg))
 
 	_, err := nv.VerifyReqTypes(moveReqPrefix, moveReqData)
 	_, err2 := nv.VerifyReqTypes(chatReqPrefix, chatReqData)
@@ -99,7 +99,7 @@ func TestReqTypesVerification(t *testing.T) {
 	// Invalid reqs (wrong types)
 
 	invalidMoveReqData := []byte(fmt.Sprintf(`{"pos": {"posX":%d,"posY":%d},"destPos": {"destPosX":%d,"destPosY":%v}}`, 1, 1, 2, nil))
-	invalidChatReqData := []byte(fmt.Sprintf(`{"peerId":%d,"message":%t}`, 123, true))
+	invalidChatReqData := []byte(fmt.Sprintf(`{"message":%t}`, true))
 
 	_, err3 := nv.VerifyReqTypes(moveReqPrefix, invalidMoveReqData)
 	_, err4 := nv.VerifyReqTypes(chatReqPrefix, invalidChatReqData)
@@ -122,20 +122,20 @@ func TestAutoReqConstruct(t *testing.T) {
 		Position:     types.Position{X: 1, Y: 1},
 		DestPosition: types.DestPosition{X: 2, Y: 2},
 	}
-	moveReqIntf, err := nv.AutoConstructRequest(moveReqPrefix, moveReqData)
+	moveReqIntf, err := nv.AutoConstructRequest(moveReqPrefix, moveReqData, playerID)
 	moveReq := moveReqIntf.(types.PlayerPosition)
 	// "Delete" the timestamp since we can't recreate it
 	moveReq.Timestamp = 0
 
 	chatReqPrefix := "CHAT_"
-	chatReqData := fmt.Sprintf(`{"peerId":%s,"message":%s}`, "100230044", "SomeMsg")
-	chatReqIntf, err2 := nv.AutoConstructRequest(chatReqPrefix, chatReqData)
+	chatReqData := fmt.Sprintf(`{"message":%s}`, "SomeMsg")
+	chatReqIntf, err2 := nv.AutoConstructRequest(chatReqPrefix, chatReqData, playerID)
 	chatReq := chatReqIntf.(types.ChatMessage)
 	// "Delete" the timestamp since we can't recreate it
 	chatReq.Timestamp = 0
 
 	expectedChatReq := types.ChatMessage{
-		PeerID:    "100230044",
+		PeerID:    playerID,
 		Timestamp: 0,
 		Message:   "SomeMsg",
 	}

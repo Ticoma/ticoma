@@ -16,7 +16,8 @@ func (nc *NodeCache) handleGameRequest(peerID string, reqPrefix string, reqS *in
 	case security.MOVE_PREFIX:
 		return nc.updatePlayerPos(peerID, (*reqS).(types.PlayerPosition))
 	case security.CHAT_PREFIX:
-		return nc.handleChatMsg(reqS)
+		// TODO: think about private msg implementation
+		return nil
 	default:
 		return fmt.Errorf("[NODE CACHE] - Unknown game request (prefix %s)", reqPrefix)
 	}
@@ -55,11 +56,5 @@ func (nc *NodeCache) updatePlayerPos(peerID string, pp types.PlayerPosition) err
 	p.Curr.DestPosition = pp.DestPosition
 	nc.Memory[peerID] = p
 
-	return nil
-}
-
-// Handle a chat message request
-func (nc *NodeCache) handleChatMsg(req *interface{}) error {
-	// TODO: think about private msg implementation
 	return nil
 }

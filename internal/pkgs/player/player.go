@@ -21,7 +21,7 @@ type Player interface {
 	Login() error
 	Move(posX *int, posY *int, destPosX *int, destPosY *int) error
 	Chat(msg *[]byte) error
-	Init(ctx context.Context, reqch chan interface{}, isRelay bool, nodeConfig *node.NodeConfig)
+	Init(ctx context.Context, crc chan types.CachedRequest, isRelay bool, nodeConfig *node.NodeConfig)
 	GetPeerID() string
 	GetCache() *cache.Memory
 	GetPos() *types.PlayerPosition
@@ -40,9 +40,9 @@ func New(ctx context.Context) *player {
 	}
 }
 
-func (p *player) Init(ctx context.Context, reqch chan interface{}, isRelay bool, nodeConfig *node.NodeConfig) {
+func (p *player) Init(ctx context.Context, crc chan types.CachedRequest, isRelay bool, nodeConfig *node.NodeConfig) {
 	p.GameNode.Init(ctx, isRelay, nodeConfig)
-	go p.GameNode.ListenForReqs(ctx, reqch)
+	go p.GameNode.ListenForReqs(ctx, crc)
 	go p.GameNode.PerformSnapshot(ctx)
 }
 
@@ -87,8 +87,9 @@ func (p *player) Move(posX *int, posY *int, destPosX *int, destPosY *int) error 
 
 func (p *player) Chat(msg *[]byte) error {
 	pfx := []byte("CHAT_")
-	var reqData []byte = append(pfx, *msg...)
-	err := p.SendRequest(p.ctx, &reqData)
+	reqData := fmt.Sprintf(`{"message":"%s"}`, string(*msg))
+	chatReq := append(pfx, []byte(reqData)...)
+	err := p.SendRequest(p.ctx, &chatReq)
 	if err != nil {
 		return fmt.Errorf("[PLAYER] - Failed to send chat message. Err: %s", err.Error())
 	}

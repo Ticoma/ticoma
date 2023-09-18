@@ -65,7 +65,7 @@ func TestLogoutPlayer(t *testing.T) {
 
 	// player "bar" should not be able to logout
 
-	_, err := c.Put("bar", []byte("LOGOUT_"))
+	_, _, err := c.Put("bar", []byte("LOGOUT_"))
 
 	// Put should reject this request
 	assert.Error(t, err)
@@ -85,7 +85,7 @@ func TestLoginPlayer(t *testing.T) {
 	assert.Equal(t, true, c.GetPlayer(id).Curr.IsOnline)
 
 	// Should not be able to log in when already is logged in
-	_, err := c.Put(id, []byte("LOGIN_"))
+	_, _, err := c.Put(id, []byte("LOGIN_"))
 	assert.Error(t, err)
 
 	c.Put(id, []byte("LOGOUT_"))

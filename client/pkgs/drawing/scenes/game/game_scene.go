@@ -47,7 +47,6 @@ func loadGameScene() {
 
 	// Setup game
 	gameCam = camera.New(float32(spawnImg.Width/2), float32(spawnImg.Height/2), float32(c.SCREEN.Width/2), float32((c.SCREEN.Height)/2))
-	// spawnMapSize := 25
 
 	// Setup textures, panels
 	world = rl.LoadRenderTexture(spawnImg.Width, spawnImg.Height) // Full sized map

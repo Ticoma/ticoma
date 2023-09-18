@@ -44,7 +44,6 @@ const (
 	}`
 	CHAT_PREFIX = "CHAT_"
 	CHAT_SCHEMA = `{
-		peerId: string,
 		message: string,
 	}`
 )
@@ -92,7 +91,6 @@ func (sv *SecurityVerifier) VerifyReqTypes(prefix string, reqData []byte) (strin
 		t, err := dec.Token()
 		if err != nil {
 			if err != io.EOF {
-				// fmt.Println(err)
 				debug.DebugLog(fmt.Sprintf("Err while decoding req: %v", err), debug.PLAYER)
 			}
 			break
@@ -154,13 +152,13 @@ func (sv *SecurityVerifier) ReqFromBytes(peerID *string, data *[]byte) (types.Re
 }
 
 // construct request based on prefix
-func (sv *SecurityVerifier) AutoConstructRequest(prefix string, data string) (interface{}, error) {
+func (sv *SecurityVerifier) AutoConstructRequest(prefix string, data string, peerID string) (interface{}, error) {
 	switch prefix {
 	case MOVE_PREFIX:
 		moveReq, err := sv.constructMoveReq(data)
 		return moveReq, err
 	case CHAT_PREFIX:
-		chatReq, err := sv.constructChatReq(data)
+		chatReq, err := sv.constructChatReq(data, peerID)
 		return chatReq, err
 	default:
 		return nil, nil
@@ -197,10 +195,10 @@ func (sv *SecurityVerifier) constructMoveReq(data string) (types.PlayerPosition,
 }
 
 // construct ChatMessage from req data
-func (sv *SecurityVerifier) constructChatReq(data string) (types.ChatMessage, error) {
+func (sv *SecurityVerifier) constructChatReq(data string, peerID string) (types.ChatMessage, error) {
 
-	const EXPECTED_VAL_LEN_IN_CHAT = 2 // [message, peerId]
-	var IGNORED_STRINGS_IN_CHAT = []string{"message", "peerId"}
+	const EXPECTED_VAL_LEN_IN_CHAT = 1 // [message]
+	var IGNORED_STRINGS_IN_CHAT = []string{"message"}
 
 	vals := utils.ExtractValsFromStrPkg(data, IGNORED_STRINGS_IN_CHAT)
 	if len(vals) != EXPECTED_VAL_LEN_IN_CHAT {
@@ -208,10 +206,10 @@ func (sv *SecurityVerifier) constructChatReq(data string) (types.ChatMessage, er
 	}
 
 	ts := time.Now().UnixMilli()
-	chatPkg := types.ChatMessage{
-		PeerID:    vals[0],
+	chatMsg := types.ChatMessage{
+		PeerID:    peerID,
 		Timestamp: ts,
-		Message:   vals[1],
+		Message:   vals[0],
 	}
-	return chatPkg, nil
+	return chatMsg, nil
 }

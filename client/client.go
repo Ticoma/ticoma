@@ -1,12 +1,12 @@
 package client
 
 import (
-	"fmt"
 	c "ticoma/client/pkgs/constants"
 	scene_handler "ticoma/client/pkgs/drawing/scenes"
 	"ticoma/client/pkgs/player"
 	"ticoma/client/pkgs/utils"
 	internal_player "ticoma/internal/pkgs/player"
+	"ticoma/types"
 
 	"github.com/fstanis/screenresolution"
 
@@ -14,9 +14,9 @@ import (
 )
 
 var icon *rl.Image
-var programState *scene_handler.ProgramState
+var sceneHandler *scene_handler.SceneHandler
 
-func Main(pc chan internal_player.Player, rc chan interface{}, fullscreen *bool) {
+func Main(pc chan internal_player.Player, crc chan types.CachedRequest, fullscreen *bool) {
 
 	// Load icon
 	icon = rl.LoadImage("../client/assets/logo/ticoma-logo-64.png")
@@ -30,15 +30,16 @@ func Main(pc chan internal_player.Player, rc chan interface{}, fullscreen *bool)
 	if *fullscreen {
 		rl.ToggleFullscreen()
 	}
-
-	defer rl.CloseWindow()
 	rl.SetTraceLogLevel(rl.LogError)
 	rl.SetTargetFPS(60)
 	rl.SetWindowIcon(*icon)
 
+	// Request listener
+	go requestListener(crc)
+
 	// Game state / scene handler
-	programState = scene_handler.New()
-	programState.Running = true
+	sceneHandler = scene_handler.New()
+	sceneHandler.GameRunning = true
 
 	// Load fonts, imgs
 	c.DEFAULT_FONT = rl.LoadFontEx("../client/assets/fonts/clacon2.ttf", int32(c.DEFAULT_FONT_SIZE)*6, nil)
@@ -49,12 +50,12 @@ func Main(pc chan internal_player.Player, rc chan interface{}, fullscreen *bool)
 	// Init client side player instance
 	cp := player.New(&p)
 
-	for programState.Running {
+	for sceneHandler.GameRunning {
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
-		programState.HandleScene(cp)
+		sceneHandler.HandleScene(cp)
 		updateState()
 
 		rl.EndDrawing()
@@ -64,7 +65,7 @@ func Main(pc chan internal_player.Player, rc chan interface{}, fullscreen *bool)
 }
 
 func updateState() {
-	programState.Running = !rl.WindowShouldClose()
+	sceneHandler.GameRunning = !rl.WindowShouldClose()
 }
 
 // Cleanup before exiting
@@ -74,9 +75,9 @@ func exit() {
 	rl.UnloadImage(icon)
 }
 
-func requestListener(rq *chan interface{}) {
+func requestListener(rc chan types.CachedRequest) {
 	for {
-		req := <-*rq
-		fmt.Printf("Client received request: %v\n", req)
+		chdReq := <-rc
+		sceneHandler.HandleCachedRequest(chdReq)
 	}
 }

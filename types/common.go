@@ -1,11 +1,20 @@
 package types
 
+//
 // Common types needed both in internal and client
-// E.g: channel types and global structs
+//
 
+// Generic network request
 type Request struct {
 	PeerID string
 	Data   []byte
+}
+
+// Result of Cache's Put and verified by Cache's components.
+// Sent directly to Client from Gamenode
+type CachedRequest struct {
+	Pfx string
+	Req interface{}
 }
 
 type Position struct {

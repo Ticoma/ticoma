@@ -8,11 +8,12 @@ import (
 	"ticoma/client"
 	"ticoma/internal"
 	"ticoma/internal/pkgs/player"
+	"ticoma/types"
 )
 
 func main() {
-	pc := make(chan player.Player) // channel for Player interface
-	rc := make(chan interface{})   // channel for network requests
+	pc := make(chan player.Player)        // channel for Player interface
+	crc := make(chan types.CachedRequest) // channel for verified requests
 	ctx, cancel := context.WithCancel(context.Background())
 
 	clientF := flag.Bool("client", false, "true if internal + client, defaults to false")
@@ -21,10 +22,10 @@ func main() {
 
 	flag.Parse()
 
-	go internal.Main(ctx, pc, rc, *relayF)
+	go internal.Main(ctx, pc, crc, relayF)
 	if *clientF {
 		fmt.Println("Starting client")
-		client.Main(pc, rc, fullscreenF)
+		client.Main(pc, crc, fullscreenF)
 	}
 	fmt.Scanln()
 	cancel()

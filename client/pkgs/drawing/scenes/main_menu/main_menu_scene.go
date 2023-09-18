@@ -49,7 +49,7 @@ func loadMainMenuScene(cp *player.ClientPlayer) {
 	regBtnTxt := rl.LoadRenderTexture(btnWidth, btnHeight)
 	logBtnTxt := rl.LoadRenderTexture(btnWidth, btnHeight)
 	regBtn = ui.NewButton(&regBtnTxt, float32(regBtnTxt.Texture.Width), float32(regBtnTxt.Texture.Height), regBtnPos.X, regBtnPos.Y, &c.COLOR_PANEL_BG, &c.COLOR_PANEL_CONTENT, "Register", cp.Register)
-	logBtn = ui.NewButton(&logBtnTxt, float32(regBtnTxt.Texture.Width), float32(regBtnTxt.Texture.Height), logBtnPos.X, logBtnPos.Y, &c.COLOR_PANEL_BG, &c.COLOR_PANEL_CONTENT, "Login (SOON)", cp.Login)
+	logBtn = ui.NewButton(&logBtnTxt, float32(regBtnTxt.Texture.Width), float32(regBtnTxt.Texture.Height), logBtnPos.X, logBtnPos.Y, &c.COLOR_PANEL_BG, &c.COLOR_PANEL_CONTENT, "Login (SOON)", func() {})
 
 	sceneReady = true
 }

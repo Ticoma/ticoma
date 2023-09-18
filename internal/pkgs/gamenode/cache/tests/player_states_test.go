@@ -40,14 +40,15 @@ func TestGetPlayerPositions(t *testing.T) {
 	assert.Equal(t, &types.PlayerPosition{}, curr)
 
 	// Register should set player's pos and destPos to {13, 13}
-	_, err := c.Put(playerID, []byte("REGISTER_"))
+	_, pfx, err := c.Put(playerID, []byte("REGISTER_"))
 
+	assert.Equal(t, "REGISTER_", pfx)
 	assert.NoError(t, err)
 
 	expectedPos := &types.PlayerPosition{
 		Timestamp:    0,
-		Position:     types.Position{X: 13, Y: 13},
-		DestPosition: types.DestPosition{X: 13, Y: 13},
+		Position:     types.Position{X: cache.SPAWN_POS_X, Y: cache.SPAWN_POS_Y},
+		DestPosition: types.DestPosition{X: cache.SPAWN_POS_X, Y: cache.SPAWN_POS_Y},
 	}
 
 	prev = c.GetPrevPlayerPos(playerID)
@@ -74,7 +75,7 @@ func TestMove(t *testing.T) {
 	assert.Equal(t, &cache.PlayerStates{}, c.GetPlayer(playerID))
 
 	// The player doesn't exist, so we need to register first.
-	_, err := c.Put(playerID, []byte("REGISTER_"))
+	_, _, err := c.Put(playerID, []byte("REGISTER_"))
 
 	p := c.GetPlayer(playerID)
 
@@ -82,17 +83,17 @@ func TestMove(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, p.Curr.IsOnline)
 
-	// Should spawn at {13, 13} or whatever is set in Cache
-	assert.Equal(t, 13, p.Curr.PlayerGameData.Position.X)
-	assert.Equal(t, 13, p.Curr.PlayerGameData.Position.Y)
+	// Should be at spawn pos
+	assert.Equal(t, cache.SPAWN_POS_X, p.Curr.PlayerGameData.Position.X)
+	assert.Equal(t, cache.SPAWN_POS_Y, p.Curr.PlayerGameData.Position.Y)
 
 	// Timestamp in those positions should not be 0 if cache initialized correctly
 	assert.NotEqual(t, 0, p.Prev.PlayerGameData.Timestamp)
 	assert.NotEqual(t, 0, p.Curr.PlayerGameData.Timestamp)
 
-	// Put valid move request to cache (pos 1, 1 -> destPos 2,2)
-	moveReqPos := 13
-	moveReqDestPos := 14
+	// Put valid move request to cache
+	moveReqPos := 12
+	moveReqDestPos := 13
 	moveReqPrefix := "MOVE_"
 	moveReqData := fmt.Sprintf(`{"pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`, moveReqPos, moveReqPos, moveReqDestPos, moveReqDestPos)
 
@@ -108,26 +109,26 @@ func TestMove(t *testing.T) {
 
 	// Send a silly bonkers request
 	invalidMoveReqData := fmt.Sprintf(`MOVE_{"pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`, 44, 41, -423, 12)
-	_, err = c.Put(playerID, []byte(invalidMoveReqData))
+	_, _, err = c.Put(playerID, []byte(invalidMoveReqData))
 
 	// Should throw
 	assert.Error(t, err)
 
 	// Logout and try to move
 	logoutReqData := []byte("LOGOUT_")
-	_, err = c.Put(playerID, logoutReqData)
+	_, _, err = c.Put(playerID, logoutReqData)
 
 	assert.NoError(t, err)
 
 	// Try to move when logged out
 
 	anotherMoveReqData := fmt.Sprintf(`MOVE_{"pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`, 14, 14, 14, 14)
-	_, err = c.Put(playerID, []byte(anotherMoveReqData))
+	_, _, err = c.Put(playerID, []byte(anotherMoveReqData))
 
 	// The mv req above should get rejected (not logged in)
 	assert.Error(t, err)
-	assert.Equal(t, 13, c.GetPlayer(playerID).Curr.Position.X)
-	assert.Equal(t, 13, c.GetPlayer(playerID).Curr.Position.Y)
+	assert.Equal(t, cache.SPAWN_POS_X, c.GetPlayer(playerID).Curr.Position.X)
+	assert.Equal(t, cache.SPAWN_POS_Y, c.GetPlayer(playerID).Curr.Position.Y)
 	assert.NotEqual(t, &cache.Memory{}, c.GetAll())
 
 }
