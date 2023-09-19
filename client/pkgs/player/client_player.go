@@ -3,8 +3,8 @@ package player
 import (
 	"fmt"
 	"ticoma/client/pkgs/camera"
-	"ticoma/client/pkgs/interfaces"
 	internal_player "ticoma/internal/pkgs/player"
+	"ticoma/types"
 	"time"
 )
 
@@ -21,9 +21,9 @@ type ClientPlayer struct {
 	InternalPlayer internal_player.Player // Interface passed from internal
 	IsActiveTile   bool                   // Helpers - hoverTile, activeTile can't be nil, and 0,0 is a valid tile
 	IsHoveringTile bool
-	HoverTile      *interfaces.Tile // Currently hovered game tile (empty if none)
-	ActiveTile     *interfaces.Tile // Clicked tile (destination of most recent move request)
-	IsMoving       bool             // Input blocker
+	HoverTile      *types.Position // Currently hovered game tile (empty if none)
+	ActiveTile     *types.Position // Clicked tile (destination of most recent move request)
+	IsMoving       bool            // Input blocker
 }
 
 func New(p *internal_player.Player) *ClientPlayer {
@@ -32,8 +32,8 @@ func New(p *internal_player.Player) *ClientPlayer {
 		InternalPlayer: *p,
 		IsActiveTile:   false,
 		IsHoveringTile: false,
-		HoverTile:      &interfaces.Tile{},
-		ActiveTile:     &interfaces.Tile{},
+		HoverTile:      &types.Position{},
+		ActiveTile:     &types.Position{},
 		IsMoving:       false,
 	}
 }
@@ -80,6 +80,9 @@ func (cp *ClientPlayer) MovePlayer(cam *camera.GameCamera, destX int, destY int)
 
 // Send a message to chat
 func (cp *ClientPlayer) Chat(msg *[]byte) error {
+	if len(*msg) == 0 {
+		return fmt.Errorf("[CLIENT] - Empty chat msg, ignoring")
+	}
 	err := cp.InternalPlayer.Chat(msg)
 	if err != nil {
 		return fmt.Errorf("[CLIENT] - Chat Err: %v", err)

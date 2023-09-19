@@ -15,7 +15,7 @@ type SceneHandler struct {
 
 func New() *SceneHandler {
 	return &SceneHandler{
-		GameRunning: true,
+		GameRunning: false,
 	}
 }
 
@@ -37,11 +37,12 @@ func (sh *SceneHandler) HandleScene(cp *player.ClientPlayer) {
 }
 
 // Unpack cached requests and sort them based on pfx
-func (sh *SceneHandler) HandleCachedRequest(cr types.CachedRequest) {
+func (sh *SceneHandler) HandleCachedRequest(cp *player.ClientPlayer, cr types.CachedRequest) {
 	switch cr.Pfx {
 	case security.CHAT_PREFIX:
 		chatReq := cr.Req.(types.ChatMessage)
 		fmt.Println(fmt.Sprintf("[CLIENT] - Received Chat request: from: %s msg: %s", chatReq.PeerID, chatReq.Message))
+		gameScene.HandleChatRequest(cp, &chatReq)
 	case security.MOVE_PREFIX:
 		mvReq := cr.Req.(types.PlayerPosition)
 		fmt.Println(fmt.Sprintf("[CLIENT] - Received Move request: pos: %v destPos: %v", mvReq.Position, mvReq.DestPosition))

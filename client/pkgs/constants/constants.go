@@ -1,16 +1,21 @@
 package constants
 
 import (
-	intf "ticoma/client/pkgs/interfaces"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+type ScreenInfo struct {
+	MonitorId   int
+	Width       int32
+	Height      int32
+	RefreshRate int
+}
 
 // All constants here assume @1.0 UI scaling factor and 1080p res,
 // Should be multiplied by scale when drawing on different resolutions
 
 // Screen stuff
-var SCREEN *intf.ScreenInfo
+var SCREEN *ScreenInfo
 
 // Fonts
 var DEFAULT_FONT rl.Font

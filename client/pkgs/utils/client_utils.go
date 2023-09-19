@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"ticoma/client/pkgs/camera"
 	c "ticoma/client/pkgs/constants"
-	intf "ticoma/client/pkgs/interfaces"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -23,8 +22,8 @@ func GetCommitHash() string {
 }
 
 // Configure game window resolution based on screen, flags
-func ConfLaunchGameRes(width int, height int, fullscreen *bool) *intf.ScreenInfo {
-	screenConf := &intf.ScreenInfo{}
+func ConfLaunchGameRes(width int, height int, fullscreen *bool) *c.ScreenInfo {
+	screenConf := &c.ScreenInfo{}
 	if *fullscreen { // if not fullscreen, make a quarter window
 		screenConf.Width = int32(width)
 		screenConf.Height = int32(height)
@@ -61,7 +60,7 @@ func FloatRound(x, unit float32) float32 {
 	return float32(math.Round(float64(x/unit)) * float64(unit))
 }
 
-// Returns the nearest tile to cursor as a rectangle with world x, y
+// Returns the nearest to mouse cursor tile position (in px, world)
 func GetNearestCursorTile(mousePos *rl.Vector2, cam *camera.GameCamera) *rl.Rectangle {
 	worldMousePos := rl.GetScreenToWorld2D(*mousePos, cam.Camera2D)
 	nearestTile := &rl.Rectangle{
@@ -71,4 +70,11 @@ func GetNearestCursorTile(mousePos *rl.Vector2, cam *camera.GameCamera) *rl.Rect
 		Height: c.BLOCK_SIZE,
 	}
 	return nearestTile
+}
+
+// Convert tile position, e.g {5, 5} to top-left pixel pos on Screen
+func TileToScreenPos(tileX int, tileY int, cam *camera.GameCamera) *rl.Vector2 {
+	tWorldPos := rl.Vector2{X: float32((tileX - 1) * int(c.BLOCK_SIZE)), Y: float32((tileY - 1) * int(c.BLOCK_SIZE))}
+	tScreenPos := rl.GetWorldToScreen2D(tWorldPos, cam.Camera2D)
+	return &tScreenPos
 }

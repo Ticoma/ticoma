@@ -181,9 +181,7 @@ func (lp *LeftPanel) DrawChatInput(cp *player.ClientPlayer, chatInput []byte) {
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
 			cp.Chat(&chatInput)
 		}
-	}
-
-	if rl.IsKeyPressed(rl.KeyEnter) {
+	} else if rl.IsKeyPressed(rl.KeyEnter) {
 		cp.Chat(&chatInput)
 	}
 

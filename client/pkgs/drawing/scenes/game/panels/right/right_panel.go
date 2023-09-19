@@ -3,8 +3,6 @@ package right
 import (
 	"ticoma/client/pkgs/drawing/scenes/game/panels"
 
-	intf "ticoma/client/pkgs/interfaces"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -21,7 +19,7 @@ func New(width float32, height float32, renderPosX float32, renderPosY float32, 
 }
 
 // Renders the panel to screen
-func (rp *RightPanel) RenderPanel(conf intf.ScreenInfo) {
+func (rp *RightPanel) RenderPanel() {
 	rl.DrawTextureRec(rp.SidePanel.Txt.Texture, rl.Rectangle{X: 0, Y: 0, Width: float32(rp.Txt.Texture.Width), Height: float32(-rp.Txt.Texture.Height)}, rl.Vector2{X: rp.Pos.X, Y: rp.Pos.Y}, rl.White)
 }
 

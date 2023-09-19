@@ -8,8 +8,8 @@ import (
 	"ticoma/types"
 )
 
-const SPAWN_POS_X = 12
-const SPAWN_POS_Y = 12
+const SPAWN_POS_X = 6
+const SPAWN_POS_Y = 6
 
 type NodeCache struct {
 	Memory

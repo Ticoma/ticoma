@@ -15,6 +15,7 @@ import (
 
 var icon *rl.Image
 var sceneHandler *scene_handler.SceneHandler
+var cp *player.ClientPlayer
 
 func Main(pc chan internal_player.Player, crc chan types.CachedRequest, fullscreen *bool) {
 
@@ -43,7 +44,7 @@ func Main(pc chan internal_player.Player, crc chan types.CachedRequest, fullscre
 	// Wait until internal connects with network
 	p := <-pc
 	// Init client side player instance
-	cp := player.New(&p)
+	cp = player.New(&p)
 
 	// Game state / scene handler
 	sceneHandler = scene_handler.New()
@@ -77,6 +78,6 @@ func exit() {
 func listenForCachedRequests(rc chan types.CachedRequest) {
 	for {
 		chdReq := <-rc
-		sceneHandler.HandleCachedRequest(chdReq)
+		sceneHandler.HandleCachedRequest(cp, chdReq)
 	}
 }

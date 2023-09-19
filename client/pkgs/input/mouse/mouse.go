@@ -1,6 +1,7 @@
 package mouse
 
 import (
+	"fmt"
 	"ticoma/client/pkgs/camera"
 	"ticoma/client/pkgs/utils"
 
@@ -36,7 +37,7 @@ func HandleMouseInputs(cp *player.ClientPlayer, cam *camera.GameCamera, targetRe
 		switch targetPanel {
 		case GAME:
 			gameHandleZoom(cam)
-			gameHandleMouse(cp, &mousePos, targetRec, cam)
+			gameHandleMouse(cp, &mousePos, cam)
 		case LEFT:
 		case RIGHT:
 		default:
@@ -60,18 +61,27 @@ func gameHandleZoom(cam *camera.GameCamera) {
 //
 // This includes:
 // Hovering over a tile, Left-clicking a tile (move request), Right-clicking a tile (display tile actions, OSRS style)
-func gameHandleMouse(cp *player.ClientPlayer, mousePos *rl.Vector2, target *rl.Rectangle, cam *camera.GameCamera) {
+func gameHandleMouse(cp *player.ClientPlayer, mousePos *rl.Vector2, cam *camera.GameCamera) {
 
 	nTileWorld := utils.GetNearestCursorTile(mousePos, cam)
 	nTileScreen := rl.GetWorldToScreen2D(rl.Vector2{X: nTileWorld.X, Y: nTileWorld.Y}, cam.Camera2D)
 	rl.DrawRectangleLinesEx(rl.Rectangle{X: nTileScreen.X, Y: nTileScreen.Y, Width: c.BLOCK_SIZE * cam.Zoom, Height: c.BLOCK_SIZE * cam.Zoom}, 2, rl.Magenta)
 
-	// TODO: Fix active tile stuff
-	// if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
-	// 	fmt.Println("MOUSE ", bX, bY)
-	// 	fmt.Println("TILE : ", tileX, tileY)
-	// 	cp.ActiveTile = &interfaces.Tile{Vector2: rl.Vector2{X: float32(tileX), Y: float32(tileY)}}
-	// 	fmt.Println(cp.ActiveTile)
-	// 	cp.IsActiveTile = true
-	// }
+	// Draw current active tile
+	if cp.IsActiveTile {
+		activeTileScreen := utils.TileToScreenPos(cp.ActiveTile.X, cp.ActiveTile.Y, cam)
+		fmt.Println(activeTileScreen)
+		activeTileColor := rl.Yellow
+		rl.DrawRectangleLinesEx(rl.Rectangle{X: activeTileScreen.X, Y: activeTileScreen.Y, Width: c.BLOCK_SIZE * cam.Zoom, Height: c.BLOCK_SIZE * cam.Zoom}, 2, activeTileColor)
+	}
+
+	// Click tile to set it to active destination
+	if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
+		tileNumX, tileNumY := (nTileWorld.X/c.BLOCK_SIZE)+1, (nTileWorld.Y/c.BLOCK_SIZE)+1
+		cp.ActiveTile.X, cp.ActiveTile.Y = int(tileNumX), int(tileNumY)
+		cp.IsActiveTile = true
+		// fmt.Println("ACTIVE TILE: ", cp.ActiveTile.X, cp.ActiveTile.Y)
+
+		// TODO: Add path finding, mv request loop to dest
+	}
 }
