@@ -35,3 +35,7 @@ var COLOR_PANEL_CONTENT rl.Color = rl.NewColor(60, 60, 60, 255)
 var COLOR_PANEL_OUTLINE rl.Color = rl.NewColor(102, 191, 255, 255) // Skyblue
 var COLOR_PANEL_OUTLINE_TRANSPARENT = rl.NewColor(102, 191, 255, 125)
 var COLOR_PANEL_TEXT rl.Color = rl.NewColor(240, 240, 240, 255)
+
+// Block runes and pathfinding stuff
+var COLLISION_BLOCK_RUNE = 'x'
+var WALKABLE_BLOCK_RUNE = ' '

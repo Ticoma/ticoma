@@ -2,8 +2,8 @@ package client
 
 import (
 	c "ticoma/client/pkgs/constants"
-	scene_handler "ticoma/client/pkgs/drawing/scenes"
 	"ticoma/client/pkgs/player"
+	scene_handler "ticoma/client/pkgs/scenes"
 	"ticoma/client/pkgs/utils"
 	internal_player "ticoma/internal/pkgs/player"
 	"ticoma/types"

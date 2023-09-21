@@ -2,9 +2,9 @@ package scenes
 
 import (
 	"fmt"
-	gameScene "ticoma/client/pkgs/drawing/scenes/game"
-	mainMenuScene "ticoma/client/pkgs/drawing/scenes/main_menu"
 	"ticoma/client/pkgs/player"
+	gameScene "ticoma/client/pkgs/scenes/game"
+	mainMenuScene "ticoma/client/pkgs/scenes/main_menu"
 	"ticoma/internal/pkgs/gamenode/cache/verifier/security"
 	"ticoma/types"
 )

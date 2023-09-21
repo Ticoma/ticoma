@@ -1,7 +1,7 @@
 package right
 
 import (
-	"ticoma/client/pkgs/drawing/scenes/game/panels"
+	"ticoma/client/pkgs/scenes/game/panels"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )

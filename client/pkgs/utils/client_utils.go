@@ -74,7 +74,17 @@ func GetNearestCursorTile(mousePos *rl.Vector2, cam *camera.GameCamera) *rl.Rect
 
 // Convert tile position, e.g {5, 5} to top-left pixel pos on Screen
 func TileToScreenPos(tileX int, tileY int, cam *camera.GameCamera) *rl.Vector2 {
-	tWorldPos := rl.Vector2{X: float32((tileX - 1) * int(c.BLOCK_SIZE)), Y: float32((tileY - 1) * int(c.BLOCK_SIZE))}
+	tWorldPos := rl.Vector2{X: float32(tileX) * c.BLOCK_SIZE, Y: float32(tileY) * c.BLOCK_SIZE}
 	tScreenPos := rl.GetWorldToScreen2D(tWorldPos, cam.Camera2D)
 	return &tScreenPos
+}
+
+// Convert Tile screen position to rl.Rectangle ready to render on screen
+func TileScreenToRec(tileScreenPos *rl.Vector2, cam *camera.GameCamera) *rl.Rectangle {
+	return &rl.Rectangle{
+		X:      tileScreenPos.X,
+		Y:      tileScreenPos.Y,
+		Width:  c.BLOCK_SIZE * cam.Zoom,
+		Height: c.BLOCK_SIZE * cam.Zoom,
+	}
 }

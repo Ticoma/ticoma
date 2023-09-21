@@ -1,7 +1,7 @@
 package left
 
 import (
-	"ticoma/client/pkgs/drawing/scenes/game/panels"
+	"ticoma/client/pkgs/scenes/game/panels"
 
 	"ticoma/client/pkgs/input/mouse"
 	"ticoma/client/pkgs/player"

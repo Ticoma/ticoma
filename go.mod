@@ -20,6 +20,7 @@ require (
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/solarlune/paths v0.0.0-20230130082802-0494358a2ca6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 

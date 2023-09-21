@@ -2,8 +2,8 @@ package mainmenu
 
 import (
 	c "ticoma/client/pkgs/constants"
-	"ticoma/client/pkgs/drawing/scenes/main_menu/ui"
 	"ticoma/client/pkgs/player"
+	"ticoma/client/pkgs/scenes/main_menu/ui"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
