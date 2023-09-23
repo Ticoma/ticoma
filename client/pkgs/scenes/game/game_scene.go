@@ -43,8 +43,8 @@ func loadGameScene() {
 
 	// Load & Generate map from file
 	gameMap = game_map.New()
-	gameMap.Init("../client/assets/maps/path_tester", &blockSprite)
-	// gameMap.Init("../client/assets/maps/spawn", &blockSprite)
+	// gameMap.Init("../client/assets/maps/path_tester", &blockSprite)
+	gameMap.Init("../client/assets/maps/spawn", &blockSprite)
 
 	// Setup res, scaling
 	SIDE_PANEL_WIDTH = int32((c.SCREEN.Width / 4))
@@ -135,8 +135,12 @@ func UnloadScene() {
 
 func HandleChatRequest(cp *player.ClientPlayer, chReq *types.ChatMessage) {
 	chatMsgs = append(chatMsgs, chReq.Message)
-	// Clear chatInput buffer if msg came from us
+	// Clear chatInput buffer if msg was sent by Player
 	if cp.InternalPlayer.GetPeerID() == chReq.PeerID {
 		chatInput = nil
 	}
+}
+
+func HandleMoveRequest(cp *player.ClientPlayer, mvReq *types.PlayerPosition) {
+	// Prompt move queue for other players ?
 }

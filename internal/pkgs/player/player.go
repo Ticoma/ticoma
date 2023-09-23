@@ -2,7 +2,6 @@ package player
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"ticoma/internal/debug"
 	"ticoma/internal/pkgs/gamenode"
@@ -68,19 +67,11 @@ func (p *player) Login() error {
 //
 
 func (p *player) Move(posX *int, posY *int, destPosX *int, destPosY *int) error {
-
-	pfx := []byte(security.MOVE_PREFIX)
-	pos := types.Position{X: *posX, Y: *posY}
-	destPos := types.DestPosition{X: *destPosX, Y: *destPosY}
-	pp := &types.PlayerPosition{Position: pos, DestPosition: destPos}
-
-	moveReqJSON, err := json.Marshal(pp)
+	moveReq := []byte(fmt.Sprintf(`MOVE_{"pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`, *posX, *posY, *destPosX, *destPosY))
+	err := p.SendRequest(p.ctx, &moveReq)
 	if err != nil {
-		return fmt.Errorf("[PLAYER] - Failed to serialize request. Err: %s", err.Error())
+		return fmt.Errorf("[PLAYER] - Failed to send move request. Err: %s", err.Error())
 	}
-	var moveReq []byte = append(pfx, moveReqJSON...)
-	p.SendRequest(p.ctx, &moveReq)
-
 	debug.DebugLog("[MOVE] Sending move req: "+string(moveReq), debug.PLAYER)
 	return nil
 }

@@ -23,6 +23,7 @@ var DEFAULT_FONT rl.Font
 // Game
 var SCALE float32
 var BLOCK_SIZE float32 = 64
+var MOVE_COOLDOWN_IN_MS int = 300
 
 // UI , Scaling, Padding
 var DEFAULT_FONT_SIZE float32 = 16

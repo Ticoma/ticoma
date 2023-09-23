@@ -45,7 +45,8 @@ func (sh *SceneHandler) HandleCachedRequest(cp *player.ClientPlayer, cr types.Ca
 		gameScene.HandleChatRequest(cp, &chatReq)
 	case security.MOVE_PREFIX:
 		mvReq := cr.Req.(types.PlayerPosition)
-		fmt.Println(fmt.Sprintf("[CLIENT] - Received Move request: pos: %v destPos: %v", mvReq.Position, mvReq.DestPosition))
+		gameScene.HandleMoveRequest(cp, &mvReq)
+		// fmt.Println(fmt.Sprintf("[CLIENT] - Received Move request: pos: %v destPos: %v", mvReq.Position, mvReq.DestPosition))
 	default:
 		fmt.Println(fmt.Sprintf("[CLIENT] - Received Cached request: {pfx : \"%s\", uncastedReq: \"%s\"}", cr.Pfx, cr.Req))
 	}

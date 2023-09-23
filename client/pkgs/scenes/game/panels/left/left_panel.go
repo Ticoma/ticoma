@@ -179,10 +179,10 @@ func (lp *LeftPanel) DrawChatInput(cp *player.ClientPlayer, chatInput []byte) {
 
 	if sendHover {
 		if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
-			cp.Chat(&chatInput)
+			cp.InternalPlayer.Chat(&chatInput)
 		}
 	} else if rl.IsKeyPressed(rl.KeyEnter) {
-		cp.Chat(&chatInput)
+		cp.InternalPlayer.Chat(&chatInput)
 	}
 
 	// Update space taken

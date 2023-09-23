@@ -72,13 +72,16 @@ func readMapFile(path string) (int, string, int, int, error) {
 	if err != nil {
 		return 0, "", 0, 0, fmt.Errorf("Couldn't convert map size to integer")
 	}
+
 	// fmt.Println("MAP SIZE: ", mapSize)
 	layerLen := (mapSize * mapSize) * 2 // including commas
 	mapContent := string(bytes[index+1:])
 	layerCount := len(mapContent) / layerLen // cut in half to get real number of layers (don't count commas)
+
 	// Check if all layers are present in file
 	expectedLayersContentLen := layerCount * layerLen
 	validLayersContent := expectedLayersContentLen == len(mapContent)
+
 	if !validLayersContent {
 		return 0, "", 0, 0, fmt.Errorf("Expected layers content don't match file content. Layers: %d\nExpected length of layers content: %d, Got: %d", layerCount, expectedLayersContentLen, len(mapContent))
 	}
@@ -114,9 +117,9 @@ func (gm *GameMap) drawMapBlocks(spriteSource *rl.Texture2D, mSize int, mContent
 			if i == 0 { // Only one (BG LAYER) layer for now
 				switch content[j] {
 				case "0": // 0 == transparent block, col on
-					cMapLayer += "x"
+					cMapLayer += string(c.COLLISION_BLOCK_RUNE)
 				default: // other == should be walkable
-					cMapLayer += " "
+					cMapLayer += string(c.WALKABLE_BLOCK_RUNE)
 				}
 			}
 			// update cMap layer
@@ -177,7 +180,6 @@ func (gm *GameMap) Render() {
 func IsTileWalkable(grid *paths.Grid, x int, y int) bool {
 	tile := grid.Get(x, y)
 	if tile != nil {
-		fmt.Println(string(tile.Rune), tile.Walkable)
 		return tile.Walkable
 	}
 	return false
