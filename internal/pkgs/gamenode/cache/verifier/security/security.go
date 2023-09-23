@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"regexp"
 	"strconv"
 	"strings"
 	"ticoma/internal/debug"
@@ -12,17 +13,18 @@ import (
 	"time"
 )
 
-// SecurityVerifier
 type SecurityVerifier struct{}
 
-// Request schemas and prefixes
 const (
 
 	//
 	// Account-related
 	//
 
-	REGISTER_PREFIX   = "REGISTER_"
+	REGISTER_PREFIX = "REGISTER_"
+	REGISTER_SCHEMA = `{
+		nickname: string,
+	}`
 	DELETE_ACC_PREFIX = "DELETEACC_"
 	LOGIN_PREFIX      = "LOGIN_"
 	LOGOUT_PREFIX     = "LOGOUT_"
@@ -66,7 +68,9 @@ func (sv *SecurityVerifier) getReqSchema(reqPrefix string) (string, error) {
 		return MOVE_SCHEMA, nil
 	case CHAT_PREFIX:
 		return CHAT_SCHEMA, nil
-	case REGISTER_PREFIX, DELETE_ACC_PREFIX, LOGIN_PREFIX, LOGOUT_PREFIX:
+	case REGISTER_PREFIX:
+		return REGISTER_SCHEMA, nil
+	case DELETE_ACC_PREFIX, LOGIN_PREFIX, LOGOUT_PREFIX:
 		return "", nil
 	default:
 		return "", fmt.Errorf("[SEC VER] - Couldn't find schema of request with this prefix: %s", reqPrefix)
@@ -151,27 +155,32 @@ func (sv *SecurityVerifier) ReqFromBytes(peerID *string, data *[]byte) (types.Re
 	return req, nil
 }
 
-// construct request based on prefix
+// Construct request based on prefix
 func (sv *SecurityVerifier) AutoConstructRequest(prefix string, data string, peerID string) (interface{}, error) {
 	switch prefix {
+	case REGISTER_PREFIX:
+		regReq, err := sv.constructRegisterReq(data, peerID)
+		return regReq, err
 	case MOVE_PREFIX:
 		moveReq, err := sv.constructMoveReq(data)
 		return moveReq, err
 	case CHAT_PREFIX:
 		chatReq, err := sv.constructChatReq(data, peerID)
 		return chatReq, err
-	default:
+	case LOGIN_PREFIX, DELETE_ACC_PREFIX, LOGOUT_PREFIX:
 		return nil, nil
+	default:
+		return nil, fmt.Errorf("Failed to auto construct request. Is prefix \"%s\" supported?", prefix)
 	}
 }
 
-// construct PlayerPosition from req data
+// Construct PlayerPosition from req data
 func (sv *SecurityVerifier) constructMoveReq(data string) (types.PlayerPosition, error) {
 
 	const EXPECTED_VAL_LEN_IN_MOVE = 4 // [posX, posY, destPosX, destPosY]
 	var IGNORED_STRINGS_IN_MOVE = []string{"posX", "posY", "pos", "destPosX", "destPosY", "destPos"}
 
-	vals := utils.ExtractValsFromStrPkg(data, IGNORED_STRINGS_IN_MOVE)
+	vals := utils.ExtractValsFromStrReq(data, IGNORED_STRINGS_IN_MOVE)
 	if len(vals) != EXPECTED_VAL_LEN_IN_MOVE {
 		return types.PlayerPosition{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
 	}
@@ -194,13 +203,13 @@ func (sv *SecurityVerifier) constructMoveReq(data string) (types.PlayerPosition,
 	return playerPos, nil
 }
 
-// construct ChatMessage from req data
+// Construct ChatMessage from req data
 func (sv *SecurityVerifier) constructChatReq(data string, peerID string) (types.ChatMessage, error) {
 
 	const EXPECTED_VAL_LEN_IN_CHAT = 1 // [message]
 	var IGNORED_STRINGS_IN_CHAT = []string{"message"}
 
-	vals := utils.ExtractValsFromStrPkg(data, IGNORED_STRINGS_IN_CHAT)
+	vals := utils.ExtractValsFromStrReq(data, IGNORED_STRINGS_IN_CHAT)
 	if len(vals) != EXPECTED_VAL_LEN_IN_CHAT {
 		return types.ChatMessage{}, fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
 	}
@@ -212,4 +221,33 @@ func (sv *SecurityVerifier) constructChatReq(data string, peerID string) (types.
 		Message:   vals[0],
 	}
 	return chatMsg, nil
+}
+
+// Construct Player nickname from req data
+func (sv *SecurityVerifier) constructRegisterReq(data string, peerID string) (string, error) {
+
+	const MIN_NICKNAME_LENGTH = 3
+	const MAX_NICKNAME_LENGTH = 12
+	const EXPECTED_VAL_LEN_IN_REGISTER = 1 // [nickname]
+	var IGNORED_STRINGS_IN_REGISTER = []string{"nickname"}
+
+	vals := utils.ExtractValsFromStrReq(data, IGNORED_STRINGS_IN_REGISTER)
+	if len(vals) != EXPECTED_VAL_LEN_IN_REGISTER {
+		return "", fmt.Errorf("[SEC VER] - Couldn't extract - pkg values length don't match schema")
+	}
+
+	nick := vals[0]
+
+	if len(nick) < MIN_NICKNAME_LENGTH || len(nick) > MAX_NICKNAME_LENGTH {
+		return "", fmt.Errorf("[SEC VER] - Nickname must be 12 or less characters long")
+	}
+
+	match, _ := regexp.MatchString(`^[a-zA-Z0-9_]*$`, nick)
+	fmt.Println("Nickname match result: ", match)
+
+	if !match {
+		return "", fmt.Errorf("[SEC VER] - Nickname contains unallowed characters")
+	}
+
+	return nick, nil
 }

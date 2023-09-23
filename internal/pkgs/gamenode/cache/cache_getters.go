@@ -4,41 +4,38 @@ import (
 	"ticoma/types"
 )
 
-//
-// All public getters for Cache
-//
-
-// Get entire cache
 func (nc *NodeCache) GetAll() *Memory {
 	return &nc.Memory
 }
 
-// Get ptr to existing player in cache (if doesn't exist -> empty playerState type)
 func (nc *NodeCache) GetPlayer(peerID string) *PlayerStates {
-	if nc.accountExists(peerID) {
-		p := nc.Memory[peerID]
-		return &p
-	} else {
+	if !nc.accountExists(peerID) {
 		return &PlayerStates{}
 	}
+	p := nc.Memory[peerID]
+	return &p
 }
 
-// Get previous player position (must be online)
 func (nc *NodeCache) GetPrevPlayerPos(peerID string) *types.PlayerPosition {
-	if nc.accountOnline(peerID) {
-		p := nc.Memory[peerID]
-		return &p.Prev.PlayerPosition
-	} else {
+	if !nc.accountOnline(peerID) {
 		return &types.PlayerPosition{}
 	}
+	p := nc.Memory[peerID]
+	return &p.Prev.PlayerPosition
 }
 
-// Get previous player position (must be online)
 func (nc *NodeCache) GetCurrPlayerPos(peerID string) *types.PlayerPosition {
-	if nc.accountOnline(peerID) {
-		p := nc.Memory[peerID]
-		return &p.Curr.PlayerPosition
-	} else {
+	if !nc.accountOnline(peerID) {
 		return &types.PlayerPosition{}
 	}
+	p := nc.Memory[peerID]
+	return &p.Curr.PlayerPosition
+}
+
+func (nc *NodeCache) GetNickname(peerID string) *string {
+	if !nc.accountExists(peerID) {
+		return new(string)
+	}
+	p := nc.Memory[peerID]
+	return &p.Curr.Nick
 }

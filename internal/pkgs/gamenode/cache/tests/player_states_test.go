@@ -11,6 +11,7 @@ import (
 )
 
 var playerId = "foo"
+var playerNick = "player"
 
 func TestGetAll(t *testing.T) {
 
@@ -40,7 +41,7 @@ func TestGetPlayerPositions(t *testing.T) {
 	assert.Equal(t, &types.PlayerPosition{}, curr)
 
 	// Register should set player's pos and destPos to {13, 13}
-	_, pfx, err := c.Put(playerID, []byte("REGISTER_"))
+	_, pfx, err := c.Put(playerID, []byte(fmt.Sprintf(`REGISTER_{"nickname":"%s"}`, playerNick)))
 
 	assert.Equal(t, "REGISTER_", pfx)
 	assert.NoError(t, err)
@@ -75,7 +76,7 @@ func TestMove(t *testing.T) {
 	assert.Equal(t, &cache.PlayerStates{}, c.GetPlayer(playerID))
 
 	// The player doesn't exist, so we need to register first.
-	_, _, err := c.Put(playerID, []byte("REGISTER_"))
+	_, _, err := c.Put(playerID, []byte(fmt.Sprintf(`REGISTER_{"nickname":"%s"}`, playerNick)))
 
 	p := c.GetPlayer(playerID)
 
@@ -92,8 +93,8 @@ func TestMove(t *testing.T) {
 	assert.NotEqual(t, 0, p.Curr.PlayerGameData.Timestamp)
 
 	// Put valid move request to cache
-	moveReqPos := 12
-	moveReqDestPos := 13
+	moveReqPos := cache.SPAWN_POS_X
+	moveReqDestPos := cache.SPAWN_POS_X + 1
 	moveReqPrefix := "MOVE_"
 	moveReqData := fmt.Sprintf(`{"pos":{"posX":%d,"posY":%d},"destPos":{"destPosX":%d,"destPosY":%d}}`, moveReqPos, moveReqPos, moveReqDestPos, moveReqDestPos)
 

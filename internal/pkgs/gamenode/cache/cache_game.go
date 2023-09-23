@@ -24,21 +24,17 @@ func (nc *NodeCache) handleGameRequest(peerID string, reqPrefix string, reqS *in
 
 }
 
-// Verify a MOVE_ request locally and return verification result.
-// If a request is valid, cache will automatically update Player's position
 func (nc *NodeCache) updatePlayerPos(peerID string, pp types.PlayerPosition) error {
 
-	// Ignore if affected player is offline
 	if !nc.accountOnline(peerID) {
 		return fmt.Errorf("[NODE CACHE] - Can't update pos. Player is offline!")
 	}
 
 	p := nc.Memory[peerID]
 
-	// Verify velocity
 	currPos := p.Curr.PlayerPosition
-	validVel := nc.EngineVerifier.VerifyMoveVelocity(&currPos, &pp)
-	if !validVel {
+	validVelocity := nc.EngineVerifier.VerifyMoveVelocity(&currPos, &pp)
+	if !validVelocity {
 		return fmt.Errorf("[NODE CACHE] - Coulnd't verify move direction or position. %s", "")
 	}
 

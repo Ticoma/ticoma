@@ -40,7 +40,8 @@ func New(p *internal_player.Player) *ClientPlayer {
 
 // Send a REGISTER_ request from Client
 func (cp *ClientPlayer) Register() {
-	err := cp.InternalPlayer.Register()
+	nick := "teaver"
+	err := cp.InternalPlayer.Register(&nick)
 	if err != nil {
 		fmt.Println("[CLIENT PLAYER] - Failed to register. Err: " + err.Error())
 		return

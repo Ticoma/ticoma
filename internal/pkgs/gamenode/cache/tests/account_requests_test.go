@@ -11,6 +11,7 @@ import (
 )
 
 var playerID string = "foo"
+var playerNickname string = "k1ng_V0n"
 
 func TestMain(t *testing.M) {
 	Setup()
@@ -32,13 +33,30 @@ func TestRegisterPlayer(t *testing.T) {
 
 	c := cache.New()
 
-	registerData := []byte("REGISTER_")
+	// Invalid nicks
+	invalidReq1 := []byte(fmt.Sprintf(`REGISTER_{"nickname":"%s"}`, "$KappaDaniels"))
+	invalidReq2 := []byte(fmt.Sprintf(`REGISTER_{"nickname":"%s"}`, "ThisNicknameIsCertainlyTooLong"))
+	invalidReq3 := []byte(fmt.Sprintf(`REGISTER_{"nickname":"%s"}`, "a"))
+
+	_, _, err := c.Put(playerID, invalidReq1)
+	assert.Error(t, err)
+
+	_, _, err = c.Put(playerID, invalidReq2)
+	assert.Error(t, err)
+
+	_, _, err = c.Put(playerID, invalidReq3)
+	assert.Error(t, err)
+
+	// Valid nick
+	registerData := []byte(fmt.Sprintf(`REGISTER_{"nickname":"%s"}`, playerNickname))
 	c.Put(playerID, registerData)
 
 	p := c.GetPlayer(playerID)
 
 	assert.Equal(t, true, p.Prev.IsOnline)
 	assert.Equal(t, true, p.Curr.IsOnline)
+	assert.Equal(t, playerNickname, p.Prev.Nick)
+	assert.Equal(t, playerNickname, p.Curr.Nick)
 }
 
 func TestLogoutPlayer(t *testing.T) {
@@ -46,7 +64,7 @@ func TestLogoutPlayer(t *testing.T) {
 	c := cache.New()
 
 	// Register first
-	registerData := []byte("REGISTER_")
+	registerData := []byte(fmt.Sprintf(`REGISTER_{"nickname":"%s"}`, playerNickname))
 	c.Put(playerID, registerData)
 
 	p := c.GetPlayer(playerID)
@@ -57,15 +75,17 @@ func TestLogoutPlayer(t *testing.T) {
 
 	// "foo" should be able to logout now
 	logoutData := []byte("LOGOUT_")
-	c.Put(playerID, logoutData)
+	_, _, err := c.Put(playerID, logoutData)
+	if err != nil {
+		t.Errorf("Error on logout: %s", err.Error())
+	}
 
 	pl := c.GetPlayer(playerID)
 
 	assert.Equal(t, false, pl.Curr.IsOnline)
 
 	// player "bar" should not be able to logout
-
-	_, _, err := c.Put("bar", []byte("LOGOUT_"))
+	_, _, err = c.Put("bar", []byte("LOGOUT_"))
 
 	// Put should reject this request
 	assert.Error(t, err)
@@ -78,7 +98,7 @@ func TestLoginPlayer(t *testing.T) {
 	// Register, logout, and then log back in
 	c := cache.New()
 
-	c.Put(id, []byte("REGISTER_"))
+	c.Put(id, []byte(fmt.Sprintf(`REGISTER_{"nickname":"%s"}`, playerNickname)))
 
 	// Check if acc created
 	assert.Equal(t, true, c.GetPlayer(id).Prev.IsOnline)
@@ -107,7 +127,7 @@ func TestDeletePlayer(t *testing.T) {
 	// Register and delete account
 	c := cache.New()
 
-	c.Put(id, []byte("REGISTER_"))
+	c.Put(id, []byte(fmt.Sprintf(`REGISTER_{"nickname":"%s"}`, playerNickname)))
 
 	// Check if acc created
 	assert.Equal(t, true, c.GetPlayer(id).Prev.IsOnline)

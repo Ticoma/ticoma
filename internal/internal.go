@@ -51,7 +51,7 @@ func Main(ctx context.Context, pc chan player.Player, crc chan types.CachedReque
 func runPlayerNode(pc chan player.Player, crc chan types.CachedRequest, ctx context.Context) {
 	p := player.New(ctx)
 	p.Init(ctx, crc, false, &nodeConfig)
-	fmt.Printf("Player pID: %s connected!\n", p.GetPeerID())
+	fmt.Printf("Player pID: %s connected!\n", *p.GetPeerID())
 	pc <- p
 }
 

@@ -84,7 +84,7 @@ func (nc *NodeCache) handleRequest(req types.Request) (*interface{}, string, err
 		return &reqS, reqPrefix, err
 	// Account request
 	case security.REGISTER_PREFIX, security.DELETE_ACC_PREFIX, security.LOGIN_PREFIX, security.LOGOUT_PREFIX:
-		err := nc.handleAccountRequest(req.PeerID, reqPrefix)
+		err := nc.handleAccountRequest(req.PeerID, reqPrefix, &reqS)
 		return &reqS, reqPrefix, err
 	// Unknown
 	default:

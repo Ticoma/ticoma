@@ -136,7 +136,7 @@ func UnloadScene() {
 func HandleChatRequest(cp *player.ClientPlayer, chReq *types.ChatMessage) {
 	chatMsgs = append(chatMsgs, chReq.Message)
 	// Clear chatInput buffer if msg was sent by Player
-	if cp.InternalPlayer.GetPeerID() == chReq.PeerID {
+	if cp.InternalPlayer.GetPeerID() == &chReq.PeerID {
 		chatInput = nil
 	}
 }

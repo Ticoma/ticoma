@@ -22,7 +22,7 @@ func StripString(str string, shouldRemoveLastChar bool) string {
 }
 
 // Extract values from a json stringified request (in-place)
-func ExtractValsFromStrPkg(reqData string, ignoredStrings []string) []string {
+func ExtractValsFromStrReq(reqData string, ignoredStrings []string) []string {
 
 	debug.DebugLog("[CACHE_UTILS] - Extracted values: "+reqData, debug.PLAYER)
 
