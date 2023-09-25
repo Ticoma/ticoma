@@ -19,34 +19,39 @@ func New() *SceneHandler {
 	}
 }
 
-// Render a scene based on Player & Game state
 func (sh *SceneHandler) HandleScene(cp *player.ClientPlayer) {
-	// Handle unloading
 	if !sh.GameRunning {
 		mainMenuScene.UnloadScene()
 		gameScene.UnloadScene()
 	}
 
-	// Render scene based on state
-	switch cp.IsOnline {
-	case false:
+	if !cp.IsOnline {
 		mainMenuScene.RenderMainMenuScene(cp)
-	case true:
-		gameScene.RenderGameScene(cp)
+		return
 	}
+
+	gameScene.RenderGameScene(cp)
 }
 
 // Unpack cached requests and sort them based on pfx
 func (sh *SceneHandler) HandleCachedRequest(cp *player.ClientPlayer, cr types.CachedRequest) {
 	switch cr.Pfx {
+	case security.REGISTER_PREFIX:
+		if nick, ok := cr.Req.(string); ok {
+			mainMenuScene.HandleRegisterRequest(cp, nick)
+		}
+	case security.LOGIN_PREFIX, security.LOGOUT_PREFIX, security.DELETE_ACC_PREFIX:
+		return
 	case security.CHAT_PREFIX:
-		chatReq := cr.Req.(types.ChatMessage)
-		fmt.Println(fmt.Sprintf("[CLIENT] - Received Chat request: from: %s msg: %s", chatReq.PeerID, chatReq.Message))
-		gameScene.HandleChatRequest(cp, &chatReq)
+		if chatReq, ok := cr.Req.(types.ChatMessage); ok {
+			fmt.Println(fmt.Sprintf("[CLIENT] - Received Chat request: from: %s msg: %s", chatReq.PeerID, chatReq.Message))
+			gameScene.HandleChatRequest(cp, &chatReq)
+		}
 	case security.MOVE_PREFIX:
-		mvReq := cr.Req.(types.PlayerPosition)
-		gameScene.HandleMoveRequest(cp, &mvReq)
-		// fmt.Println(fmt.Sprintf("[CLIENT] - Received Move request: pos: %v destPos: %v", mvReq.Position, mvReq.DestPosition))
+		if mvReq, ok := cr.Req.(types.PlayerPosition); ok {
+			fmt.Println(fmt.Sprintf("[CLIENT] - Received Move request: pos: %v destPos: %v", mvReq.Position, mvReq.DestPosition))
+			gameScene.HandleMoveRequest(cp, &mvReq)
+		}
 	default:
 		fmt.Println(fmt.Sprintf("[CLIENT] - Received Cached request: {pfx : \"%s\", uncastedReq: \"%s\"}", cr.Pfx, cr.Req))
 	}

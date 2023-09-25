@@ -88,8 +88,11 @@ func RenderGameScene(cp *player.ClientPlayer) {
 		Width:  c.BLOCK_SIZE,
 		Height: c.BLOCK_SIZE,
 	}
+
+	playerNick := rl.MeasureTextEx(c.DEFAULT_FONT, *cp.Nickname, c.DEFAULT_FONT_SIZE*1.5, 0)
 	rl.DrawRectangleRec(playerRec, rl.Gray)
 	rl.DrawRectangleLinesEx(playerRec, 2, rl.DarkGray)
+	rl.DrawTextEx(c.DEFAULT_FONT, *cp.Nickname, rl.Vector2{X: playerRec.X + (playerRec.Width / 2) - playerNick.X/2, Y: playerRec.Y - playerNick.Y}, c.DEFAULT_FONT_SIZE*1.5, 0, c.COLOR_PANEL_TEXT)
 	rl.EndMode2D()
 
 	// // Game mouse input handler
@@ -134,9 +137,11 @@ func UnloadScene() {
 }
 
 func HandleChatRequest(cp *player.ClientPlayer, chReq *types.ChatMessage) {
-	chatMsgs = append(chatMsgs, chReq.Message)
+	chatterNickname := cp.InternalPlayer.GetNickname(&chReq.PeerID)
+	formattedChatMsg := *chatterNickname + ": " + chReq.Message
+	chatMsgs = append(chatMsgs, formattedChatMsg)
 	// Clear chatInput buffer if msg was sent by Player
-	if cp.InternalPlayer.GetPeerID() == &chReq.PeerID {
+	if *cp.InternalPlayer.GetPeerID() == chReq.PeerID {
 		chatInput = nil
 	}
 }

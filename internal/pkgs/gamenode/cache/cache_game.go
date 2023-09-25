@@ -42,14 +42,12 @@ func (nc *NodeCache) updatePlayerPos(peerID string, pp types.PlayerPosition) err
 	validMove := nc.EngineVerifier.VerifyMoveDirection(&currPos.DestPosition, &pp.Position)
 
 	if !validMove {
-		return fmt.Errorf("[NODE CACHE] - Engine couldn't verify move. %s", "")
+		return fmt.Errorf("[NODE CACHE] - Engine couldn't verify move direction. %s", "")
 	}
 
-	// Update playerStates with new data (move pStates stack)
-	p.Prev.PlayerGameData.Position = types.Position(p.Prev.PlayerGameData.DestPosition)
-	p.Prev.DestPosition = types.DestPosition(p.Curr.Position)
-	p.Curr.Position = pp.Position
-	p.Curr.DestPosition = pp.DestPosition
+	p.Prev.Position, p.Prev.DestPosition = types.Position(p.Prev.DestPosition), types.DestPosition(p.Curr.Position)
+	p.Curr.Position, p.Curr.DestPosition = pp.Position, pp.DestPosition
+	p.Prev.Timestamp, p.Curr.Timestamp = p.Curr.Timestamp, pp.Timestamp
 	nc.Memory[peerID] = p
 
 	return nil

@@ -51,9 +51,10 @@ func (p *player) Init(ctx context.Context, crc chan types.CachedRequest, isRelay
 //
 
 func (p *player) Register(nickname *string) error {
-	pfx := []byte(security.REGISTER_PREFIX)
-	reqData := append(pfx, []byte(*nickname)...)
-	err := p.SendRequest(p.ctx, &reqData)
+	pfx := security.REGISTER_PREFIX
+	reqData := fmt.Sprintf(`{"nickname":"%s"}`, *nickname)
+	registerReq := []byte(pfx + reqData)
+	err := p.SendRequest(p.ctx, &registerReq)
 	return err
 }
 

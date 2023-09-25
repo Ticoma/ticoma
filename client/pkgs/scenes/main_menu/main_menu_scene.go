@@ -54,6 +54,11 @@ func loadMainMenuScene(cp *player.ClientPlayer) {
 	sceneReady = true
 }
 
+func HandleRegisterRequest(cp *player.ClientPlayer, nick string) {
+	cp.Nickname = &nick
+	cp.IsOnline = true
+}
+
 func UnloadScene() {
 	rl.UnloadRenderTexture(*regBtn.Txt)
 	rl.UnloadRenderTexture(*logBtn.Txt)

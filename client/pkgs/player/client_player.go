@@ -19,34 +19,42 @@ import (
 //
 
 type ClientPlayer struct {
+	Nickname        *string
 	IsOnline        bool
 	InternalPlayer  internal_player.Player // Interface passed from internal
 	HoverTile       *types.Position        // Currently hovered game tile
 	DestTile        *types.Position        // Destination of most recent move request
-	MoveQueue       []paths.Cell           // Queued DestPositions to reach DestTile
+	MoveQueue       []*paths.Cell          // Queued move requests
 	MoveQueueCancel chan bool              // Channel for stopping an ongoing MouseMove
 }
 
+type MOVE_REQ_TYPE int
+
+const ( // Think of better names for this
+	INTENTION MOVE_REQ_TYPE = iota
+	ARRIVAL
+)
+
 func New(p *internal_player.Player) *ClientPlayer {
 	return &ClientPlayer{
+		Nickname:        new(string),
 		IsOnline:        false,
 		InternalPlayer:  *p,
 		HoverTile:       nil,
 		DestTile:        nil,
-		MoveQueue:       []paths.Cell{},
+		MoveQueue:       []*paths.Cell{},
 		MoveQueueCancel: make(chan bool),
 	}
 }
 
 // Send a REGISTER_ request from Client
 func (cp *ClientPlayer) Register() {
-	nick := "teaver"
+	nick := "nick"
 	err := cp.InternalPlayer.Register(&nick)
 	if err != nil {
 		fmt.Println("[CLIENT PLAYER] - Failed to register. Err: " + err.Error())
 		return
 	}
-	cp.IsOnline = true
 }
 
 // Send a LOGIN_ request from Client
@@ -56,7 +64,6 @@ func (cp *ClientPlayer) Login() {
 		fmt.Println("[CLIENT PLAYER] - Failed to login. Err: " + err.Error())
 		return
 	}
-	cp.IsOnline = true
 }
 
 // Computes a path and queues n MOVE_ requests to destination tile
@@ -76,22 +83,17 @@ func (cp *ClientPlayer) MouseMove(cMap *paths.Grid) error {
 
 		ticker := time.NewTicker(time.Millisecond * time.Duration(c.MOVE_COOLDOWN_IN_MS))
 
-		// Fill queue with new path tiles
 		for i, pathTile := range path.Cells {
-			// Paths pkg counts first pos, but we don't need it. MoveQueue stores only Dest's
 			if i != 0 {
-				cp.MoveQueue = append(cp.MoveQueue, *pathTile)
+				cp.MoveQueue = append(cp.MoveQueue, pathTile, pathTile)
 			}
 		}
-
-		// fmt.Println("Queue: ", cp.MoveQueue)
 
 		// Perform move in
 		for range cp.MoveQueue {
 			go func() {
 				select {
 				case <-cp.MoveQueueCancel:
-					// New MouseMove request - Abort this one and clear queue
 					cp.MoveQueue = nil
 					return
 				case <-ticker.C:
@@ -100,31 +102,34 @@ func (cp *ClientPlayer) MouseMove(cMap *paths.Grid) error {
 						return
 					}
 
-					// fmt.Println("Move: ", cp.MoveQueue[0].X+1, cp.MoveQueue[0].Y+1)
-
+					pPos := cp.InternalPlayer.GetPos().Position
+					destPos := cp.InternalPlayer.GetPos().DestPosition
 					queuedX, queuedY := cp.MoveQueue[0].X+1, cp.MoveQueue[0].Y+1
 
-					// First move (Intention)
-					mvErr := cp.InternalPlayer.Move(&cp.InternalPlayer.GetPos().Position.X, &cp.InternalPlayer.GetPos().Position.Y, &queuedX, &queuedY)
-					if mvErr != nil {
-						fmt.Println("[CLIENT PLAYER] - Failed to MouseMove (Intention) Err: ", mvErr.Error())
-						return
+					// fmt.Println("pPos", pPos.X, pPos.Y)
+					// fmt.Println("destPos", destPos.X, destPos.Y)
+					// fmt.Println("queued", queuedX, queuedY)
+
+					if destPos.X == queuedX && destPos.Y == queuedY {
+						cp.singleMove(&queuedX, &queuedY, &queuedX, &queuedY, ARRIVAL)
+					} else {
+						cp.singleMove(&pPos.X, &pPos.Y, &queuedX, &queuedY, INTENTION)
 					}
 
-					// Second move (Arrival)
-					mvErr = cp.InternalPlayer.Move(&queuedX, &queuedY, &queuedX, &queuedY)
-					if mvErr != nil {
-						fmt.Println("[CLIENT PLAYER] - Failed to MouseMove (Arrival) Err: ", mvErr.Error())
-						return
-					}
-
-					// This panics when I change move direction in certain tick timings
-					// TODO: Solution: Make a global tickrate and make a Wait on cancel
-
-					cp.MoveQueue = cp.MoveQueue[1:] // Pop first element from queue
+					cp.MoveQueue = cp.MoveQueue[1:]
 				}
 			}()
 		}
 	}
 	return nil
+}
+
+func (cp *ClientPlayer) singleMove(posX, posY, destX, destY *int, reqType MOVE_REQ_TYPE) {
+	pPos := cp.InternalPlayer.GetPos().Position
+	switch reqType {
+	case INTENTION:
+		cp.InternalPlayer.Move(&pPos.X, &pPos.Y, destX, destY)
+	case ARRIVAL:
+		cp.InternalPlayer.Move(destX, destY, destX, destY)
+	}
 }

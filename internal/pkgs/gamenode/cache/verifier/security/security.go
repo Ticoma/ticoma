@@ -243,7 +243,7 @@ func (sv *SecurityVerifier) constructRegisterReq(data string, peerID string) (st
 	}
 
 	match, _ := regexp.MatchString(`^[a-zA-Z0-9_]*$`, nick)
-	fmt.Println("Nickname match result: ", match)
+	debug.DebugLog(fmt.Sprintf("[SEC VER] - Nickname regex pass: %t", match), debug.PLAYER)
 
 	if !match {
 		return "", fmt.Errorf("[SEC VER] - Nickname contains unallowed characters")

@@ -30,7 +30,7 @@ func (ev *EngineVerifier) VerifyMoveVelocity(start *types.PlayerPosition, end *t
 
 	velocity := blocksTraveledTotal / float64(elapsedTime)
 
-	debug.DebugLog(fmt.Sprintf("[ENGINE VER] - Move vel info: Velocity: %f, Max Vel: %f, Elapsed Time: %d\n[ENGINE VER] - First mv: { pos{%d, %d}, dest{%d, %d}}, End pos: { pos{%d, %d}, dest{%d, %d}}", velocity, MAX_VEL, elapsedTime, start.Position.X, start.Position.Y, start.DestPosition.X, start.DestPosition.Y, end.Position.X, end.Position.Y, end.DestPosition.X, end.DestPosition.Y), debug.PLAYER)
+	debug.DebugLog(fmt.Sprintf("[ENGINE VER] - Velocity: %f, Max Vel: %f, Blocks Traveled: %f, Elapsed Time: %d\n[ENGINE VER] - StartPos: {{%d, %d}, {%d, %d}}, EndPos: {{%d, %d}, {%d, %d}}", velocity, MAX_VEL, blocksTraveledTotal, elapsedTime, start.Position.X, start.Position.Y, start.DestPosition.X, start.DestPosition.Y, end.Position.X, end.Position.Y, end.DestPosition.X, end.DestPosition.Y), debug.PLAYER)
 
 	if velocity > MAX_VEL {
 		msg := fmt.Sprintf("[ERR] Engine player movement verification (velocity too high).\nVelocity: %f\nMax acceptable velocity: %f\n", velocity, MAX_VEL)
@@ -45,7 +45,6 @@ func (ev *EngineVerifier) VerifyMoveDirection(lastDestPos *types.DestPosition, p
 	verX, verY := lastDestPos.X == pos.X, lastDestPos.Y == pos.Y
 	if !verX || !verY {
 		return false
-	} else {
-		return true
 	}
+	return true
 }

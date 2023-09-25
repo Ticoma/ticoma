@@ -37,7 +37,6 @@ func (nc *NodeCache) handleAccountRequest(peerID string, reqPrefix string, reqS 
 	case security.LOGIN_PREFIX:
 		return nc.loginPlayer(peerID)
 	case security.LOGOUT_PREFIX:
-		fmt.Println("Logout request")
 		return nc.logoutPlayer(peerID)
 	default:
 		return fmt.Errorf("[NODE CACHE] - Unknown account related request.")
@@ -58,6 +57,7 @@ func (nc *NodeCache) registerPlayer(peerID string, nickname string) error {
 	p.Prev.IsOnline, p.Curr.IsOnline = true, true
 	p.Prev.PlayerPosition, p.Curr.PlayerPosition = spawnPos, spawnPos
 	p.Prev.Nick, p.Curr.Nick = nickname, nickname
+
 	nc.Memory[peerID] = *p
 	debug.DebugLog(fmt.Sprintf("[NODE CACHE] - PeerID: %s created an account", peerID), debug.PLAYER)
 	return nil
@@ -87,7 +87,6 @@ func (nc *NodeCache) logoutPlayer(peerID string) error {
 	if !nc.accountOnline(peerID) {
 		return fmt.Errorf("[NODE CACHE] - Failed to logout. Player is already logged out")
 	}
-	fmt.Println("Logging out player: ", peerID)
 	p := nc.Memory[peerID]
 	p.Curr.IsOnline = false
 	nc.Memory[peerID] = p

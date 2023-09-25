@@ -133,3 +133,21 @@ func TestMove(t *testing.T) {
 	assert.NotEqual(t, &cache.Memory{}, c.GetAll())
 
 }
+
+func TestGetNickname(t *testing.T) {
+
+	c := cache.New()
+	localId := "123000123"
+	localNickname := "tester0"
+
+	nick := c.GetNickname(localId)
+
+	assert.Equal(t, "", *nick)
+
+	_, _, err := c.Put(localId, []byte(fmt.Sprintf(`REGISTER_{"nickname":"%s"}`, localNickname)))
+
+	nick = c.GetNickname(localId)
+
+	assert.NoError(t, err)
+	assert.Equal(t, localNickname, *nick)
+}
