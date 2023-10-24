@@ -24,7 +24,7 @@ Get Xcode or Command Line Tools for Xcode
 
 #### Windows
 
-1. Download standalone gcc from [here](https://winlibs.com/)
+1. Download tdm-gcc (64+32-bit) from [here](https://jmeubank.github.io/tdm-gcc/)
 2. Unzip the archive with [7zip](https://www.7-zip.org/)
 3. Place it somewhere safe: home dir, dev folder, etc. 
 4. Add the `mingw64\bin` dir to PATH
