@@ -1,0 +1,66 @@
+name: Test and compile
+
+on:
+  push:
+  pull_request:
+    paths:
+    - 'internal/**'
+    - 'client/**'
+    - 'main/**'
+
+jobs:
+  build:
+    name: test locally & compile for linux, win
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.20
+
+    - name: Install X11
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libgl1-mesa-dev
+
+    - name: Tidy
+      run: |
+        go mod tidy
+
+    - name: Run Tests
+      run: go test ./internal/pkgs/gamenode/cache/tests/...
+
+    - name: Install MinGW for Windows Cross-Compilation
+      run: sudo apt-get install -y mingw-w64
+
+    - name: Compile for Linux
+      env:
+        GOOS: linux
+        GOARCH: amd64
+      run: go build -o ticoma-linux-amd64 ./main/
+
+    - name: Compile for Windows
+      env:
+        GOOS: windows
+        GOARCH: amd64
+        CC: x86_64-w64-mingw32-gcc
+        CGO_ENABLED: 1
+      run: go build -o ticoma-windows-amd64.exe ./main/
+
+    # NOTE: Compiling for macOS from a Linux runner is a pain in the ass
+    # due to raylib-go using native C libs. From raylib-go docs:
+    # "On macOS you need Xcode or Command Line Tools for Xcode."
+    # This would be trivial on a macOS runner but not so much on a linux one
+    # Compiling for macOS should be done on a local machine for convenience
+
+    # TODO: Make a separate workflow for macOS -> macOS compilation
+
+    # - name: Compile for macOS
+    #   env:
+    #     GOOS: darwin
+    #     GOARCH: amd64
+    #   run: go build -o ticoma-darwin-amd64 ./main/

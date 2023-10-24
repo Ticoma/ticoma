@@ -1,3 +1,5 @@
+//go:build !noX11
+
 package main
 
 import (
@@ -16,9 +18,9 @@ func main() {
 	crc := make(chan types.CachedRequest) // channel for verified requests
 	ctx, cancel := context.WithCancel(context.Background())
 
-	clientF := flag.Bool("client", false, "true if internal + client, defaults to false")
-	relayF := flag.Bool("relay", false, "true if only want to run relay (seed standalone gamenode)")
-	fullscreenF := flag.Bool("fullscreen", false, "true if want to run in fullscreen mode")
+	clientF := flag.Bool("client", false, "True = run with GUI, False = headless. Defaults to true")
+	relayF := flag.Bool("relay", false, "True = only seed standalone gamenode, no player node. Defaults to false")
+	fullscreenF := flag.Bool("fullscreen", false, "True = run in fullscreen mode. Defaults to false")
 
 	flag.Parse()
 

@@ -2,32 +2,14 @@ package tests
 
 import (
 	"fmt"
-	"os"
 	"testing"
 	"ticoma/internal/pkgs/gamenode/cache"
 
-	"github.com/joho/godotenv"
 	assert "github.com/stretchr/testify/assert"
 )
 
 var playerID string = "foo"
 var playerNickname string = "k1ng_V0n"
-
-func TestMain(t *testing.M) {
-	Setup()
-	code := t.Run()
-	os.Exit(code)
-}
-
-func Setup() {
-	// Load debug from env
-	err := godotenv.Load()
-	if err != nil {
-		panic("[ERR] couldn't load .env file in tests directory. " + err.Error())
-	}
-	// Init cache
-	fmt.Println("Test setup OK")
-}
 
 func TestRegisterPlayer(t *testing.T) {
 

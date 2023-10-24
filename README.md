@@ -43,7 +43,7 @@ Install raylib
 
 ### Flags
 
-* `client (bool)` - Run with client or headless. Default = `false`
+* `client (bool)` - Run with client or headless. Default = `true`
 * `relay (bool)` - When set to `true` creates a relay node instead of a player node. Default = `false`
 * `fullscreen (bool)` - Run in fullscreen mode instead of a quarter resolution window. Default = `false`
 
